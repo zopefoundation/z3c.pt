@@ -1,0 +1,70 @@
+Benchmarks
+==========
+
+                  zope.pagetemplate     z3c.pt
+Hello World       4.482                 1     
+1000 x 10 table   4.540                 1
+
+Source
+------
+
+  >>> from z3c.pt import PageTemplate
+  >>> from zope.pagetemplate.pagetemplate import PageTemplate as z3PageTemplate
+
+Hello World:
+
+  >>> template = PageTemplate("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml">
+  ...   Hello World!
+  ... </div>""")
+
+  >>> # for i in range(300000): a = template()
+
+  >>> template = z3PageTemplate()
+  >>> template.pt_edit("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml">
+  ...   Hello World!
+  ... </div>""", 'text/xhtml')
+
+  >>> # for i in range(300000): a = template()  
+
+1000 x 10 table:
+  
+  >>> table = [dict(a=1,b=2,c=3,d=4,e=5,f=6,g=7,h=8,i=9,j=10) \
+  ...          for x in range(1000)]
+
+  >>> template = PageTemplate("""\
+  ... <table xmlns="http://www.w3.org/1999/xhtml"
+  ...        xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   <tr tal:repeat="row table">
+  ...      <td tal:repeat="c row.values()"
+  ...          tal:content="c" />
+  ...   </tr>
+  ... </table>""")
+
+  >>> # for i in range(20): a = template(table=table)
+  
+  >>> template = z3PageTemplate()
+  >>> template.pt_edit("""\
+  ... <table xmlns="http://www.w3.org/1999/xhtml"
+  ...        xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   <tr tal:repeat="row options/table">
+  ...      <td tal:repeat="c python: row.values()"
+  ...          tal:content="c" />
+  ...   </tr>
+  ... </table>""", 'text/xhtml')
+
+  >>> # for i in range(20): a = template(table=table)
+
+  >>> from StringIO import StringIO
+  >>> def bigtable(table):
+  ...   out = StringIO()
+  ...   for row in table:
+  ...      out.write('<tr>')
+  ...      for c in row.values():
+  ...         out.write('<td>%s</td>' % c)
+  ...      out.write('</tr>')
+  ...   return out.getvalue()
+  
+  >>> # for i in range(20): a = bigtable(table=table)
+

@@ -1,0 +1,60 @@
+Translation
+-----------
+
+  >>> from z3c.pt.pagetemplate import translate
+  >>> from z3c.pt import io
+
+A few imports.
+  
+  >>> from lxml import etree
+  >>> from StringIO import StringIO
+
+The following symbols are expected to be in the local symbol table.
+
+  >>> from cgi import escape as _escape
+  >>> from z3c.pt.tal import repeatdict as _repeat
+  >>> repeat = _repeat()
+  >>> _attrs = {}
+  
+Example:
+
+  >>> tree = etree.fromstring("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   <span tal:define="a 'abc'"
+  ...         tal:attributes="class 'def' + a"
+  ...         tal:content="a + 'ghi'" />
+  ...   <ul>
+  ...     <li tal:repeat="i range(5)">
+  ...       <span tal:replace="'Item ' + str(i) + ')'" />
+  ...     </li>
+  ...   </ul>
+  ... </div>
+  ... """)
+
+  >>> stream = io.CodeIO(indentation_string="  ")
+  >>> translate(tree, stream)
+  >>> _out = StringIO()
+  >>> _scope = []
+  >>> exec stream.getvalue()
+  >>> print _out.getvalue()
+  <div>
+    <span class="defabc">abcghi</span>
+    <ul>
+       <li>
+          Item 0)
+       </li>
+       <li>
+          Item 1)
+       </li>
+       <li>
+          Item 2)
+       </li>
+       <li>
+          Item 3)
+       </li>
+       <li>
+          Item 4)
+       </li>
+     </ul>
+  </div>

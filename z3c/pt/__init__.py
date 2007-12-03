@@ -1,0 +1,2 @@
+from pagetemplate import PageTemplate
+from pagetemplate import PageTemplateFile

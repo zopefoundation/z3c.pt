@@ -1,0 +1,226 @@
+TAL
+===
+
+Tests for the TAL language implementation.
+
+  >>> from z3c.pt import tal
+
+expression
+----------
+
+Simple expression:
+
+  >>> tal.expression("4 + 5")
+  ['4 + 5']
+
+Complex expressions:
+
+  >>> tal.expression("a.non_defined_method() | 1")
+  ['a.non_defined_method() ', '1']
+
+Expression with non-semantic horizontal bar.
+
+  >>> tal.expression("'|'")
+  ["'|'"]
+    
+Expression with non-semantic horizontal bar and semantic bar.
+
+  >>> tal.expression("a.non_defined_method() | '|'")
+  ['a.non_defined_method() ', "'|'"]
+    
+Define
+------
+
+  >>> from z3c.pt.io import CodeIO
+  >>> stream = CodeIO()
+  >>> _scope = []
+  
+Variable scope:
+
+  >>> define = tal.Define("a b")
+  >>> b = object()
+  >>> define.begin(stream)
+  >>> exec stream.getvalue()
+  >>> a is b
+  True
+  >>> del a
+  >>> _scope.remove('a')
+  >>> define.end(stream)
+  >>> exec stream.getvalue()
+  >>> a
+  Traceback (most recent call last):
+      ...
+  NameError: name 'a' is not defined
+  >>> b is not None
+  True
+  
+Multiple defines:
+
+  >>> define = tal.Define("a b; c d")
+  >>> d = object()
+  >>> define.begin(stream)
+  >>> exec stream.getvalue()
+  >>> a is b and c is d
+  True
+  >>> define.end(stream)
+  >>> del a; del c
+  >>> _scope.remove('a'); _scope.remove('c')
+  >>> exec stream.getvalue()
+  >>> a
+  Traceback (most recent call last):
+      ...
+  NameError: name 'a' is not defined
+  >>> c
+  Traceback (most recent call last):
+      ...
+  NameError: name 'c' is not defined
+  >>> b is not None and d is not None
+  True
+
+Using semicolons in expressions within a define:
+
+  >>> define = tal.Define("a ';'")
+  >>> define.begin(stream)
+  >>> exec stream.getvalue()
+  >>> a
+  ';'
+  >>> define.end(stream)
+
+Ending an define clause with a semicolon.
+
+  >>> define = tal.Define("a 4 + 5;")
+  >>> define.begin(stream)
+  >>> exec stream.getvalue()
+  >>> a
+  9
+  >>> define.end(stream)
+
+Scope:
+
+  >>> a = 1
+  >>> define = tal.Define("a 2")
+  >>> define.begin(stream)
+  >>> define.end(stream)
+  >>> exec stream.getvalue()
+  >>> a
+  1
+  
+Conditions
+----------
+
+  >>> stream = CodeIO()
+  
+True:
+
+  >>> a = 0
+  >>> condition = tal.Condition("True")
+  >>> define = tal.Define("a 1")
+  >>> condition.begin(stream)
+  >>> define.begin(stream)
+  >>> exec stream.getvalue()
+  >>> a
+  1
+  >>> define.end(stream)
+  >>> condition.end(stream)
+
+False:
+
+  >>> a = 0
+  >>> condition = tal.Condition("False")
+  >>> define = tal.Define("a 1")
+  >>> condition.begin(stream)
+  >>> define.begin(stream)
+  >>> exec stream.getvalue()
+  >>> a
+  0
+  >>> define.end(stream)
+  >>> condition.end(stream)
+
+Repeat
+------
+
+  >>> from z3c.pt.tal import repeatdict as _repeat
+  >>> repeat = _repeat()
+  
+  >>> stream = CodeIO()
+  
+  >>> _repeat = tal.Repeat("i range(5)")
+  >>> _repeat.begin(stream)
+  >>> stream.write("r = repeat['i']")
+  >>> stream.write("print (i, r.index, r.start, r.end, r.number(), r.odd(), r.even())")
+  >>> exec stream.getvalue()
+  (0, 0, True, False, 1, False, True)
+  (1, 1, False, False, 2, True, False)
+  (2, 2, False, False, 3, False, True)
+  (3, 3, False, False, 4, True, False)
+  (4, 4, False, True, 5, False, True)
+  >>> _repeat.end(stream)
+
+Attribute
+---------
+
+  >>> from z3c.pt.tal import Attribute
+  >>> stream = CodeIO()
+  
+  >>> attribute = Attribute("class 'plain'")
+  >>> attribute.begin(stream)
+  >>> attribute.end(stream)
+  >>> exec stream.getvalue()
+  >>> _attrs
+  {'class': 'plain'}
+  >>> del _attrs
+  
+Attributes that are bound to expressions will be removed on ``update``:
+
+  >>> from lxml.etree import Element
+  >>> img = Element('img')
+  >>> img.set('src', u'logo.gif')
+  >>> img.set('class', u'stx')
+  >>> img = attribute.update(img)
+  >>> img.attrib
+  {'src': 'logo.gif'}
+
+Content
+-------
+
+  >>> from z3c.pt.tal import Content
+  >>> stream = CodeIO()
+
+  >>> from StringIO import StringIO
+  >>> _out = StringIO()
+  
+  >>> content = tal.Content(u"'Hello World!'")
+  >>> content.begin(stream)
+  >>> exec stream.getvalue()
+  >>> _out.getvalue()
+  'Hello World!'
+  >>> content.end(stream)
+
+Tag
+---
+
+Define required global symbols.
+
+  >>> from cgi import escape as _escape
+  >>> _attrs = {}
+  
+  >>> stream = CodeIO()
+  >>> br = Element('br')  
+  >>> tag = tal.Tag(br)
+  >>> tag.begin(stream)
+  >>> tag.end(stream)
+  >>> _out = StringIO()
+  >>> exec stream.getvalue()
+  >>> _out.getvalue()
+  '<br />'
+
+  >>> stream = CodeIO()
+  >>> div = Element('div')
+  >>> div.text = ''
+  >>> tag = tal.Tag(div)
+  >>> tag.begin(stream)
+  >>> tag.end(stream)
+  >>> _out = StringIO()
+  >>> exec stream.getvalue()
+  >>> _out.getvalue()
+  '<div></div>'
