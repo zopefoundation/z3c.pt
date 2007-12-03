@@ -179,9 +179,6 @@ class Define(object):
         self.defines = [(v, Assign(e)) for v, e in definition(value)]
         self.variables = list(itertools.chain(*[v for (v, e) in self.defines]))
 
-        if '' in self.variables:
-            import pdb; pdb.set_trace()
-            
     def update(self, node):
         return node
             

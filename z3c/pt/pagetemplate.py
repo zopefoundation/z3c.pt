@@ -29,17 +29,21 @@ class PageTemplate(object):
         # imports and symbols
         stream.write("from cgi import escape as _escape")
         stream.write("from z3c.pt.tal import repeatdict as _repeatdict")
+        stream.write("from z3c.pt.tal import attrdict as _attrdict")
         stream.write("from StringIO import StringIO as _StringIO")
-
+        
         stream.write("def render(**_kwargs):")
         stream.indent()
 
         # globalize imports and set up process variables
-        stream.write("global _StringIO, _repeatdict, _escape")
+        stream.write("global _StringIO, _repeatdict, _attrdict, _escape")
         stream.write("repeat = _repeatdict()")
         stream.write("_attrs = {}")
         stream.write("_scope = _kwargs.keys()")
-        
+
+        # proxy kwargs as attrdict
+        stream.write("_kwargs = _attrdict(**_kwargs)")
+
         # output
         stream.write("_out = _StringIO()")
         
