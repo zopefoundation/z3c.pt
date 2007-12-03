@@ -33,6 +33,8 @@ class PageTemplate(object):
 
         stream.write("def render(**_kwargs):")
         stream.indent()
+
+        # globalize imports and set up process variables
         stream.write("global _StringIO, _repeatdict, _escape")
         stream.write("repeat = _repeatdict()")
         stream.write("_attrs = {}")

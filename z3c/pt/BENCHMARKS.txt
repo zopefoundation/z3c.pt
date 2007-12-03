@@ -3,7 +3,7 @@ Benchmarks
 
                   zope.pagetemplate     z3c.pt
 Hello World       4.482                 1     
-1000 x 10 table   4.540                 1
+1000 x 10 table   4.513                 1
 
 Source
 ------
@@ -42,7 +42,7 @@ Hello World:
   ...   </tr>
   ... </table>""")
 
-  >>> # for i in range(20): a = template(table=table)
+  >>> for i in range(20): a = template(table=table)
   
   >>> template = z3PageTemplate()
   >>> template.pt_edit("""\

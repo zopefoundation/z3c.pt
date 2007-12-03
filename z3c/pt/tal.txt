@@ -77,6 +77,23 @@ Multiple defines:
   >>> b is not None and d is not None
   True
 
+Tuple assignments:
+
+  >>> define = tal.Define("(e, f) [1, 2]")
+  >>> define.begin(stream)
+  >>> exec stream.getvalue()
+  >>> e == 1 and f == 2
+  True
+  >>> define.end(stream)
+
+Verify scope is preserved on tuple assignment:
+
+  >>> e = None; f = None
+  >>> _scope.append('e'); _scope.append('f')
+  >>> exec stream.getvalue()
+  >>> e is None and f is None
+  True
+  
 Using semicolons in expressions within a define:
 
   >>> define = tal.Define("a ';'")
