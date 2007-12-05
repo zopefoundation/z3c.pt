@@ -6,7 +6,7 @@ template language.
 
 In a nutshell:
 
-  - Templates are JIT-compiled
+  - Templates are bytecode-compiled
   - Only Python-expressions are supported
   - Depends only on lxml
 
