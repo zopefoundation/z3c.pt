@@ -27,16 +27,31 @@ Expression with non-semantic horizontal bar and semantic bar.
 
   >>> tal.expression("a.non_defined_method() | '|'")
   ['a.non_defined_method() ', "'|'"]
-    
-Define
+
+Assign
 ------
+
+Simple assignment.
 
   >>> from z3c.pt.io import CodeIO
   >>> stream = CodeIO()
   >>> _scope = []
+
+  >>> assign = tal.Assign(tal.expression("1"))
+  >>> assign.begin(stream, 'a')
+  >>> exec stream.getvalue()
+  >>> a == 1
+  True
+  >>> del a
+  >>> assign.end(stream)
+  >>> exec stream.getvalue()
   
+Define
+------
+
 Variable scope:
 
+  >>> stream = CodeIO()
   >>> define = tal.Define("a b")
   >>> b = object()
   >>> define.begin(stream)
@@ -56,6 +71,7 @@ Variable scope:
   
 Multiple defines:
 
+  >>> stream = CodeIO()
   >>> define = tal.Define("a b; c d")
   >>> d = object()
   >>> define.begin(stream)
@@ -79,6 +95,7 @@ Multiple defines:
 
 Tuple assignments:
 
+  >>> stream = CodeIO()
   >>> define = tal.Define("(e, f) [1, 2]")
   >>> define.begin(stream)
   >>> exec stream.getvalue()
@@ -96,6 +113,7 @@ Verify scope is preserved on tuple assignment:
   
 Using semicolons in expressions within a define:
 
+  >>> stream = CodeIO()
   >>> define = tal.Define("a ';'")
   >>> define.begin(stream)
   >>> exec stream.getvalue()
@@ -105,16 +123,22 @@ Using semicolons in expressions within a define:
 
 Ending an define clause with a semicolon.
 
+  >>> stream = CodeIO()
   >>> define = tal.Define("a 4 + 5;")
   >>> define.begin(stream)
   >>> exec stream.getvalue()
   >>> a
   9
   >>> define.end(stream)
-
+  >>> del a
+  >>> _scope.remove('a')
+  >>> exec stream.getvalue()
+  
 Scope:
 
+  >>> stream = CodeIO()
   >>> a = 1
+  >>> _scope.append('a')
   >>> define = tal.Define("a 2")
   >>> define.begin(stream)
   >>> define.end(stream)

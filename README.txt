@@ -12,14 +12,12 @@ In a nutshell:
 
 The METAL macro language is not supported; i18n is on the to-do.
 
-Template language
------------------
+Template and expression language
+--------------------------------
 
-The template language is based loosely on the TAL 1.4 specification
-found here:
+The template and expression language is based loosely on the TAL 1.4
+specification*. Some notable changes:
 
-  * http://wiki.zope.org/ZPT/TALSpecification14
-  
 1. Only Python-expressions are allowed. Expressions can have
    try-except fallbacks using the vertical bar syntax:
 
@@ -33,3 +31,12 @@ found here:
    repeat variable is not available in this case.
 
       tal:repeat="i <some generator>"
+
+4. Attribute-access to dictionary entries is allowed, e.g.
+
+      dictionary.key
+
+   can be used instead of ``dictionary['key']``.
+
+*) http://wiki.zope.org/ZPT/TALSpecification14
+  

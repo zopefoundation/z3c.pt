@@ -24,6 +24,7 @@ setup(name='z3c.pt',
       zip_safe=False,
       install_requires=[
           'setuptools',
+          'lxml',
           # -*- Extra requirements: -*-
       ],
       entry_points="""

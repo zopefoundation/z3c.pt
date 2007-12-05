@@ -170,7 +170,7 @@ class Assign(object):
 
         expression = self.expressions[-1]
         stream.write("%s = %s" % (variable, expression))
-
+        
     def end(self, stream):
         stream.outdent(len(self.expressions)-1)
 
@@ -212,7 +212,7 @@ class Define(object):
             stream.write("del %s" % variable)
             stream.write("_scope.remove('%s')" % variable)
             stream.outdent()
-            
+
 class Condition(object):
     def __init__(self, value):
         self.assign = Assign(expression(value))
