@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '0.1'
+version = '0.2'
 
 setup(name='z3c.pt',
       version=version,
@@ -24,6 +24,7 @@ setup(name='z3c.pt',
       zip_safe=False,
       install_requires=[
           'setuptools',
+          'lxml',
           # -*- Extra requirements: -*-
       ],
       entry_points="""

@@ -12,9 +12,9 @@ class CodeIO(StringIO):
 
     variable_prefix = '_saved'
     
-    def __init__(self, indentation_string="\t"):
+    def __init__(self, indentation=0, indentation_string="\t"):
         StringIO.__init__(self)
-        self.indentation = 0
+        self.indentation = indentation
         self.indentation_string = indentation_string
         self.counter = 0
         self.queue = u''

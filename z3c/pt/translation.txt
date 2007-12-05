@@ -1,24 +1,11 @@
 Translation
 -----------
 
-  >>> from z3c.pt.pagetemplate import translate
-  >>> from z3c.pt import io
+  >>> from z3c.pt.translation import translate
 
-A few imports.
-  
-  >>> from lxml import etree
-  >>> from StringIO import StringIO
-
-The following symbols are expected to be in the local symbol table.
-
-  >>> from cgi import escape as _escape
-  >>> from z3c.pt.tal import repeatdict as _repeat
-  >>> repeat = _repeat()
-  >>> _attrs = {}
-  
 Example:
 
-  >>> tree = etree.fromstring("""\
+  >>> body = """\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
   ...   <span tal:define="a 'abc'"
@@ -30,14 +17,12 @@ Example:
   ...     </li>
   ...   </ul>
   ... </div>
-  ... """)
+  ... """
 
-  >>> stream = io.CodeIO(indentation_string="  ")
-  >>> translate(tree, stream)
-  >>> _out = StringIO()
-  >>> _scope = []
-  >>> exec stream.getvalue()
-  >>> print _out.getvalue()
+  >>> source, _globals = translate(body)
+  >>> _locals = {}
+  >>> exec source in _globals, _locals
+  >>> print _locals['render']()
   <div>
     <span class="defabc">abcghi</span>
     <ul>

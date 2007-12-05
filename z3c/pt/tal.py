@@ -1,6 +1,7 @@
 import parser
 import cgi
 import xml.sax.saxutils
+import itertools
 
 def expression(string):
     """
@@ -42,6 +43,18 @@ def expression(string):
 
     return expression
 
+def variable(string):
+    for var in string.split(', '):
+        var = var.strip()
+
+        if var in ('repeat',):
+            raise ValueError, "Invalid variable name '%s' (reserved)." % variable
+
+        if var.startswith('_'):
+            raise ValueError, \
+                  "Invalid variable name '%s' (starts with an underscore)." % variable            
+        yield var
+    
 def definition(string):
     """
     TAL define-expression:
@@ -62,19 +75,19 @@ def definition(string):
         while string[i] == ' ':
             i += 1
 
-        # get variable name
-        j = string.find(' ', i + 1)
-        if j == -1:
-            raise ValueError, "Invalid define clause (%s)." % string
+        # get variable definition
+        if string[i] == '(':
+            j = string.find(')', i+1)
+            if j == -1:
+                raise ValueError, "Invalid variable tuple definition (%s)." % string
+            var = variable(string[i+1:j])
+            j += 1
+        else:
+            j = string.find(' ', i + 1)
+            if j == -1:
+                raise ValueError, "Invalid define clause (%s)." % string
+            var = variable(string[i:j])
 
-        variable = string[i:j]
-
-        if variable in ('repeat',):
-            raise ValueError, "Invalid variable name '%s' (reserved)." % variable
-
-        if variable.startswith('_'):
-            raise ValueError, \
-                  "Invalid variable name '%s' (starts with an underscore)." % variable            
         # get expression
         i = j
         while j < len(string):
@@ -90,7 +103,7 @@ def definition(string):
         else:
             raise e
 
-        defines.append((variable, expr))
+        defines.append((list(var), expr))
 
         i = j + 1
 
@@ -157,35 +170,38 @@ class Assign(object):
 
         expression = self.expressions[-1]
         stream.write("%s = %s" % (variable, expression))
-
+        
     def end(self, stream):
         stream.outdent(len(self.expressions)-1)
 
 class Define(object):    
     def __init__(self, value):
         self.defines = [(v, Assign(e)) for v, e in definition(value)]
+        self.variables = list(itertools.chain(*[v for (v, e) in self.defines]))
 
     def update(self, node):
         return node
             
     def begin(self, stream):
-        variables = [v for (v, e) in self.defines]
-
         # save local variables already in scope
         save = stream.save()
         stream.write("%s = {}" % save)
-        for var in variables:
+
+        for var in self.variables:
             stream.write("if '%s' in _scope: %s['%s'] = %s" % (var, save, var, var))
             stream.write("else: _scope.append('%s')" % var)
         
-        for variable, assign in self.defines:
-            assign.begin(stream, variable)
+        for variables, assign in self.defines:
+            if len(variables) == 1:
+                assign.begin(stream, variables[0])
+            else:
+                assign.begin(stream, u"(%s,)" % ", ".join(variables))
             assign.end(stream)
         
     def end(self, stream):
         restore = stream.restore()
 
-        for variable, expression in reversed(self.defines):
+        for variable in reversed(self.variables):
             # restore local variables previously in scope
             stream.write("if '%s' in %s:" % (variable, restore))
             stream.indent()
@@ -196,7 +212,7 @@ class Define(object):
             stream.write("del %s" % variable)
             stream.write("_scope.remove('%s')" % variable)
             stream.outdent()
-            
+
 class Condition(object):
     def __init__(self, value):
         self.assign = Assign(expression(value))
@@ -258,21 +274,22 @@ class Repeat(object):
         
 class Attribute(object):
     def __init__(self, value):
-        self.attributes = definition(value)
+        self.attributes = [(v, Assign(e)) for v, e in definition(value)]
 
     def update(self, node):
-        for variable, expression in self.attributes:
-            if variable in node.attrib:
-                del node.attrib[variable]        
+        for variables, expression in self.attributes:
+            for variable in variables:
+                if variable in node.attrib:
+                    del node.attrib[variable]
 
         return node
     
     def begin(self, stream):
         stream.write("_attrs = {}")
-        for variable, expression in self.attributes:
-            assign = Assign(expression)
-            assign.begin(stream, "_attrs['%s']" % variable)
-            assign.end(stream)
+        for variables, assign in self.attributes:
+            for variable in variables:
+                assign.begin(stream, "_attrs['%s']" % variable)
+                assign.end(stream)
 
     def end(self, stream):
         pass

@@ -9,7 +9,7 @@ From a string:
   >>> from z3c.pt import PageTemplate
   >>> template = PageTemplate("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal/python">
   ...   Hello World!
   ... </div>
   ... """)
