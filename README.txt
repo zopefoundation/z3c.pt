@@ -1,6 +1,6 @@
 Overview
 --------
-
+		      
 The z3c.pt package provides an alternative implementation of the TAL
 template language.
 
@@ -9,8 +9,8 @@ In a nutshell:
   - Templates are bytecode-compiled
   - Only Python-expressions are supported
   - Depends only on lxml
-
-The METAL macro language is not supported; i18n is on the to-do.
+    
+The METAL macro language is not supported.
 
 Template and expression language
 --------------------------------
@@ -39,4 +39,3 @@ specification*. Some notable changes:
    can be used instead of ``dictionary['key']``.
 
 *) http://wiki.zope.org/ZPT/TALSpecification14
-  

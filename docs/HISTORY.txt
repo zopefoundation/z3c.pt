@@ -1,0 +1,28 @@
+Changelog
+---------
+
+Version 0.3 - December 21, 2007
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Added ``ViewPageTemplateFile`` class
+  [malthe]
+  
+- Added support for i18n
+  [malthe]
+  
+- Engine rewrite; improved code generation abstractions
+  [malthe]
+
+  
+Version 0.2 - December 5, 2007
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Major optimizations to the generated code
+  [malthe]
+
+
+Version 0.1 - December 3, 2007
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- First public release
+  [malthe]

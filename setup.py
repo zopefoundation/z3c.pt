@@ -1,12 +1,12 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '0.2'
+version = '0.3'
 
 setup(name='z3c.pt',
       version=version,
       description="An implementation of the TAL template language.",
-      long_description=open("README.txt").read(),
+      long_description=open("README.txt").read() + open("docs/HISTORY.txt").read(),
       classifiers=[
         "Programming Language :: Python",
         "Topic :: Text Processing :: Markup :: HTML",
@@ -25,6 +25,7 @@ setup(name='z3c.pt',
       install_requires=[
           'setuptools',
           'lxml',
+          'zope.i18n',
           # -*- Extra requirements: -*-
       ],
       entry_points="""

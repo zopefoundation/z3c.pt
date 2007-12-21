@@ -42,7 +42,7 @@ class Suite(object):
     
     def __init__(self, source):
         """Create the code object from a string."""
-        
+
         node = parse(source, self.mode)
 
         # build tree
