@@ -76,10 +76,14 @@ class Element(lxml.etree.ElementBase):
         # tag tail (deferred)
         if self.tail:
             _.append(clauses.Out(self.tail, defer=True))
+
+        # compute dynamic flag
+        dynamic = self.replace or self.content or self.i18n_translate is not None
         
         # tag
         if self.replace is None:
-            tag = clauses.Tag(self.tag, self._attributes())
+            selfclosing = self.text is None and not dynamic
+            tag = clauses.Tag(self.tag, self._attributes(), selfclosing=selfclosing)
 
             if self.omit is not None:
                 _.append(clauses.Condition(_not(self.omit), [tag]))
@@ -87,7 +91,7 @@ class Element(lxml.etree.ElementBase):
                 _.append(tag)
 
         # tag text (if we're not replacing tag body)
-        if self.text and not (self.replace or self.content) and self.i18n_translate is None:
+        if self.text and not dynamic:
             _.append(clauses.Out(self.text))
 
         # dynamic content and content translation
@@ -185,7 +189,7 @@ class Element(lxml.etree.ElementBase):
         # static attributes are at the bottom of the food chain
         static = [key for key in self.keys() if not key.startswith('{')]
         for key in static:
-            attributes[key] = self.attrib[key]
+            attributes[key] = [repr(self.attrib[key])]
 
         # dynamic attributes
         attrs = self.attributes
@@ -266,6 +270,9 @@ def translate(body, params=[]):
     tree = lxml.etree.parse(StringIO(body), parser)
     root = tree.getroot()
 
+    if None not in root.nsmap:
+        raise ValueError, "Must set default namespace."
+        
     stream = io.CodeIO(indentation=1, indentation_string="\t")
 
     root.visit(stream)

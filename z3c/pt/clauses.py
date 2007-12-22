@@ -282,11 +282,11 @@ class Group(object):
     
 class Tag(object):
     """
-      >>> from z3c.pt.io import CodeIO; stream = CodeIO()
-      >>> _scope = []
+      >>> from z3c.pt.io import CodeIO
       >>> from StringIO import StringIO
+      >>> _scope = []
 
-      >>> _out = StringIO()
+      >>> _out = StringIO(); stream = CodeIO()
       >>> tag = Tag('div', dict(alt=expression(repr('Hello World!'))))
       >>> tag.begin(stream)
       >>> stream.out('Hello Universe!')
@@ -294,16 +294,25 @@ class Tag(object):
       >>> exec stream.getvalue()
       >>> _out.getvalue()
       '<div alt="Hello World!">Hello Universe!</div>'
+
+      >>> _out = StringIO(); stream = CodeIO()
+      >>> tag = Tag('br', {}, True)
+      >>> tag.begin(stream)
+      >>> tag.end(stream)
+      >>> exec stream.getvalue()
+      >>> _out.getvalue()
+      '<br />'
       
     """
 
-    def __init__(self, tag, attributes):
+    def __init__(self, tag, attributes, selfclosing=False):
         i = tag.find('}')
         if i != -1:
             self.tag = tag[i+1:]
         else:
             self.tag = tag
 
+        self.selfclosing = selfclosing
         self.attributes = attributes
         
     def begin(self, stream):
@@ -317,10 +326,14 @@ class Tag(object):
             write.end(stream)
             stream.out('"')
 
-        stream.out(">")
+        if self.selfclosing:
+            stream.out(" />")
+        else:
+            stream.out(">")
 
     def end(self, stream):
-        stream.out('</%s>' % self.tag)
+        if not self.selfclosing:
+            stream.out('</%s>' % self.tag)
 
 class Repeat(object):
     """
