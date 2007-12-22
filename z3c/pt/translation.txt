@@ -1,14 +1,26 @@
 Translation
 -----------
 
+This document contains functional template tests covering the TAL
+directives.
+
   >>> from z3c.pt.translation import translate
 
-Example:
+  >>> def render(body, **kwargs):
+  ...    source, _globals = translate(body)
+  ...    _locals = {}
+  ...    exec source in _globals, _locals
+  ...    return _locals['render'](**kwargs)
+  
+Canonical test template
+-----------------------
 
   >>> body = """\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   <span tal:define="a 'abc'"
+  ...   <span id="test"
+  ...         class="dummy"
+  ...         tal:define="a 'abc'"
   ...         tal:attributes="class 'def' + a"
   ...         tal:content="a + 'ghi'" />
   ...   <ul>
@@ -19,12 +31,9 @@ Example:
   ... </div>
   ... """
 
-  >>> source, _globals = translate(body)
-  >>> _locals = {}
-  >>> exec source in _globals, _locals
-  >>> print _locals['render']()
+  >>> print render(body)
   <div>
-    <span class="defabc">abcghi</span>
+    <span id="test" class="defabc">abcghi</span>
     <ul>
        <li>
           Item 0)
@@ -43,3 +52,39 @@ Example:
        </li>
      </ul>
   </div>
+
+Error handling
+--------------
+
+This section demonstrates how the package handles templates that
+contain errors.
+
+No default namespace declaration:
+  A default namespace must be explicitly declared for the parser to work.
+  
+  >>> body = '<br />'
+  >>> render(body)
+  Traceback (most recent call last):
+    ...
+  ValueError: Must set default namespace.
+    
+Bad XML
+  We expect the xml-parser to raise an exception.
+  
+  >>> body = '<div xmlns="http://www.w3.org/1999/xhtml"'
+  >>> render(body)
+  Traceback (most recent call last):
+    ...
+  XMLSyntaxError: line 1: Couldn't find end of Start Tag div line 1
+
+Missing namespace definition:
+    We expect the engine to render the attributes as static.
+
+  >>> body = """\
+  ... <div xmlns="http://www.w3.org/1999/xhtml" tal:content="'Hello World'" />
+  ... """
+
+  >>> print render(body)
+  <div content="'Hello World'" />
+
+  

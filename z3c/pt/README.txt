@@ -48,5 +48,5 @@ From a view:
     <span><MockView object at ...</span>
     <span>my context</span>
     <span>my request</span>
-    <span>{'test': u'my test'}</span>
+    <span>my test</span>
   </div>

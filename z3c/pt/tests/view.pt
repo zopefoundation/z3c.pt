@@ -3,5 +3,5 @@
   <span tal:content="view" />
   <span tal:content="context" />
   <span tal:content="request" />
-  <span tal:content="options" />
+  <span tal:content="options.test" />
 </div>
