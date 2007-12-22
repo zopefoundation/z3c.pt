@@ -65,6 +65,7 @@ class CodeIO(StringIO):
         return variable
 
     def indent(self, amount=1):
+        self.cook()
         self.indentation += amount
 
     def outdent(self, amount=1):
@@ -72,7 +73,6 @@ class CodeIO(StringIO):
         self.indentation -= amount
 
     def out(self, string):
-        self.cook()
         self.queue += string
 
     def cook(self):
