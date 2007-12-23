@@ -1,10 +1,11 @@
 from attributes import expression
+from attributes import definition
+
 import utils
 
 class Assign(object):
     """
       >>> from z3c.pt.io import CodeIO; stream = CodeIO()
-      >>> _scope = []
 
     Simple assignment:
 
@@ -23,7 +24,15 @@ class Assign(object):
       >>> b == 1
       True
       >>> assign.end(stream)
-      
+
+    Try-except chain part 2: 
+
+      >>> assign = Assign(expression("'abc' | 1"))
+      >>> assign.begin(stream, 'b')
+      >>> exec stream.getvalue()
+      >>> b == 'abc'
+      True
+      >>> assign.end(stream)
      """
     
     def __init__(self, expressions, variable=None):
@@ -54,7 +63,6 @@ class Assign(object):
 class Define(object):
     """
       >>> from z3c.pt.io import CodeIO; stream = CodeIO()
-      >>> _scope = []
 
     Variable scope:
 
@@ -65,7 +73,6 @@ class Define(object):
       >>> a is b
       True
       >>> del a
-      >>> _scope.remove('a')
       >>> define.end(stream)
       >>> exec stream.getvalue()
       >>> a
@@ -89,7 +96,7 @@ class Define(object):
       >>> define2.end(stream)
       >>> define1.end(stream)
       >>> del a; del c
-      >>> _scope.remove('a'); _scope.remove('c')
+      >>> stream.scope[-1].remove('a'); stream.scope[-1].remove('c')
       >>> exec stream.getvalue()
       >>> a
       Traceback (most recent call last):
@@ -105,7 +112,7 @@ class Define(object):
     Tuple assignments:
 
       >>> stream = CodeIO()
-      >>> define = Define("(e, f)", expression("[1, 2]"))
+      >>> define = Define(['e', 'f'], expression("[1, 2]"))
       >>> define.begin(stream)
       >>> exec stream.getvalue()
       >>> e == 1 and f == 2
@@ -114,8 +121,12 @@ class Define(object):
 
     Verify scope is preserved on tuple assignment:
 
+      >>> stream = CodeIO()
       >>> e = None; f = None
-      >>> _scope.append('e'); _scope.append('f')
+      >>> stream.scope[-1].add('e'); stream.scope[-1].add('f')
+      >>> stream.scope.append(set())
+      >>> define.begin(stream)
+      >>> define.end(stream)
       >>> exec stream.getvalue()
       >>> e is None and f is None
       True
@@ -134,7 +145,8 @@ class Define(object):
 
       >>> stream = CodeIO()
       >>> a = 1
-      >>> _scope.append('a')
+      >>> stream.scope[-1].add('a')
+      >>> stream.scope.append(set())
       >>> define = Define("a", expression("2"))
       >>> define.begin(stream)
       >>> define.end(stream)
@@ -143,7 +155,7 @@ class Define(object):
       1
     
     """
-    def __init__(self, definition, expression, scope=()):
+    def __init__(self, definition, expression):
         if not isinstance(definition, (list, tuple)):
             definition = (definition,)
 
@@ -152,45 +164,48 @@ class Define(object):
         else:
             variable = u"(%s,)" % ", ".join(definition)
 
-        self.assign = Assign(expression, variable)
-
-        # only register definitions for variables that have not
-        # been defined in this scope
-        self.definitions = [var for var in definition if var not in scope]
-            
-        if scope:
-            scope.extend(self.definitions)
-        if not scope:
-            scope = utils.scope()
-
-        self.scope = scope
+        self.assign = Assign(expression, variable)        
+        self.definitions = definition
         
     def begin(self, stream):
-        temp = stream.savevariable(self.scope, '{}')
-
         # save local variables already in in scope
         for var in self.definitions:
-            stream.write("if '%s' in _scope: %s['%s'] = %s" % (var, temp, var, var))
-            stream.write("else: _scope.append('%s')" % var)
-            
+            temp = stream.save()
+
+            # If we didn't set the variable in this scope already
+            if var not in stream.scope[-1]:
+
+                # we'll check if it's set in one of the older scopes
+                for scope in stream.scope[:-1]:
+                    if var in scope:
+                        # in which case we back it up
+                        stream.write('%s = %s' % (temp, var))
+
+                stream.scope[-1].add(var)
+                   
         self.assign.begin(stream)
 
     def end(self, stream):
-        temp = stream.restorevariable(self.scope)
-
         self.assign.end(stream)
-        
+
+        # back come the variables that were already in scope in the
+        # first place
         for var in reversed(self.definitions):
-            stream.write("if '%s' in %s:" % (var, temp))
-            stream.indent()
-            stream.write("%s = %s['%s']" % (var, temp, var))
-            stream.outdent()
-            stream.write("else:")
-            stream.indent()
-            stream.write("del %s" % var)
-            stream.write("_scope.remove('%s')" % var)
-            stream.outdent()
-            
+            temp = stream.restore()
+
+            # If we set the variable in this scope already
+            if var in stream.scope[-1]:
+
+                # we'll check if it's set in one of the older scopes
+                for scope in stream.scope[:-1]:
+                    if var in scope:
+                        # in which case we restore it
+                        stream.write('%s = %s' % (var, temp))
+                        stream.scope[-1].remove(var)
+                        break
+                else:
+                    stream.write("del %s" % var)
+
 class Condition(object):
     """
       >>> from z3c.pt.io import CodeIO
@@ -284,7 +299,6 @@ class Tag(object):
     """
       >>> from z3c.pt.io import CodeIO
       >>> from StringIO import StringIO
-      >>> _scope = []
 
       >>> _out = StringIO(); stream = CodeIO()
       >>> tag = Tag('div', dict(alt=expression(repr('Hello World!'))))
@@ -338,7 +352,6 @@ class Tag(object):
 class Repeat(object):
     """
       >>> from z3c.pt.io import CodeIO; stream = CodeIO()
-      >>> _scope = []
 
     We need to set up the repeat object.
 
@@ -363,7 +376,7 @@ class Repeat(object):
         
     def __init__(self, v, e, scope=()):
         self.variable = v
-        self.define = Define(v, expression("None"), scope)
+        self.define = Define(v, expression("None"))
         self.assign = Assign(e)
 
     def begin(self, stream):

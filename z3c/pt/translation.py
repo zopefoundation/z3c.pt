@@ -11,7 +11,6 @@ def render(%starget_language=None):
 \tglobal utils
 
 \t_out = utils.initialize_stream()
-\t_scope = locals().keys()
     
 \t(_attributes, repeat) = utils.initialize_tal()
 \t(_domain, _translate) = utils.initialize_i18n()
@@ -32,10 +31,12 @@ def attribute(ns, factory):
 
 class Element(lxml.etree.ElementBase):
     def begin(self, stream):
+        stream.scope.append(set())
         stream.begin(self.clauses())
         
     def end(self, stream):
         stream.end(self.clauses())
+        stream.scope.pop()
 
     def body(self, stream):
         skip = self.replace or self.content or self.i18n_translate is not None
@@ -51,16 +52,14 @@ class Element(lxml.etree.ElementBase):
     def clauses(self):
         _ = []
 
-        scope = utils.scope()
-
         # i18n domain
         if self.i18n_domain is not None:
-            _.append(clauses.Define("_domain", [repr(self.i18n_domain)], scope))
+            _.append(clauses.Define("_domain", [repr(self.i18n_domain)]))
 
         # defines
         if self.define is not None:
             for variables, expression in self.define:
-                _.append(clauses.Define(variables, expression, scope))
+                _.append(clauses.Define(variables, expression))
 
         # condition
         if self.condition is not None:
@@ -71,7 +70,7 @@ class Element(lxml.etree.ElementBase):
             variables, expression = self.repeat
             if len(variables) != 1:
                 raise ValueError, "Cannot unpack more than one variable in a repeat statement."
-            _.append(clauses.Repeat(variables[0], expression, scope))
+            _.append(clauses.Repeat(variables[0], expression))
 
         # tag tail (deferred)
         if self.tail:
@@ -131,7 +130,7 @@ class Element(lxml.etree.ElementBase):
                     name = element.i18n_name
                     
                     subclauses = []
-                    subclauses.append(clauses.Define('_out', ['utils.initialize_stream()'], scope))
+                    subclauses.append(clauses.Define('_out', ['utils.initialize_stream()']))
                     subclauses.append(clauses.Group(element.clauses()))
                     subclauses.append(clauses.Assign(['_out.getvalue()'],
                                                      "%s['%s']" % (mapping, name)))
@@ -274,6 +273,8 @@ def translate(body, params=[]):
         raise ValueError, "Must set default namespace."
         
     stream = io.CodeIO(indentation=1, indentation_string="\t")
+
+    stream.scope.append(set(params + ['_out']))
 
     root.visit(stream)
 
