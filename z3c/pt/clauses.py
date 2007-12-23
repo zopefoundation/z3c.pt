@@ -1,7 +1,4 @@
 from attributes import expression
-from attributes import definition
-
-import utils
 
 class Assign(object):
     """

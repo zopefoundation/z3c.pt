@@ -1,6 +1,5 @@
 import translation
 import codegen
-import io
 
 class PageTemplate(object):
     def __init__(self, body):

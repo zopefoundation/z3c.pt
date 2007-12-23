@@ -1,4 +1,4 @@
-from compiler import ast, parse
+from compiler import ast
 
 class ASTTransformer(object):
     """General purpose base class for AST transformations.
