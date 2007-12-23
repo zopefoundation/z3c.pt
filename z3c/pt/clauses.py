@@ -223,7 +223,7 @@ class Condition(object):
       Hello
       World!
 
-    Limited scope:
+    Finalized limited scope:
 
       >>> stream = CodeIO()
       >>> from StringIO import StringIO
@@ -237,11 +237,29 @@ class Condition(object):
       >>> exec stream.getvalue()
       >>> _out.getvalue()
       'Hello'
+
+    Open limited scope:
+
+      >>> stream = CodeIO()
+      >>> from StringIO import StringIO
+      >>> _out = StringIO()
+      >>> true = Condition(expression("True"), [Tag('div')], finalize=False)
+      >>> false = Condition(expression("False"), [Tag('span')], finalize=False)
+      >>> true.begin(stream)
+      >>> stream.out("Hello World!")
+      >>> true.end(stream)
+      >>> false.begin(stream)
+      >>> false.end(stream)
+      >>> exec stream.getvalue()
+      >>> _out.getvalue()
+      '<div>Hello World!</div>'
+          
     """
       
-    def __init__(self, expression, clauses=None):
+    def __init__(self, expression, clauses=None, finalize=True):
         self.assign = Assign(expression)
         self.clauses = clauses
+        self.finalize = finalize
         
     def begin(self, stream):
         temp = stream.save()
@@ -251,15 +269,24 @@ class Condition(object):
         if self.clauses:
             for clause in self.clauses:
                 clause.begin(stream)
-            for clause in reversed(self.clauses):
-                clause.end(stream)
+            if self.finalize:
+                for clause in reversed(self.clauses):
+                    clause.end(stream)
             stream.outdent()
         
     def end(self, stream):
-        if not self.clauses:
+        temp = stream.restore()
+
+        if self.clauses:
+            if not self.finalize:
+                stream.write("if %s:" % temp)
+                stream.indent()
+                for clause in reversed(self.clauses):
+                    clause.end(stream)
+                    stream.outdent()
+        else:
             stream.outdent()
         self.assign.end(stream)
-        stream.restore()
 
 class Else(object):
     def __init__(self, clauses=None):
@@ -316,7 +343,7 @@ class Tag(object):
       
     """
 
-    def __init__(self, tag, attributes, selfclosing=False):
+    def __init__(self, tag, attributes={}, selfclosing=False):
         i = tag.find('}')
         if i != -1:
             self.tag = tag[i+1:]
@@ -332,9 +359,13 @@ class Tag(object):
         # attributes
         for attribute, expression in self.attributes.items():
             stream.out(' %s="' % attribute)
-            write = Write(expression)
-            write.begin(stream)
-            write.end(stream)
+
+            if isinstance(expression, (tuple, list)):
+                write = Write(expression)
+                write.begin(stream)
+                write.end(stream)
+            else:
+                stream.out(expression.replace("'", "\\'"))
             stream.out('"')
 
         if self.selfclosing:

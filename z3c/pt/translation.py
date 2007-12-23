@@ -84,8 +84,10 @@ class Element(lxml.etree.ElementBase):
             selfclosing = self.text is None and not dynamic
             tag = clauses.Tag(self.tag, self._attributes(), selfclosing=selfclosing)
 
-            if self.omit is not None:
-                _.append(clauses.Condition(_not(self.omit), [tag]))
+            if self.omit:
+                _.append(clauses.Condition(_not(self.omit), [tag], finalize=False))
+            elif self.omit is not None:
+                pass
             else:
                 _.append(tag)
 
@@ -188,7 +190,7 @@ class Element(lxml.etree.ElementBase):
         # static attributes are at the bottom of the food chain
         static = [key for key in self.keys() if not key.startswith('{')]
         for key in static:
-            attributes[key] = [repr(self.attrib[key])]
+            attributes[key] = self.attrib[key]
 
         # dynamic attributes
         attrs = self.attributes

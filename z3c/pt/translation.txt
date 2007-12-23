@@ -21,19 +21,23 @@ Canonical test template
   ...   <span id="test"
   ...         class="dummy"
   ...         tal:define="a 'abc'"
-  ...         tal:attributes="class 'def' + a"
+  ...         tal:attributes="class 'def' + a; style 'position: absolute'"
   ...         tal:content="a + 'ghi'" />
   ...   <ul>
   ...     <li tal:repeat="i range(5)">
   ...       <span tal:replace="'Item ' + str(i) + ')'" />
   ...     </li>
   ...   </ul>
+  ...   <p tal:omit-tag="">No paragraph here.</p>
+  ...   <p tal:omit-tag="True">No paragraph here either.</p>
+  ...   <p tal:omit-tag="False">A paragraph here.</p>
+  ...   <span tal:replace="'Hello World!'">Hello Universe!</span>
   ... </div>
   ... """
 
   >>> print render(body)
   <div>
-    <span id="test" class="defabc">abcghi</span>
+    <span style="position: absolute" id="test" class="defabc">abcghi</span>
     <ul>
        <li>
           Item 0)
@@ -51,6 +55,10 @@ Canonical test template
           Item 4)
        </li>
      </ul>
+     No paragraph here.
+     No paragraph here either.
+     <p>A paragraph here.</p>
+     Hello World!
   </div>
 
 Error handling
@@ -86,5 +94,3 @@ Missing namespace definition:
 
   >>> print render(body)
   <div content="'Hello World'" />
-
-  
