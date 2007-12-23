@@ -3,7 +3,7 @@ import lxml.etree
 
 import io
 import utils
-import attributes as attrs
+import expressions
 import clauses
 
 wrapper = """\
@@ -237,27 +237,27 @@ class Element(lxml.etree.ElementBase):
         return attributes
 
     define = attribute(
-        "{http://xml.zope.org/namespaces/tal}define", attrs.definitions)
+        "{http://xml.zope.org/namespaces/tal}define", expressions.definitions)
     condition = attribute(
-        "{http://xml.zope.org/namespaces/tal}condition", attrs.expression)
+        "{http://xml.zope.org/namespaces/tal}condition", expressions.value)
     repeat = attribute(
-        "{http://xml.zope.org/namespaces/tal}repeat", attrs.definition)
+        "{http://xml.zope.org/namespaces/tal}repeat", expressions.definition)
     attributes = attribute(
-        "{http://xml.zope.org/namespaces/tal}attributes", attrs.definitions)
+        "{http://xml.zope.org/namespaces/tal}attributes", expressions.definitions)
     content = attribute(
-        "{http://xml.zope.org/namespaces/tal}content", attrs.expression)
+        "{http://xml.zope.org/namespaces/tal}content", expressions.value)
     replace = attribute(
-        "{http://xml.zope.org/namespaces/tal}replace", attrs.expression)
+        "{http://xml.zope.org/namespaces/tal}replace", expressions.value)
     omit = attribute(
-        "{http://xml.zope.org/namespaces/tal}omit-tag", attrs.expression)
+        "{http://xml.zope.org/namespaces/tal}omit-tag", expressions.value)
     i18n_translate = attribute(
-        "{http://xml.zope.org/namespaces/i18n}translate", attrs.name)
+        "{http://xml.zope.org/namespaces/i18n}translate", expressions.name)
     i18n_attributes = attribute(
-        "{http://xml.zope.org/namespaces/i18n}attrs", attrs.mapping)
+        "{http://xml.zope.org/namespaces/i18n}attributes", expressions.mapping)
     i18n_domain = attribute(
-        "{http://xml.zope.org/namespaces/i18n}domain", attrs.name)
+        "{http://xml.zope.org/namespaces/i18n}domain", expressions.name)
     i18n_name = attribute(
-        "{http://xml.zope.org/namespaces/i18n}name", attrs.name)
+        "{http://xml.zope.org/namespaces/i18n}name", expressions.name)
     
 # set up namespace
 lookup = lxml.etree.ElementNamespaceClassLookup()

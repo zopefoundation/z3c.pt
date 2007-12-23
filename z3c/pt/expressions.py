@@ -3,31 +3,31 @@ import parser
 def name(string):
     return string
     
-def expression(string):
+def value(string):
     """
     Specification:
 
-    expression :: = python_expression [ |* expression ]
+    value :: = python_expression [ |* value ]
     python_expresion ::= a python expression string
 
     *) Using | as logical or is not supported.
 
-      >>> expression("4 + 5")
+      >>> value("4 + 5")
       ['4 + 5']
 
     Complex expressions:
 
-      >>> expression("a.non_defined_method() | 1")
+      >>> value("a.non_defined_method() | 1")
       ['a.non_defined_method() ', '1']
 
     Expression with non-semantic horizontal bar.
 
-      >>> expression("'|'")
+      >>> value("'|'")
       ["'|'"]
 
     Expression with non-semantic horizontal bar and semantic bar.
 
-      >>> expression("a.non_defined_method() | '|'")
+      >>> value("a.non_defined_method() | '|'")
       ['a.non_defined_method() ', "'|'"]
 
     """
@@ -201,7 +201,7 @@ def definitions(string):
                 j = len(string)
 
             try:
-                expr = expression(string[i:j])
+                expr = value(string[i:j])
             except SyntaxError, e:
                 if j < len(string):
                     continue

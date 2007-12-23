@@ -9,7 +9,7 @@ import zope.component.testing
 
 def test_suite():
     filesuites = ['README.txt', 'BENCHMARKS.txt', 'translation.txt', 'i18n.txt', 'codegen.txt']
-    testsuites = ['z3c.pt.translation', 'z3c.pt.attributes', 'z3c.pt.clauses']
+    testsuites = ['z3c.pt.translation', 'z3c.pt.expressions', 'z3c.pt.clauses']
 
     return unittest.TestSuite(
         [zope.testing.doctest.DocTestSuite(doctest,

@@ -1,4 +1,4 @@
-from attributes import expression
+from expressions import value
 
 class Assign(object):
     """
@@ -6,7 +6,7 @@ class Assign(object):
 
     Simple assignment:
 
-      >>> assign = Assign(expression("1"))
+      >>> assign = Assign(value("1"))
       >>> assign.begin(stream, 'a')
       >>> exec stream.getvalue()
       >>> a == 1
@@ -15,7 +15,7 @@ class Assign(object):
 
     Try-except chain:
 
-      >>> assign = Assign(expression("float('abc') | 1"))
+      >>> assign = Assign(value("float('abc') | 1"))
       >>> assign.begin(stream, 'b')
       >>> exec stream.getvalue()
       >>> b == 1
@@ -24,7 +24,7 @@ class Assign(object):
 
     Try-except chain part 2: 
 
-      >>> assign = Assign(expression("'abc' | 1"))
+      >>> assign = Assign(value("'abc' | 1"))
       >>> assign.begin(stream, 'b')
       >>> exec stream.getvalue()
       >>> b == 'abc'
@@ -63,7 +63,7 @@ class Define(object):
 
     Variable scope:
 
-      >>> define = Define("a", expression("b"))
+      >>> define = Define("a", value("b"))
       >>> b = object()
       >>> define.begin(stream)
       >>> exec stream.getvalue()
@@ -82,8 +82,8 @@ class Define(object):
     Multiple defines:
 
       >>> stream = CodeIO()
-      >>> define1 = Define("a", expression("b"))
-      >>> define2 = Define("c", expression("d"))
+      >>> define1 = Define("a", value("b"))
+      >>> define2 = Define("c", value("d"))
       >>> d = object()
       >>> define1.begin(stream)
       >>> define2.begin(stream)
@@ -109,7 +109,7 @@ class Define(object):
     Tuple assignments:
 
       >>> stream = CodeIO()
-      >>> define = Define(['e', 'f'], expression("[1, 2]"))
+      >>> define = Define(['e', 'f'], value("[1, 2]"))
       >>> define.begin(stream)
       >>> exec stream.getvalue()
       >>> e == 1 and f == 2
@@ -131,7 +131,7 @@ class Define(object):
     Using semicolons in expressions within a define:
 
       >>> stream = CodeIO()
-      >>> define = Define("a", expression("';'"))
+      >>> define = Define("a", value("';'"))
       >>> define.begin(stream)
       >>> exec stream.getvalue()
       >>> a
@@ -144,7 +144,7 @@ class Define(object):
       >>> a = 1
       >>> stream.scope[-1].add('a')
       >>> stream.scope.append(set())
-      >>> define = Define("a", expression("2"))
+      >>> define = Define("a", value("2"))
       >>> define.begin(stream)
       >>> define.end(stream)
       >>> exec stream.getvalue()
@@ -210,8 +210,8 @@ class Condition(object):
     Unlimited scope:
     
       >>> stream = CodeIO()
-      >>> true = Condition(expression("True"))
-      >>> false = Condition(expression("False"))
+      >>> true = Condition(value("True"))
+      >>> false = Condition(value("False"))
       >>> true.begin(stream)
       >>> stream.write("print 'Hello'")
       >>> true.end(stream)
@@ -228,8 +228,8 @@ class Condition(object):
       >>> stream = CodeIO()
       >>> from StringIO import StringIO
       >>> _out = StringIO()
-      >>> true = Condition(expression("True"), [Write(expression("'Hello'"))])
-      >>> false = Condition(expression("False"), [Write(expression("'Hallo'"))])
+      >>> true = Condition(value("True"), [Write(value("'Hello'"))])
+      >>> false = Condition(value("False"), [Write(value("'Hallo'"))])
       >>> true.begin(stream)
       >>> true.end(stream)
       >>> false.begin(stream)
@@ -243,8 +243,8 @@ class Condition(object):
       >>> stream = CodeIO()
       >>> from StringIO import StringIO
       >>> _out = StringIO()
-      >>> true = Condition(expression("True"), [Tag('div')], finalize=False)
-      >>> false = Condition(expression("False"), [Tag('span')], finalize=False)
+      >>> true = Condition(value("True"), [Tag('div')], finalize=False)
+      >>> false = Condition(value("False"), [Tag('span')], finalize=False)
       >>> true.begin(stream)
       >>> stream.out("Hello World!")
       >>> true.end(stream)
@@ -325,7 +325,7 @@ class Tag(object):
       >>> from StringIO import StringIO
 
       >>> _out = StringIO(); stream = CodeIO()
-      >>> tag = Tag('div', dict(alt=expression(repr('Hello World!'))))
+      >>> tag = Tag('div', dict(alt=value(repr('Hello World!'))))
       >>> tag.begin(stream)
       >>> stream.out('Hello Universe!')
       >>> tag.end(stream)
@@ -388,7 +388,7 @@ class Repeat(object):
 
     Simple repeat loop and repeat data structure:
 
-      >>> _repeat = Repeat("i", expression("range(5)"))
+      >>> _repeat = Repeat("i", value("range(5)"))
       >>> _repeat.begin(stream)
       >>> stream.write("r = repeat['i']")
       >>> stream.write("print (i, r.index, r.start, r.end, r.number(), r.odd(), r.even())")
@@ -404,7 +404,7 @@ class Repeat(object):
         
     def __init__(self, v, e, scope=()):
         self.variable = v
-        self.define = Define(v, expression("None"))
+        self.define = Define(v, value("None"))
         self.assign = Assign(e)
 
     def begin(self, stream):
@@ -440,14 +440,14 @@ class Write(object):
       >>> from StringIO import StringIO
 
       >>> _out = StringIO()
-      >>> write = Write(expression("'New York'"))
+      >>> write = Write(value("'New York'"))
       >>> write.begin(stream)
       >>> write.end(stream)
       >>> exec stream.getvalue()
       >>> _out.getvalue()
       'New York'
       >>> _out = StringIO()
-      >>> write = Write(expression("undefined | ', New York!'"))
+      >>> write = Write(value("undefined | ', New York!'"))
       >>> write.begin(stream)
       >>> write.end(stream)
       >>> exec stream.getvalue()
