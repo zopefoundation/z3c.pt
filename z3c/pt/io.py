@@ -38,12 +38,14 @@ class CodeIO(StringIO):
         return var
         
     def indent(self, amount=1):
-        self.cook()
-        self.indentation += amount
+        if amount > 0:
+            self.cook()
+            self.indentation += amount
 
     def outdent(self, amount=1):
-        self.cook()
-        self.indentation -= amount
+        if amount > 0:
+            self.cook()
+            self.indentation -= amount
 
     def out(self, string):
         self.queue += string
