@@ -1,8 +1,11 @@
 Changelog
 ---------
 
-Version 0.3 - in development
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Version 0.3 - December 23, 2007
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Code optimization; bug fixing spree
+  [malthe]
 
 - Added ``ViewPageTemplateFile`` class
   [malthe]

@@ -2,14 +2,14 @@ Overview
 --------
 		      
 The z3c.pt package provides an alternative implementation of the TAL
-template language.
+template language including i18n.
 
 In a nutshell:
 
   - Templates are bytecode-compiled
   - Only Python-expressions are supported
   - Depends only on lxml
-    
+
 The METAL macro language is not supported.
 
 Template and expression language
