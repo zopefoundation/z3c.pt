@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+Version 0.4 - in development
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
 Version 0.3 - December 23, 2007
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
