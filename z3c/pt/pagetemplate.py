@@ -1,17 +1,19 @@
+import os
 import translation
 import codegen
 
 class PageTemplate(object):
+    registry = {}
+
     def __init__(self, body):
         self.body = body
-        self.init()
-        
-    def init(self):
-        self.registry = {}
+        self.signature = hash(body)
         
     def cook(self, params):
         source, _globals = translation.translate(self.body, params)
         suite = codegen.Suite(source)
+
+        self.source = source
 
         _locals = {}
 
@@ -20,7 +22,7 @@ class PageTemplate(object):
         return _locals['render']
 
     def render(self, **kwargs):
-        signature = hash(",".join(kwargs.keys()))
+        signature = self.signature + hash(",".join(kwargs.keys()))
 
         template = self.registry.get(signature)
         if not template:
@@ -34,19 +36,38 @@ class PageTemplate(object):
 class PageTemplateFile(PageTemplate):
     def __init__(self, filename):
         self.filename = filename
-
+        
     def get_filename(self):
         return getattr(self, '_filename', None)
 
     def set_filename(self, filename):
         self._filename = filename
-        self.init()
+        self._v_last_read = False
 
     filename = property(get_filename, set_filename)
-        
-    @property
-    def body(self):
-        return open(self.filename, 'r').read()
+
+    def render(self, **kwargs):
+        if self._cook_check():
+            self.body = open(self.filename, 'r').read()
+            self.signature = hash(self.body)
+            self._v_last_read = self.mtime()
+
+        return PageTemplate.render(self, **kwargs)
+            
+    def _cook_check(self):
+        if self._v_last_read and not __debug__:
+            return
+
+        if self.mtime() == self._v_last_read:
+            return
+
+        return True
+
+    def mtime(self):
+        try:
+            return os.path.getmtime(self.filename)
+        except OSError:
+            return 0
 
 class ViewPageTemplateFile(property):
     def __init__(self, filename):
