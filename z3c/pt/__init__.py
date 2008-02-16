@@ -1,3 +1,4 @@
 from pagetemplate import PageTemplate
 from pagetemplate import PageTemplateFile
+from pagetemplate import ViewPageTemplate
 from pagetemplate import ViewPageTemplateFile

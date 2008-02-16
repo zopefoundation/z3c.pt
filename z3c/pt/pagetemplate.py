@@ -69,16 +69,22 @@ class PageTemplateFile(PageTemplate):
         except OSError:
             return 0
 
-class ViewPageTemplateFile(property):
+class ViewPageTemplate(property):
+    def __init__(self, body):
+        self.template = PageTemplate(body)
+        property.__init__(self, self.render)
+
+    def render(self, view):
+        def template(**kwargs):
+            return self.template.render(view=view,
+                                        context=view.context,
+                                        request=view.request,
+                                        options=kwargs)
+        return template
+    
+class ViewPageTemplateFile(ViewPageTemplate):
     def __init__(self, filename):
         self.template = PageTemplateFile(filename)
+        property.__init__(self, self.render)
 
-        def render(view):
-            def render(**kwargs):
-                return self.template.render(view=view,
-                                            context=view.context,
-                                            request=view.request,
-                                            options=kwargs)
-            return render
         
-        property.__init__(self, render)

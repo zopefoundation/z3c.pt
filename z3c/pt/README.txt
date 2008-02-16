@@ -32,21 +32,49 @@ From a file:
 
 Keyword-parameters are passed on to the template namespace as-is.
 
-From a view:
+View template classes
+---------------------
 
-  >>> from z3c.pt import ViewPageTemplateFile
-  >>> class MockView(object):
-  ...     template = ViewPageTemplateFile(path+'/view.pt')
-  ...
-  ...     def __init__(self):
-  ...         self.request = u'my request'
-  ...         self.context = u'my context'
+View template classes are provided for templates on the file system
+and for inline templates. The following symbols are defined for the
+template:
 
-  >>> view = MockView()
-  >>> print view.template(test=u'my test')
+  * view
+  * context
+  * request
+  * options
+
+Keyword-parameters are passed on to the template in a dictionary bound
+to the symbol ``options``.
+
+  >>> from z3c.pt import ViewPageTemplate, ViewPageTemplateFile
+  
+  >>> class ViewPageTemplateView(object):
+  ...     view_page_template_file = ViewPageTemplateFile(path+'/view.pt')
+  ...     view_page_template = ViewPageTemplate(open(path+'/view.pt').read())
+  ...     request = u'request'
+  ...     context = u'context'
+
+  >>> view = ViewPageTemplateView()
+
+File system:
+  
+  >>> print view.view_page_template_file(test=u'test')
   <div>
-    <span><MockView object at ...</span>
-    <span>my context</span>
-    <span>my request</span>
-    <span>my test</span>
+    <span><ViewPageTemplateView object at ...</span>
+    <span>context</span>
+    <span>request</span>
+    <span>test</span>
   </div>
+
+Inline:
+  
+  >>> print view.view_page_template(test=u'test')
+  <div>
+    <span><ViewPageTemplateView object at ...</span>
+    <span>context</span>
+    <span>request</span>
+    <span>test</span>
+  </div>
+
+  
