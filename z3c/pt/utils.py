@@ -11,8 +11,9 @@ try:
     str(u'La Pe\xf1a')
     unicode_required_flag = False
 except UnicodeEncodeError:
-    unicode_required_flag = True    
-    logging.warn("Default system encoding is set to '%s'; the template engine will perform better if an encoding that coerces gracefully to unicode is used ('utf-8' recommended).")
+    unicode_required_flag = True
+    log = logging.getLogger('z3c.pt')
+    log.info("Default system encoding is set to '%s'; the template engine will perform better if an encoding that coerces gracefully to unicode is used ('utf-8' recommended)." % sys.getdefaultencoding())
 
 def handler(key=None):
     def decorate(f):
