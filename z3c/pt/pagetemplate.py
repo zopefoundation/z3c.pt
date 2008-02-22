@@ -1,6 +1,7 @@
 import os
 import translation
 import codegen
+import sys
 
 class PageTemplate(object):
     registry = {}
@@ -37,14 +38,14 @@ class PageTemplateFile(PageTemplate):
     def __init__(self, filename):
         self.filename = filename
         
-    def get_filename(self):
+    def _get_filename(self):
         return getattr(self, '_filename', None)
 
-    def set_filename(self, filename):
+    def _set_filename(self, filename):
         self._filename = filename
         self._v_last_read = False
 
-    filename = property(get_filename, set_filename)
+    filename = property(_get_filename, _set_filename)
 
     def render(self, **kwargs):
         if self._cook_check():
@@ -84,7 +85,13 @@ class ViewPageTemplate(property):
     
 class ViewPageTemplateFile(ViewPageTemplate):
     def __init__(self, filename):
+        if not os.path.isabs(filename):
+            package_name = sys._getframe(1).f_globals['__name__']
+            path = sys.modules[package_name].__path__[0]
+            filename = path + os.sep + filename
+
+        # make sure file exists
+        os.lstat(filename)
+            
         self.template = PageTemplateFile(filename)
         property.__init__(self, self.render)
-
-        
