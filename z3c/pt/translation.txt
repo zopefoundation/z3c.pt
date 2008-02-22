@@ -28,6 +28,9 @@ Canonical test template
   ...       <span tal:replace="'Item ' + str(i) + ')'" />
   ...     </li>
   ...   </ul>
+  ...   <tal:example replace="'Hello World!'" />
+  ...   <tal:div content="'Hello World!'" />
+  ...   <tal:multiple repeat="i range(5)" replace="i" />
   ...   <p tal:omit-tag="">No paragraph here.</p>
   ...   <p tal:omit-tag="True">No paragraph here either.</p>
   ...   <p tal:omit-tag="False">A paragraph here.</p>
@@ -39,28 +42,35 @@ Canonical test template
   <div>
     <span style="position: absolute" id="test" class="defabc">abcghi</span>
     <ul>
-       <li>
-          Item 0)
-       </li>
-       <li>
-          Item 1)
-       </li>
-       <li>
-          Item 2)
-       </li>
-       <li>
-          Item 3)
-       </li>
-       <li>
-          Item 4)
-       </li>
-     </ul>
-     No paragraph here.
-     No paragraph here either.
-     <p>A paragraph here.</p>
-     Hello World!
+      <li>
+	Item 0)
+      </li>
+    <li>
+	Item 1)
+      </li>
+    <li>
+	Item 2)
+      </li>
+    <li>
+	Item 3)
+      </li>
+    <li>
+	Item 4)
+      </li>
+    </ul>
+    Hello World!
+    <div>Hello World!</div>
+  <BLANKLINE>
+    1
+    2
+    3
+    4
+    No paragraph here.
+    No paragraph here either.
+    <p>A paragraph here.</p>
+    Hello World!
   </div>
-
+    
 Error handling
 --------------
 

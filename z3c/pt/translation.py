@@ -26,7 +26,6 @@ def attribute(ns, factory):
         value = self.attrib.get(ns)
         if value is not None:
             return factory(value)
-        
     return property(get)
 
 class Element(lxml.etree.ElementBase):
@@ -43,7 +42,7 @@ class Element(lxml.etree.ElementBase):
         if not skip:
             for element in self:
                 element.visit(stream)
-                        
+                    
     def visit(self, stream):
         self.begin(stream)
         self.body(stream)
@@ -181,17 +180,22 @@ class Element(lxml.etree.ElementBase):
         msgid = msgid.replace('  ', ' ').replace('\n', '')
         
         return msgid
-            
+
+    def _static_attributes(self):
+        attributes = {}
+
+        for key in self.keys():
+            if not key.startswith('{'):
+                attributes[key] = self.attrib[key]
+
+        return attributes
+        
     def _attributes(self):
         """Aggregate static, dynamic and translatable attributes."""
 
-        attributes = {}
-
         # static attributes are at the bottom of the food chain
-        static = [key for key in self.keys() if not key.startswith('{')]
-        for key in static:
-            attributes[key] = self.attrib[key]
-
+        attributes = self._static_attributes()
+        
         # dynamic attributes
         attrs = self.attributes
         if attrs is not None:
@@ -258,14 +262,36 @@ class Element(lxml.etree.ElementBase):
         "{http://xml.zope.org/namespaces/i18n}domain", expressions.name)
     i18n_name = attribute(
         "{http://xml.zope.org/namespaces/i18n}name", expressions.name)
-    
+
+class TALElement(Element):
+    define = attribute("define", expressions.definitions)
+    replace = attribute("replace", expressions.value)
+    repeat = attribute("repeat", expressions.definition)
+    content = attribute("content", expressions.value)
+    omit = attribute("omit-tag", expressions.value)
+
+    def _static_attributes(self):
+        attributes = {}
+
+        for key in self.keys():
+            if key not in \
+                   ('define', 'replace', 'repeat', 'content', 'omit-tag'):
+                raise ValueError(
+                    u"Attribute '%s' not allowed in the namespace '%s'" %
+                    (key, self.nsmap[self.prefix]))
+
+        return attributes
+
 # set up namespace
 lookup = lxml.etree.ElementNamespaceClassLookup()
 parser = lxml.etree.XMLParser()
 parser.setElementClassLookup(lookup)
 
-namespace = lxml.etree.Namespace('http://www.w3.org/1999/xhtml')
-namespace[None] = Element
+xhtml = lxml.etree.Namespace('http://www.w3.org/1999/xhtml')
+tal = lxml.etree.Namespace('http://xml.zope.org/namespaces/tal')
+
+xhtml[None] = Element
+tal[None] = TALElement
 
 def translate(body, params=[]):
     tree = lxml.etree.parse(StringIO(body), parser)
