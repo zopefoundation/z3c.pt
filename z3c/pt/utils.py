@@ -1,7 +1,18 @@
 import zope.i18n
 
+from cStringIO import StringIO
+
+import sys
 import cgi
-from StringIO import StringIO
+import logging
+
+# check if we're able to coerce unicode to str
+try:
+    str(u'La Pe\xf1a')
+    unicode_required_flag = False
+except UnicodeEncodeError:
+    unicode_required_flag = True    
+    logging.warn("Default system encoding is set to '%s'; the template engine will perform better if an encoding that coerces gracefully to unicode is used ('utf-8' recommended).")
 
 def handler(key=None):
     def decorate(f):

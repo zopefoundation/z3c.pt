@@ -1,12 +1,26 @@
 Benchmarks
 ==========
 
-                  zope.pagetemplate     z3c.pt
-Hello World       3.55                  1     
-1000 x 10 table   6.02                  1
+These benchmarks should not be taken too seriously but they do give an
+idea of how this package measures up to Zope's default TAL
+engine. Also included is a comparison to a pure python implementation.
 
-Source
-------
+Results
+-------
+
+                  zope.pagetemplate     z3c.pt    pure python
+Hello World        3.6                  1         0.02        
+1000 x 10 table   14.0                  1         0.63
+
+There's a setup cost in using a template language which explains the
+50x factor in the 'Hello World' benchmark versus a pure python
+implementation.
+
+Certainly a specialized implementation will always be faster. But
+there's still some room for improvement.
+
+Benchmark source code
+---------------------
 
   >>> from z3c.pt import PageTemplate
   >>> from zope.pagetemplate.pagetemplate import PageTemplate as z3PageTemplate
@@ -18,7 +32,7 @@ Hello World:
   ...   Hello World!
   ... </div>""")
 
-  >>> # for i in range(300000): a = template()
+  >>> # for i in range(90000): a = template()
 
   >>> template = z3PageTemplate()
   >>> template.pt_edit("""\
@@ -26,7 +40,15 @@ Hello World:
   ...   Hello World!
   ... </div>""", 'text/xhtml')
 
-  >>> # for i in range(300000): a = template()  
+  >>> # for i in range(90000): a = template()  
+
+  >>> def hello_world():
+  ...     return u"""\
+  ... <div>
+  ...   Hello World!
+  ... </div>"""
+
+  >>> for i in range(9000000): a = hello_world()
 
 1000 x 10 table:
   
@@ -68,9 +90,10 @@ Hello World:
   ...   for row in table:
   ...      out.write('<tr>')
   ...      for c in row.values():
-  ...         out.write('<td>%s</td>' % c)
+  ...         d = c+1
+  ...         out.write('<td><span class="column-%d">%s</span></td>' % (d, d))
   ...      out.write('</tr>')
   ...   return out.getvalue()
   
-  >>> # for i in range(20): a = bigtable(table=table)
+  >>> # for i in range(40): a = bigtable(table=table)
 

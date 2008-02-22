@@ -35,8 +35,9 @@ Canonical test template
   ...   <p tal:omit-tag="True">No paragraph here either.</p>
   ...   <p tal:omit-tag="False">A paragraph here.</p>
   ...   <span tal:replace="'Hello World!'">Hello Universe!</span>
+  ...   <span tal:content="'%s'" />
   ... </div>
-  ... """
+  ... """ % (u'La Pe\xf1a').encode('utf-8')
 
   >>> print render(body)
   <div>
@@ -60,7 +61,7 @@ Canonical test template
     </ul>
     Hello World!
     <div>Hello World!</div>
-  <BLANKLINE>
+    0
     1
     2
     3
@@ -69,6 +70,7 @@ Canonical test template
     No paragraph here either.
     <p>A paragraph here.</p>
     Hello World!
+    <span>La Peña</span>
   </div>
     
 Error handling

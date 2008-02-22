@@ -50,13 +50,13 @@ def value(string):
         try:
             # we use the ``parser`` module to determine if
             # an expression is a valid python expression
-            parser.expr(expr)
+            parser.expr(expr.encode('utf-8'))
         except SyntaxError, e:
             if j < len(string):
                 continue
 
             raise e
-
+            
         expressions.append(expr)
         i = j + 1
 

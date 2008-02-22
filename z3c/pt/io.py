@@ -25,7 +25,6 @@ class CodeIO(StringIO):
         self.scope = [set()]
         
         self._variables = {}
-
         self.t_counter = 0
 
     def save(self):
@@ -58,7 +57,8 @@ class CodeIO(StringIO):
         
     def write(self, string):
         self.cook()
-        StringIO.write(self, self.indentation_string * self.indentation + string + '\n')
+        StringIO.write(
+            self, self.indentation_string * self.indentation + string + '\n')
 
     def getvalue(self):
         self.cook()

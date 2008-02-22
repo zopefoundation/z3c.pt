@@ -1,5 +1,7 @@
 from expressions import value
 
+from utils import unicode_required_flag
+
 class Assign(object):
     """
       >>> from z3c.pt.io import CodeIO; stream = CodeIO()
@@ -464,11 +466,24 @@ class Write(object):
         temp = stream.save()
                 
         if self.count == 1:
-            stream.write("_out.write(%s)" % self.expressions[0])
+            expr = self.expressions[0]
         else:
             self.assign.begin(stream, temp)
-            stream.write("_out.write(%s)" % temp)
-        
+            expr = temp
+
+        if unicode_required_flag:
+            stream.write("_urf = %s" % expr)
+            stream.write("try:")
+            stream.indent()
+            stream.write("_out.write(str(_urf))")
+            stream.outdent()
+            stream.write("except TypeError:")
+            stream.indent()
+            stream.write("_out.write(unicode(_urf, 'utf-8'))")
+            stream.outdent()
+        else:
+            stream.write("_out.write(str(%s))" % expr)
+            
     def end(self, stream):
         if self.count != 1:
             self.assign.end(stream)

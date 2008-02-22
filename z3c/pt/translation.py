@@ -18,7 +18,7 @@ def render(%starget_language=None):
 
 \t_target_language = target_language
 %s
-\treturn _out.getvalue()
+\treturn _out.getvalue().decode('utf-8')
 """
 
 def attribute(ns, factory):
