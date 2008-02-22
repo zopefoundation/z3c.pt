@@ -36,6 +36,7 @@ Canonical test template
   ...   <p tal:omit-tag="False">A paragraph here.</p>
   ...   <span tal:replace="'Hello World!'">Hello Universe!</span>
   ...   <span tal:content="'%s'" />
+  ...   <span tal:content="None" />
   ... </div>
   ... """ % (u'La Pe\xf1a').encode('utf-8')
 
@@ -71,6 +72,7 @@ Canonical test template
     <p>A paragraph here.</p>
     Hello World!
     <span>La Peña</span>
+    <span></span>
   </div>
     
 Error handling

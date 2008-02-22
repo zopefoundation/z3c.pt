@@ -473,6 +473,7 @@ class Write(object):
 
         if unicode_required_flag:
             stream.write("_urf = %s" % expr)
+            stream.write("if _urf is None: _urf = ''")
             stream.write("try:")
             stream.indent()
             stream.write("_out.write(str(_urf))")

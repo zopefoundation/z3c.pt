@@ -48,7 +48,7 @@ Hello World:
   ...   Hello World!
   ... </div>"""
 
-  >>> for i in range(9000000): a = hello_world()
+  >>> # for i in range(9000000): a = hello_world()
 
 1000 x 10 table:
   
@@ -67,7 +67,7 @@ Hello World:
   ...   </tr>
   ... </table>""")
 
-  >>> # for i in range(40): a = template(table=table)
+  >>> for i in range(40): a = template(table=table)
   
   >>> template = z3PageTemplate()
   >>> template.pt_edit("""\
