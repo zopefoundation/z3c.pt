@@ -7,6 +7,33 @@ marker = object()
 
 CONSTANTS = frozenset(['False', 'True', 'None', 'NotImplemented', 'Ellipsis'])
 
+UNDEFINED = object()
+
+class Lookup(object):
+    """Abstract base class for variable lookup implementations."""
+
+    def globals(cls):
+        """Construct the globals dictionary to use as the execution context for
+        the expression or suite.
+        """
+        return {
+            '_lookup_attr': cls.lookup_attr,
+        }
+
+    globals = classmethod(globals)
+
+    @classmethod
+    def lookup_attr(cls, obj, key):
+        __traceback_hide__ = True
+        val = getattr(obj, key, UNDEFINED)
+        if val is UNDEFINED:
+            try:
+                val = obj[key]
+            except (KeyError, TypeError):
+                raise AttributeError(key)
+
+        return val
+
 class TemplateASTTransformer(ASTTransformer):
     def __init__(self):
         self.locals = [CONSTANTS]
@@ -22,20 +49,12 @@ class TemplateASTTransformer(ASTTransformer):
         if hasattr(node.expr, 'name') and node.expr.name.startswith('_'):
             return ast.Getattr(node.expr, node.attrname)
 
-        expr = self.visit(node.expr)
-        name = ast.Const(node.attrname)
-
-        # hasattr(obj, key) and getattr(obj, key) or not
-        # hasattr(obj, key) and obj[key]
-        return ast.Or([ast.And(
-            [ast.CallFunc(ast.Name('hasattr'), [expr, name], None, None),
-             ast.CallFunc(ast.Name('getattr'), [expr, name], None, None)]),
-                    ast.And([
-            ast.Not(ast.CallFunc(ast.Name('hasattr'), [expr, name], None, None)),
-            ast.Subscript(expr, 'OP_APPLY', [name])])])
+        return ast.CallFunc(ast.Name('_lookup_attr'), [
+            self.visit(node.expr), ast.Const(node.attrname)
+            ])
     
 class Suite(object):
-    __slots__ = ['code']
+    __slots__ = ['code', '_globals']
 
     xform = TemplateASTTransformer
     mode = 'exec'
@@ -54,6 +73,7 @@ class Suite(object):
         gen = ModuleCodeGenerator(tree)
         gen.optimized = True
 
+        self._globals = Lookup.globals()
         self.code = gen.getCode()
         
     def __hash__(self):

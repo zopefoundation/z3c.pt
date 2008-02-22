@@ -16,8 +16,7 @@ There's a setup cost in using a template language which explains the
 50x factor in the 'Hello World' benchmark versus a pure python
 implementation.
 
-Certainly a specialized implementation will always be faster. But
-there's still some room for improvement.
+Certainly a specialized implementation will always be faster.
 
 Benchmark source code
 ---------------------
@@ -67,7 +66,7 @@ Hello World:
   ...   </tr>
   ... </table>""")
 
-  >>> for i in range(40): a = template(table=table)
+  >>> # for i in range(40): a = template(table=table)
   
   >>> template = z3PageTemplate()
   >>> template.pt_edit("""\

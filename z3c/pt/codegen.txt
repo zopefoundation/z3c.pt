@@ -14,7 +14,7 @@ object available.
   >>> suite = Suite("""\
   ... print 'Hello World!'
   ... """)
-  >>> exec suite.code
+  >>> exec suite.code in suite._globals
   Hello World!
 
 AST transformations
@@ -28,4 +28,4 @@ that tries a dictionary lookup if attribute lookup failed.
   ... a = {'b': 1}
   ... assert a['b'] == a.b
   ... """)
-  >>> exec suite.code
+  >>> exec suite.code in suite._globals
