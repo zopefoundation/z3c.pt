@@ -1,10 +1,19 @@
 from StringIO import StringIO
 import lxml.etree
+import re
 
 import io
 import utils
 import expressions
 import clauses
+
+# set up namespace
+lookup = lxml.etree.ElementNamespaceClassLookup()
+parser = lxml.etree.XMLParser()
+parser.setElementClassLookup(lookup)
+
+xhtml = lxml.etree.Namespace('http://www.w3.org/1999/xhtml')
+tal = lxml.etree.Namespace('http://xml.zope.org/namespaces/tal')
 
 wrapper = """\
 def render(%starget_language=None):
@@ -20,6 +29,7 @@ def render(%starget_language=None):
 %s
 \treturn _out.getvalue().decode('utf-8')
 """
+interpolation_regex = re.compile(r'([^\\]\$|^\$){(?P<expression>.*)}')
 
 def attribute(ns, factory):
     def get(self):
@@ -27,6 +37,25 @@ def attribute(ns, factory):
         if value is not None:
             return factory(value)
     return property(get)
+
+def interpolate(string):
+    m = interpolation_regex.search(string)
+    if m is None:
+        return None
+
+    left = m.start()
+    exp = expressions.search(string[left+3:])
+    right = left+4+len(exp)
+
+    m = interpolation_regex.search(string[:right])
+
+    if m is None:
+        interpolation = string[left:right]
+        raise SyntaxError(
+            "Interpolation expressions must of the "
+            "form ${<expression>} (%s)" % interpolation)
+
+    return m
 
 class Element(lxml.etree.ElementBase):
     def begin(self, stream):
@@ -41,12 +70,43 @@ class Element(lxml.etree.ElementBase):
         skip = self.replace or self.content or self.i18n_translate is not None
         if not skip:
             for element in self:
+                element.interpolate()
+            for element in self:
                 element.visit(stream)
                     
     def visit(self, stream):
         self.begin(stream)
         self.body(stream)
         self.end(stream)
+
+    def interpolate(self):
+        # interpolate text
+        if self.text is not None:
+            while self.text:
+                m = interpolate(self.text)
+                if m is None:
+                    break
+
+                t = parser.makeelement(
+                    '{http://xml.zope.org/namespaces/tal}interpolation')
+                t.attrib['replace'] = m.group('expression')
+                t.tail = self.text[m.end():]
+                self.insert(0, t)                
+                self.text = self.text[:m.start()+1]
+
+        # interpolate tail
+        if self.tail is not None:
+            while self.tail:
+                m = interpolate(self.tail)
+                if m is None:
+                    break
+
+                t = parser.makeelement(
+                    '{http://xml.zope.org/namespaces/tal}interpolation')
+                t.attrib['replace'] = m.group('expression')
+                t.tail = self.tail[m.end():]
+                self.getparent().append(t)                
+                self.tail = self.tail[:m.start()+1]
 
     def clauses(self):
         _ = []
@@ -281,14 +341,6 @@ class TALElement(Element):
                     (key, self.nsmap[self.prefix]))
 
         return attributes
-
-# set up namespace
-lookup = lxml.etree.ElementNamespaceClassLookup()
-parser = lxml.etree.XMLParser()
-parser.setElementClassLookup(lookup)
-
-xhtml = lxml.etree.Namespace('http://www.w3.org/1999/xhtml')
-tal = lxml.etree.Namespace('http://xml.zope.org/namespaces/tal')
 
 xhtml[None] = Element
 tal[None] = TALElement

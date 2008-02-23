@@ -40,6 +40,7 @@ Canonical test template
   ...   <span tal:content="None" />
   ...   <span tal:attributes="class lambda: 'Hello'"
   ...         tal:content="lambda: 'World'" />
+  ...   <span>Inter${'pol' + 'ati'}on</span>is ${int('test') | 'convenient'}!
   ... </div>
   ... """ % (u'La Pe\xf1a').encode('utf-8')
 
@@ -78,6 +79,7 @@ Canonical test template
     <span>La Peña</span>
     <span></span>
     <span class="Hello">World</span>
+    <span>Interpolation</span>is convenient!
   </div>
     
 Error handling

@@ -2,6 +2,44 @@ import parser
 
 def name(string):
     return string
+
+def search(string):
+    """
+    Extracts the longest valid Python-expression from the beginning of
+    the provided string..
+    
+      >>> search("'Hello World'")
+      "'Hello World'"
+      
+      >>> search("'Hello World'}")
+      "'Hello World'"
+
+      >>> search("'Hello World' + '")
+      "'Hello World' "
+
+    """
+    
+    left = 0
+    right = left + 1
+
+    current = None
+                    
+    while right <= len(string):
+        expression = string[left:right]
+        
+        try:
+            e = value(expression)
+            current = expression
+        except SyntaxError, e:
+            if right == len(string):
+                if current is not None:
+                    return current
+            
+                raise e
+                    
+        right += 1
+
+    return current
     
 def value(string):
     """
