@@ -45,7 +45,7 @@ specification*. Some notable changes:
 
 6. Expression interpolation is allowed:
 
-       <a href="mailto:${context/email}">${context/email}</a>
+       <a href="mailto:${context.email}">${context.email}</a>
 
 7. Attribute-values are always escaped; document expressions are
    never.
