@@ -39,6 +39,8 @@ Canonical test template
   ...   <span tal:content="None" />
   ...   <span tal:attributes="class lambda: 'Hello'"
   ...         tal:content="lambda: 'World'" />
+  ...   <img tal:attributes="title '%sHello%s' % (chr(60), chr(62))" />
+  ...   <span tal:replace="'%sbr /%s' % (chr(60), chr(62))" />
   ...   <span tal:content="unicode('La Pe\xc3\xb1a', 'utf-8')" />
   ...   <span>inter${'pol' + 'ati'}on</span>is ${int('test') | 'convenient'}!
   ...   <span tal:define="hello 'Hello'" class="${hello} World!" />
@@ -86,6 +88,8 @@ Canonical test template
     Hello World!
     <span></span>
     <span class="Hello">World</span>
+    <img title="&lt;Hello&gt;" />
+    <br />
     <span>La Peña</span>
     <span>interpolation</span>is convenient!
     <span class="Hello World!" />
