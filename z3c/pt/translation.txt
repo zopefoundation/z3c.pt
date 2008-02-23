@@ -30,6 +30,7 @@ Canonical test template
   ...   </ul>
   ...   <tal:example replace="'Hello World!'" />
   ...   <tal:div content="'Hello World!'" />
+  ...   <img alt="'Hello World!'" />
   ...   <tal:multiple repeat="i range(5)" replace="i" />
   ...   <p tal:omit-tag="">No paragraph here.</p>
   ...   <p tal:omit-tag="True">No paragraph here either.</p>
@@ -44,7 +45,7 @@ Canonical test template
 
   >>> print render(body)
   <div>
-    <span style="position: absolute" id="test" class="defabc">abcghi</span>
+    <span id="test" style="position: absolute" class="defabc">abcghi</span>
     <ul>
       <li>
 	Item 0)
@@ -64,6 +65,7 @@ Canonical test template
     </ul>
     Hello World!
     <div>Hello World!</div>
+    <img alt="'Hello World!'" />
     0
     1
     2

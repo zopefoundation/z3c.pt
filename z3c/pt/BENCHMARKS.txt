@@ -10,7 +10,7 @@ Results
 
                   zope.pagetemplate     z3c.pt    pure python
 Hello World        3.6                  1         0.02        
-1000 x 10 table   13.5                  1         0.58
+1000 x 10 table   11.3                  1         0.48
 
 There's a setup cost in using a template language which explains the
 50x factor in the 'Hello World' benchmark versus a pure python

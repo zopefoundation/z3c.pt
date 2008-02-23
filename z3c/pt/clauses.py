@@ -1,6 +1,7 @@
 from expressions import value
-
 from utils import unicode_required_flag
+
+from cgi import escape
 
 class Assign(object):
     """
@@ -359,17 +360,55 @@ class Tag(object):
     def begin(self, stream):
         stream.out('<%s' % self.tag)
 
-        # attributes
-        for attribute, expression in self.attributes.items():
-            stream.out(' %s="' % attribute)
+        # static attributes
+        static = filter(
+            lambda (attribute, expression): \
+            not isinstance(expression, (tuple, list)),
+            self.attributes.items())
 
-            if isinstance(expression, (tuple, list)):
-                write = Write(expression)
-                write.begin(stream, escape='"')
-                write.end(stream)
+        dynamic = filter(
+            lambda (attribute, expression): \
+            isinstance(expression, (tuple, list)),
+            self.attributes.items())
+
+        for attribute, expression in static:
+            stream.out(' %s="%s"' %
+               (attribute,
+                escape(expression, '"').replace("'", "\\'")))
+
+        temp = stream.save()
+        
+        for attribute, expression in dynamic:
+            assign = Assign(expression)
+            assign.begin(stream, temp)
+            
+            # only include attribute if value is non-trivial
+            stream.write("if %s is not None:" % temp)
+            stream.indent()
+
+            # if callable, evaluate method
+            stream.write("if callable(%s): %s = %s()" % (temp, temp, temp))
+
+            if unicode_required_flag:
+                stream.write("if isinstance(%s, unicode):" % temp)
+                stream.indent()
+                stream.write("%s = %s.encode('utf-8')" % (temp, temp))
+                stream.outdent()
+                stream.write("else:")
+                stream.indent()
+                stream.write("%s = str(%s)" % (temp, temp))
+                stream.outdent()
             else:
-                stream.out(expression.replace("'", "\\'"))
+                stream.write("%s = str(%s)" % (temp, temp))
+                
+            stream.write("_out.write(' %s=\"' + _escape(%s, \"\\\"\"))" %
+                         (attribute, temp))
             stream.out('"')
+            
+            assign.end(stream)
+            stream.outdent()
+
+        stream.restore()
 
         if self.selfclosing:
             stream.out(" />")
@@ -463,7 +502,7 @@ class Write(object):
         self.expressions = expressions
         self.count = len(expressions)
         
-    def begin(self, stream, escape=False):
+    def begin(self, stream):
         temp = stream.save()
                 
         if self.count == 1:
@@ -476,18 +515,14 @@ class Write(object):
         stream.write("if callable(_urf): _urf = _urf()")
         stream.write("if _urf is None: _urf = ''")
 
-        if escape:
-            escape_char = escape.replace("'", "\'")
-            stream.write("_urf = _escape(_urf, '%s')" % escape_char)
-            
         if unicode_required_flag:
-            stream.write("try:")
+            stream.write("if isinstance('_urf', unicode):")
+            stream.indent()
+            stream.write("_out.write(_urf.encode('utf-8'))")
+            stream.outdent()
+            stream.write("else:")
             stream.indent()
             stream.write("_out.write(str(_urf))")
-            stream.outdent()
-            stream.write("except TypeError:")
-            stream.indent()
-            stream.write("_out.write(unicode(_urf, 'utf-8'))")
             stream.outdent()
         else:
             stream.write("_out.write(str(_urf))")

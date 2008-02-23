@@ -14,6 +14,8 @@ class PageTemplate(object):
         source, _globals = translation.translate(self.body, params)
         suite = codegen.Suite(source)
 
+        self.source = source
+        
         _globals.update(suite._globals)
         _locals = {}
 
