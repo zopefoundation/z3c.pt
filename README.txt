@@ -4,12 +4,15 @@ Overview
 The z3c.pt package provides an alternative implementation of the TAL
 template language including i18n.
 
+Casual benchmarks pegs it 12x more performant than ``zope.pagetemplate``.
+
 In a nutshell:
 
   - Templates are bytecode-compiled
   - Only Python-expressions are supported
   - Depends only on lxml
-
+  - Adds support for expression interpolation
+  
 The METAL macro language is not supported.
 
 Template and expression language
@@ -40,7 +43,13 @@ specification*. Some notable changes:
 
 5. Expressions that return a callable are called.
 
+6. Expression interpolation is allowed:
 
+       <a href="mailto:${context/email}">${context/email}</a>
+
+7. Attribute-values are always escaped; document expressions are
+   never.
+   
 *) http://wiki.zope.org/ZPT/TALSpecification14
 
 Development

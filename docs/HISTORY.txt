@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+Version 0.5 - February 23, 2008
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Expression interpolation implemented.
+
 Version 0.4 - February 22, 2008
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
