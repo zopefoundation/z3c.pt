@@ -38,4 +38,15 @@ specification*. Some notable changes:
 
    can be used instead of ``dictionary['key']``.
 
+5. Expressions that return a callable are called.
+
+
 *) http://wiki.zope.org/ZPT/TALSpecification14
+
+Development
+-----------
+
+If you want to use the code directly from trunk, provide
+``z3c.pt==dev`` as your dependency.
+
+http://svn.zope.org/z3c.pt/trunk#egg=z3c.pt-dev

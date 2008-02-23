@@ -37,6 +37,8 @@ Canonical test template
   ...   <span tal:replace="'Hello World!'">Hello Universe!</span>
   ...   <span tal:content="'%s'" />
   ...   <span tal:content="None" />
+  ...   <span tal:attributes="class lambda: 'Hello'"
+  ...         tal:content="lambda: 'World'" />
   ... </div>
   ... """ % (u'La Pe\xf1a').encode('utf-8')
 
@@ -73,6 +75,7 @@ Canonical test template
     Hello World!
     <span>La Peña</span>
     <span></span>
+    <span class="Hello">World</span>
   </div>
     
 Error handling

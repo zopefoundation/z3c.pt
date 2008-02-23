@@ -325,7 +325,8 @@ class Tag(object):
     """
       >>> from z3c.pt.io import CodeIO
       >>> from StringIO import StringIO
-
+      >>> from cgi import escape as _escape
+      
       >>> _out = StringIO(); stream = CodeIO()
       >>> tag = Tag('div', dict(alt=value(repr('Hello World!'))))
       >>> tag.begin(stream)
@@ -364,7 +365,7 @@ class Tag(object):
 
             if isinstance(expression, (tuple, list)):
                 write = Write(expression)
-                write.begin(stream)
+                write.begin(stream, escape='"')
                 write.end(stream)
             else:
                 stream.out(expression.replace("'", "\\'"))
@@ -462,7 +463,7 @@ class Write(object):
         self.expressions = expressions
         self.count = len(expressions)
         
-    def begin(self, stream):
+    def begin(self, stream, escape=False):
         temp = stream.save()
                 
         if self.count == 1:
@@ -471,9 +472,15 @@ class Write(object):
             self.assign.begin(stream, temp)
             expr = temp
 
+        stream.write("_urf = %s" % expr)
+        stream.write("if callable(_urf): _urf = _urf()")
+        stream.write("if _urf is None: _urf = ''")
+
+        if escape:
+            escape_char = escape.replace("'", "\'")
+            stream.write("_urf = _escape(_urf, '%s')" % escape_char)
+            
         if unicode_required_flag:
-            stream.write("_urf = %s" % expr)
-            stream.write("if _urf is None: _urf = ''")
             stream.write("try:")
             stream.indent()
             stream.write("_out.write(str(_urf))")
@@ -483,7 +490,7 @@ class Write(object):
             stream.write("_out.write(unicode(_urf, 'utf-8'))")
             stream.outdent()
         else:
-            stream.write("_out.write(str(%s))" % expr)
+            stream.write("_out.write(str(_urf))")
             
     def end(self, stream):
         if self.count != 1:

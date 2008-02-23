@@ -204,7 +204,7 @@ class Element(lxml.etree.ElementBase):
                     raise ValueError, "Tuple definitions in assignment clause is not supported."
 
                 variable = variables[0]
-                attributes[variable] = _escape(expression, '"')
+                attributes[variable] = expression
         else:
             attrs = []
 
@@ -316,9 +316,6 @@ def _translate(expressions, mapping=None, default=None):
     return [("_translate(%s, domain=_domain, mapping=%s, " + \
              "target_language=_target_language, default=%s)") %
             (exp, mapping, default) for exp in expressions]
-
-def _escape(expressions, delim):
-    return ["_escape(%s, '\\%s')" % (exp, delim) for exp in expressions]
 
 def _not(expressions):
     return ["not (%s)" % exp for exp in expressions]
