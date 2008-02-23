@@ -10,13 +10,17 @@ Results
 
                   zope.pagetemplate     z3c.pt    pure python
 Hello World        3.6                  1         0.02        
-1000 x 10 table   11.3                  1         0.48
+1000 x 10 table   12.7*                 1         0.53
 
 There's a setup cost in using a template language which explains the
 50x factor in the 'Hello World' benchmark versus a pure python
 implementation.
 
 Certainly a specialized implementation will always be faster.
+
+*) This benchmark was made with the default encoding set to
+ UTF-8. There's a penalty of 10-15% when using an encoding that does
+ not coerce unicode gracefully to strings.
 
 Benchmark source code
 ---------------------
