@@ -105,7 +105,8 @@ class Element(lxml.etree.ElementBase):
                     '{http://xml.zope.org/namespaces/tal}interpolation')
                 t.attrib['replace'] = m.group('expression')
                 t.tail = self.tail[m.end():]
-                self.getparent().append(t)                
+                parent = self.getparent()
+                parent.insert(parent.index(self)+1, t)                
                 self.tail = self.tail[:m.start()+1]
 
     def clauses(self):
