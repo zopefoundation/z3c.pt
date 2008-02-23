@@ -53,7 +53,8 @@ class CodeIO(StringIO):
         if self.queue:
             queue = self.queue
             self.queue = ''
-            self.write("_out.write('%s')" % queue.replace('\n', '\\n'))
+            self.write("_out.write('%s')" %
+                       queue.replace('\n', '\\n').replace("'", "\\'"))
         
     def write(self, string):
         self.cook()

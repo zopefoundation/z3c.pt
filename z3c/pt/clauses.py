@@ -374,7 +374,7 @@ class Tag(object):
         for attribute, expression in static:
             stream.out(' %s="%s"' %
                (attribute,
-                escape(expression, '"').replace("'", "\\'")))
+                escape(expression, '"')))
 
         temp = stream.save()
         
@@ -525,7 +525,7 @@ class Write(object):
             stream.write("_out.write(str(_urf))")
             stream.outdent()
         else:
-            stream.write("_out.write(str(_urf))")
+            stream.write("_out.write(str(_urf)")
             
     def end(self, stream):
         if self.count != 1:
