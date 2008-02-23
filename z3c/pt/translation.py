@@ -36,7 +36,10 @@ def attribute(ns, factory):
         value = self.attrib.get(ns)
         if value is not None:
             return factory(value)
-    return property(get)
+    def set(self, value):
+        self.attrib[ns] = value
+
+    return property(get, set)
 
 def interpolate(string):
     m = interpolation_regex.search(string)
@@ -70,7 +73,7 @@ class Element(lxml.etree.ElementBase):
         skip = self.replace or self.content or self.i18n_translate is not None
         if not skip:
             for element in self:
-                element.interpolate()
+                element.interpolate(stream)
             for element in self:
                 element.visit(stream)
                     
@@ -79,7 +82,7 @@ class Element(lxml.etree.ElementBase):
         self.body(stream)
         self.end(stream)
 
-    def interpolate(self):
+    def interpolate(self, stream):
         # interpolate text
         if self.text is not None:
             while self.text:
@@ -109,6 +112,63 @@ class Element(lxml.etree.ElementBase):
                 parent.insert(parent.index(self)+1, t)                
                 self.tail = self.tail[:m.start()+1]
 
+        # interpolate attributes
+        for name in self._static_attributes():
+            value = self.attrib[name]
+
+            i = 0
+            format = ''
+            terms = []
+
+            defines = []
+
+            while value:
+                string = value[i:]
+                m = interpolate(string)
+                if m is None:
+                    break
+
+                start = m.start()
+                if start > 0:
+                    text = string[:m.start()+1]
+                else:
+                    text = ''
+                i += m.end()
+
+                format += '%s%s'
+                exp = m.group('expression')
+
+                if len(expressions.value(exp)) == 1:
+                    terms.extend(("'%s'" % text.replace("'", "\\'"), exp))
+                else:
+                    var = stream.save()
+                    defines.append((var, m.group('expression')))
+                    terms.extend(("'%s'" % text.replace("'", "\\'"), var))
+
+            if not terms:
+                continue
+
+            if i < len(value):
+                format += '%s'
+                terms.append("'%s'" % value[i:].replace("'", "\\'"))
+
+            value = "'%s'" % format + '%%(%s,)' % ",".join(terms)
+
+            del self.attrib[name]
+
+            attributes = '{http://xml.zope.org/namespaces/tal}attributes'
+            if attributes in self.attrib:
+                self.attrib[attributes] += '; %s %s' % (name, value)
+            else:
+                self.attrib[attributes] = '%s %s' % (name, value)
+
+            define = '{http://xml.zope.org/namespaces/tal}define'
+            for name, expression in defines:
+                if define in self.attrib:
+                    self.attrib[define] += '; %s %s' % (name, expression)
+                else:
+                    self.attrib[define] = '%s %s' % (name, expression)
+                
     def clauses(self):
         _ = []
 
@@ -328,15 +388,21 @@ class TALElement(Element):
     define = attribute("define", expressions.definitions)
     replace = attribute("replace", expressions.value)
     repeat = attribute("repeat", expressions.definition)
+    attributes = attribute("attributes", expressions.value)
     content = attribute("content", expressions.value)
     omit = attribute("omit-tag", expressions.value)
-
+    
     def _static_attributes(self):
         attributes = {}
 
         for key in self.keys():
             if key not in \
-                   ('define', 'replace', 'repeat', 'content', 'omit-tag'):
+                   ('define',
+                    'replace',
+                    'repeat',
+                    'attributes',
+                    'content',
+                    'omit-tag'):
                 raise ValueError(
                     u"Attribute '%s' not allowed in the namespace '%s'" %
                     (key, self.nsmap[self.prefix]))

@@ -36,13 +36,21 @@ Canonical test template
   ...   <p tal:omit-tag="True">No paragraph here either.</p>
   ...   <p tal:omit-tag="False">A paragraph here.</p>
   ...   <span tal:replace="'Hello World!'">Hello Universe!</span>
-  ...   <span tal:content="'%s'" />
   ...   <span tal:content="None" />
   ...   <span tal:attributes="class lambda: 'Hello'"
   ...         tal:content="lambda: 'World'" />
-  ...   <span>Inter${'pol' + 'ati'}on</span>is ${int('test') | 'convenient'}!
+  ...   <span tal:content="unicode('La Pe\xc3\xb1a', 'utf-8')" />
+  ...   <span>inter${'pol' + 'ati'}on</span>is ${int('test') | 'convenient'}!
+  ...   <span tal:define="hello 'Hello'" class="${hello} World!" />
+  ...   <span class="my-${'class'} item${'Last'}" />
+  ...   <span style="position: ${'abs'}olute"
+  ...         class="my-${int('test') | 'class'} item${'Last'}" />
+  ...   <img alt="La Peña, oh ${'La Peña'}" />
+  ...   ${unicode('La Pe\xc3\xb1a', 'utf-8')}
+  ...   <img alt="${unicode('La Pe\xc3\xb1a', 'utf-8')}" />
+  ...   <img alt="Hello ${unicode('La Pe\xc3\xb1a', 'utf-8').encode('utf-8')}!" />  
   ... </div>
-  ... """ % (u'La Pe\xf1a').encode('utf-8')
+  ... """
 
   >>> print render(body)
   <div>
@@ -76,11 +84,19 @@ Canonical test template
     No paragraph here either.
     <p>A paragraph here.</p>
     Hello World!
-    <span>La Peña</span>
     <span></span>
     <span class="Hello">World</span>
-    <span>Interpolation</span>is convenient!
+    <span>La Peña</span>
+    <span>interpolation</span>is convenient!
+    <span class="Hello World!" />
+    <span class="my-class itemLast" />
+    <span style="position: absolute" class="my-class itemLast" />
+    <img alt="La Peña, oh La Peña" />
+    La Peña
+    <img alt="La Peña" />
+    <img alt="Hello La Peña!" />  
   </div>
+
     
 Error handling
 --------------

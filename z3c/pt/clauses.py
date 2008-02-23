@@ -504,7 +504,7 @@ class Write(object):
         
     def begin(self, stream):
         temp = stream.save()
-                
+
         if self.count == 1:
             expr = self.expressions[0]
         else:
@@ -516,7 +516,7 @@ class Write(object):
         stream.write("if _urf is None: _urf = ''")
 
         if unicode_required_flag:
-            stream.write("if isinstance('_urf', unicode):")
+            stream.write("if isinstance(_urf, unicode):")
             stream.indent()
             stream.write("_out.write(_urf.encode('utf-8'))")
             stream.outdent()
@@ -525,7 +525,7 @@ class Write(object):
             stream.write("_out.write(str(_urf))")
             stream.outdent()
         else:
-            stream.write("_out.write(str(_urf)")
+            stream.write("_out.write(str(_urf))")
             
     def end(self, stream):
         if self.count != 1:

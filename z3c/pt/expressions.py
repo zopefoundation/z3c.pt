@@ -125,9 +125,10 @@ def variable(string):
         if var in ('repeat',):
             raise ValueError, "Invalid variable name '%s' (reserved)." % variable
 
-        if var.startswith('_'):
-            raise ValueError, \
-                  "Invalid variable name '%s' (starts with an underscore)." % variable            
+        if var.startswith('_') and not var.startswith('_tmp'):
+            raise ValueError(
+                "Invalid variable name '%s' (starts with an underscore)." % var)
+        
         variables.append(var)
 
     return tuple(variables)
