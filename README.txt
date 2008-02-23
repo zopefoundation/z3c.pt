@@ -8,10 +8,10 @@ Casual benchmarks pegs it 12x more performant than ``zope.pagetemplate``.
 
 In a nutshell:
 
-  - Templates are bytecode-compiled
-  - Only Python-expressions are supported
-  - Depends only on lxml
-  - Adds support for expression interpolation
+* Templates are bytecode-compiled
+* Only Python-expressions are supported
+* Depends only on lxml
+* Adds support for expression interpolation
   
 The METAL macro language is not supported.
 
@@ -50,7 +50,7 @@ specification*. Some notable changes:
 7. Attribute-values are always escaped; document expressions are
    never.
    
-*) http://wiki.zope.org/ZPT/TALSpecification14
+.. _TAL: http://wiki.zope.org/ZPT/TALSpecification14
 
 Development
 -----------
