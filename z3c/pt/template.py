@@ -1,4 +1,5 @@
 import os
+import sys
 import codegen
 
 class BaseTemplate(object):
@@ -88,7 +89,7 @@ class BaseViewTemplate(property):
 class BaseViewTemplateFile(BaseViewTemplate):
     def __init__(self, filename):
         if not os.path.isabs(filename):
-            package_name = sys._getframe(1).f_globals['__name__']
+            package_name = sys._getframe(2).f_globals['__name__']
             module = sys.modules[package_name]
             try:
                 path = module.__path__[0]
@@ -100,5 +101,6 @@ class BaseViewTemplateFile(BaseViewTemplate):
 
         # make sure file exists
         os.lstat(filename)
-
+        self.filename = filename
+        
         property.__init__(self, self.render)

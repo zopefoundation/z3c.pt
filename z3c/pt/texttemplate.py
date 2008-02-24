@@ -19,4 +19,4 @@ class ViewTextTemplate(template.BaseViewTemplate):
 class ViewTextTemplateFile(template.BaseViewTemplateFile):
     def __init__(self, filename):
         super(ViewTextTemplateFile, self).__init__(filename)
-        self.template = TextTemplateFile(filename)
+        self.template = TextTemplateFile(self.filename)

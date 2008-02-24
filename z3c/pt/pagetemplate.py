@@ -22,4 +22,4 @@ class ViewPageTemplate(template.BaseViewTemplate):
 class ViewPageTemplateFile(template.BaseViewTemplateFile):
     def __init__(self, filename):
         super(ViewPageTemplateFile, self).__init__(filename)
-        self.template = PageTemplateFile(filename)
+        self.template = PageTemplateFile(self.filename)
