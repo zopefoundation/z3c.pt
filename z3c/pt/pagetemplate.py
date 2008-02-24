@@ -88,7 +88,13 @@ class ViewPageTemplateFile(ViewPageTemplate):
     def __init__(self, filename):
         if not os.path.isabs(filename):
             package_name = sys._getframe(1).f_globals['__name__']
-            path = sys.modules[package_name].__path__[0]
+            module = sys.modules[package_name]
+            try:
+                path = module.__path__[0]
+            except AttributeError:
+                path = module.__file__
+                path = path[:path.rfind(os.sep)]
+                
             filename = path + os.sep + filename
 
         # make sure file exists
