@@ -349,6 +349,7 @@ class Tag(object):
 
     def __init__(self, tag, attributes={}, selfclosing=False):
         i = tag.find('}')
+
         if i != -1:
             self.tag = tag[i+1:]
         else:

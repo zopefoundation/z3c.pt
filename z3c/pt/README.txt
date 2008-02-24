@@ -1,10 +1,37 @@
 z3c.pt
 ======
 
-Usage
------
+This document demonstrates the high-level API of the package.
 
-From a string:
+Overview
+--------
+
+Two types of TAL page template classes are provided:
+
+``PageTemplate``, ``PageTemlateFile``
+       These classes allow passing of arguments directly to the
+       template namespace.
+
+``ViewPageTemplate``, ``ViewPageTemplateFile``
+       These classes should be initialized as properties in a
+       view class and provide a set of default arguments to the
+       template.
+
+Templates structured as plain text are supported:
+
+``TextTemplate``, ``TextTemplateFile``
+       These classes work like their page template counterparts,
+       except they work with plain text documents, extending
+       to CSS stylesheets, javascript files and other non-XML
+       document. Only expression interpolation is supported.
+
+``ViewTextTemplate``, ``ViewTextTemplateFile``
+       See above.
+
+Page template classes
+---------------------
+
+Initialized with a string:
 
   >>> from z3c.pt import PageTemplate
   >>> template = PageTemplate("""\
@@ -19,7 +46,7 @@ From a string:
      Hello World!
   </div>
 
-From a file:
+Providing the path to a template file:
 
   >>> from z3c.pt import PageTemplateFile
   >>> from z3c.pt import tests
@@ -39,10 +66,10 @@ View template classes are provided for templates on the file system
 and for inline templates. The following symbols are defined for the
 template:
 
-  * view
-  * context
-  * request
-  * options
+* view
+* context
+* request
+* options
 
 Keyword-parameters are passed on to the template in a dictionary bound
 to the symbol ``options``.
@@ -77,4 +104,25 @@ Inline:
     <span>test</span>
   </div>
 
+Text template classes
+---------------------
+
+  >>> from z3c.pt import ViewTextTemplate, ViewTextTemplateFile
   
+  >>> class ViewTextTemplateView(object):
+  ...     view_text_template_file = ViewTextTemplateFile(path+'/view.css')
+  ...     view_text_template = ViewTextTemplate(open(path+'/view.css').read())
+  ...     request = u'request'
+  ...     context = u'context'
+
+  >>> view = ViewTextTemplateView()
+
+  >>> print view.view_text_template_file(color=u'#ccc')
+  #region {
+      background: #ccc;
+  }
+
+  >>> print view.view_text_template(color=u'#ccc')
+  #region {
+      background: #ccc;
+  }

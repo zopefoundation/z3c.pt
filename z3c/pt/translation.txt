@@ -1,20 +1,25 @@
 Translation
 -----------
 
-This document contains functional template tests covering the TAL
-directives.
+This document contains functional template tests.
 
-  >>> from z3c.pt.translation import translate
+We use a generic render-method for convenience.
 
-  >>> def render(body, **kwargs):
-  ...    source, _globals = translate(body)
+  >>> def render(body, translator, **kwargs):
+  ...    source, _globals = translator(body)
   ...    _locals = {}
   ...    exec source in _globals, _locals
   ...    return _locals['render'](**kwargs)
-  
-Canonical test template
------------------------
 
+TAL templates
+-------------
+
+  >>> from z3c.pt.translation import translate_xml
+
+For the functional testing of TAL templates we provide a complex
+template that covers most cases. It's been developed alongside
+development and is not meant to be easy on the eye.
+  
   >>> body = """\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
@@ -54,7 +59,7 @@ Canonical test template
   ... </div>
   ... """
 
-  >>> print render(body)
+  >>> print render(body, translate_xml)
   <div>
     <span id="test" style="position: absolute" class="defabc">abcghi</span>
     <ul>
@@ -101,7 +106,31 @@ Canonical test template
     <img alt="Hello La Peña!" />  
   </div>
 
-    
+Text templates
+--------------
+
+  >>> from z3c.pt.translation import translate_text
+
+An example with a CSS stylesheet document:
+  
+  >>> css = """\
+  ... #some-region {
+  ...    background: url(${'http://nohost/plone'}/logo.gif) no-repeat;
+  ... }"""
+
+  >>> print render(css, translate_text)
+  #some-region {
+     background: url(http://nohost/plone/logo.gif) no-repeat;
+  }
+
+A javascript document that prints out HTML:
+
+  >>> js = """\
+  ... print '<div class="description">Hello ${'World!'}</div>';"""
+
+  >>> print render(js, translate_text)
+  print '<div class="description">Hello World!</div>';
+
 Error handling
 --------------
 
@@ -112,7 +141,7 @@ No default namespace declaration:
   A default namespace must be explicitly declared for the parser to work.
   
   >>> body = '<br />'
-  >>> render(body)
+  >>> render(body, translate_xml)
   Traceback (most recent call last):
     ...
   ValueError: Must set default namespace.
@@ -121,7 +150,7 @@ Bad XML
   We expect the xml-parser to raise an exception.
   
   >>> body = '<div xmlns="http://www.w3.org/1999/xhtml"'
-  >>> render(body)
+  >>> render(body, translate_xml)
   Traceback (most recent call last):
     ...
   XMLSyntaxError: line 1: Couldn't find end of Start Tag div line 1
@@ -133,5 +162,5 @@ Missing namespace definition:
   ... <div xmlns="http://www.w3.org/1999/xhtml" tal:content="'Hello World'" />
   ... """
 
-  >>> print render(body)
+  >>> print render(body, translate_xml)
   <div content="'Hello World'" />

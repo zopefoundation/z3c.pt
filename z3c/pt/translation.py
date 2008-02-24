@@ -412,10 +412,12 @@ class TALElement(Element):
 xhtml[None] = Element
 tal[None] = TALElement
 
-def translate(body, params=[]):
+def translate_xml(body, params=[]):
     tree = lxml.etree.parse(StringIO(body), parser)
     root = tree.getroot()
+    return translate_etree(root, params=params)
 
+def translate_etree(root, params=[]):
     if None not in root.nsmap:
         raise ValueError, "Must set default namespace."
         
@@ -423,6 +425,7 @@ def translate(body, params=[]):
 
     stream.scope.append(set(params + ['_out']))
 
+    root.interpolate(stream)
     root.visit(stream)
 
     code = stream.getvalue()
@@ -431,6 +434,14 @@ def translate(body, params=[]):
     
     return wrapper % (args, code), {'utils': utils}
 
+def translate_text(body, params=[]):
+    xml = parser.makeelement(
+        '{http://www.w3.org/1999/xhtml}text',
+        nsmap={None: 'http://www.w3.org/1999/xhtml'})
+    xml.text = body
+    xml.attrib['{http://xml.zope.org/namespaces/tal}omit-tag'] = ''
+    return translate_etree(xml, params=params)    
+    
 def _translate(expressions, mapping=None, default=None):
     return [("_translate(%s, domain=_domain, mapping=%s, " + \
              "target_language=_target_language, default=%s)") %

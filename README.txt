@@ -2,7 +2,8 @@ Overview
 --------
 		      
 The z3c.pt package provides an alternative implementation of the TAL
-template language including i18n.
+template language including i18n. It also provides a simple text
+template class that allows expression interpolation.
 
 Casual benchmarks pegs it 12x more performant than ``zope.pagetemplate``.
 
@@ -12,8 +13,11 @@ In a nutshell:
 * Only Python-expressions are supported
 * Depends only on lxml
 * Adds support for expression interpolation
-  
-The METAL macro language is not supported.
+* Limited support for CSS, Javascript and other non-XML documents
+
+See the README.txt inside the package for instructions on usage.
+
+Note: The METAL macro language is not supported.
 
 Template and expression language
 --------------------------------
@@ -59,3 +63,4 @@ If you want to use the code directly from trunk, provide
 ``z3c.pt==dev`` as your dependency.
 
 http://svn.zope.org/z3c.pt/trunk#egg=z3c.pt-dev
+
