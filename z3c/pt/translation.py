@@ -31,11 +31,13 @@ def render(%starget_language=None):
 """
 interpolation_regex = re.compile(r'([^\\]\$|^\$){(?P<expression>.*)}')
 
-def attribute(ns, factory):
+def attribute(ns, factory, default=None):
     def get(self):
         value = self.attrib.get(ns)
         if value is not None:
             return factory(value)
+        elif default is not None:
+            return default
     def set(self, value):
         self.attrib[ns] = value
 
@@ -390,7 +392,7 @@ class TALElement(Element):
     repeat = attribute("repeat", expressions.definition)
     attributes = attribute("attributes", expressions.value)
     content = attribute("content", expressions.value)
-    omit = attribute("omit-tag", expressions.value)
+    omit = attribute("omit-tag", expressions.value, u"")
     
     def _static_attributes(self):
         attributes = {}

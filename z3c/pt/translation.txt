@@ -80,7 +80,7 @@ development and is not meant to be easy on the eye.
       </li>
     </ul>
     Hello World!
-    <div>Hello World!</div>
+    Hello World!
     <img alt="'Hello World!'" />
     0
     1
