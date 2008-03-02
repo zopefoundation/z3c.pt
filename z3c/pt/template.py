@@ -40,8 +40,21 @@ class BaseTemplate(object):
 
 class BaseTemplateFile(BaseTemplate):
     def __init__(self, filename):
+        if not os.path.isabs(filename):
+            package_name = sys._getframe(2).f_globals['__name__']
+            module = sys.modules[package_name]
+            try:
+                path = module.__path__[0]
+            except AttributeError:
+                path = module.__file__
+                path = path[:path.rfind(os.sep)]
+                
+            filename = path + os.sep + filename
+
+        # make sure file exists
+        os.lstat(filename)
         self.filename = filename
-        
+                
     def _get_filename(self):
         return getattr(self, '_filename', None)
 
@@ -73,34 +86,3 @@ class BaseTemplateFile(BaseTemplate):
             return os.path.getmtime(self.filename)
         except OSError:
             return 0
-
-class BaseViewTemplate(property):
-    def __init__(self, body):
-        property.__init__(self, self.render)
-
-    def render(self, view):
-        def template(**kwargs):
-            return self.template.render(view=view,
-                                        context=view.context,
-                                        request=view.request,
-                                        options=kwargs)
-        return template
-
-class BaseViewTemplateFile(BaseViewTemplate):
-    def __init__(self, filename):
-        if not os.path.isabs(filename):
-            package_name = sys._getframe(2).f_globals['__name__']
-            module = sys.modules[package_name]
-            try:
-                path = module.__path__[0]
-            except AttributeError:
-                path = module.__file__
-                path = path[:path.rfind(os.sep)]
-                
-            filename = path + os.sep + filename
-
-        # make sure file exists
-        os.lstat(filename)
-        self.filename = filename
-        
-        property.__init__(self, self.render)

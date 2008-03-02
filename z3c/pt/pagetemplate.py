@@ -14,12 +14,20 @@ class PageTemplateFile(template.BaseTemplateFile):
     def translate(self):
         return translation.translate_xml
 
-class ViewPageTemplate(template.BaseViewTemplate):
+class ViewPageTemplate(property):
     def __init__(self, body):
-        super(ViewPageTemplate, self).__init__(body)
         self.template = PageTemplate(body)
+        property.__init__(self, self.render)
+
+    def render(self, view):
+        def template(**kwargs):
+            return self.template.render(view=view,
+                                        context=view.context,
+                                        request=view.request,
+                                        options=kwargs)
+        return template        
     
-class ViewPageTemplateFile(template.BaseViewTemplateFile):
+class ViewPageTemplateFile(ViewPageTemplate):
     def __init__(self, filename):
-        super(ViewPageTemplateFile, self).__init__(filename)
-        self.template = PageTemplateFile(self.filename)
+        self.template = PageTemplateFile(filename)
+        property.__init__(self, self.render)
