@@ -24,15 +24,13 @@ class Lookup(object):
 
     @classmethod
     def lookup_attr(cls, obj, key):
-        __traceback_hide__ = True
-        val = getattr(obj, key, UNDEFINED)
-        if val is UNDEFINED:
+        try:
+            return getattr(obj, key)
+        except AttributeError, e:
             try:
-                val = obj[key]
+                return obj[key]
             except (KeyError, TypeError):
-                raise AttributeError(key)
-
-        return val
+                raise e
 
 class TemplateASTTransformer(ASTTransformer):
     def __init__(self):
