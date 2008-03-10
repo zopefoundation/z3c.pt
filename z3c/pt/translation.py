@@ -74,6 +74,23 @@ class Element(lxml.etree.ElementBase):
     def body(self, stream):
         skip = self.replace or self.content or self.i18n_translate is not None
         if not skip:
+            for element in list(self):
+                if isinstance(element, lxml.etree._Comment):
+                    index = self.index(element)
+
+                    t = parser.makeelement(
+                        '{http://xml.zope.org/namespaces/tal}comment')
+
+                    t.attrib['omit-tag'] = ''
+                    t.tail = element.tail
+                    t.text = '<!--' + element.text + '-->'
+
+                    for child in element.getchildren():
+                        t.append(child)
+
+                    self.remove(element)
+                    self.insert(index, t)
+                
             for element in self:
                 element.interpolate(stream)
             for element in self:

@@ -1,6 +1,16 @@
 Changelog
 ---------
 
+Version 0.7 - March 10, 2008
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Added support for comments; expressions are allowed
+  inside comments, i.e.
+
+     <!-- ${'Hello World!'} -->
+
+  Comments are always included.
+  
 Version 0.6 - February 24, 2008
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -33,6 +33,10 @@ development and is not meant to be easy on the eye.
   ...       <span tal:replace="'Item ' + str(i) + ')'" />
   ...     </li>
   ...   </ul>
+  ...   <!-- a comment -->
+  ...   <!-- a multi-
+  ...        line comment -->
+  ...   <!-- a comment with an ${'expression'} -->
   ...   <tal:example replace="'Hello World!'" />
   ...   <tal:div content="'Hello World!'" />
   ...   <img alt="'Hello World!'" />
@@ -79,6 +83,10 @@ development and is not meant to be easy on the eye.
 	Item 4)
       </li>
     </ul>
+    <!-- a comment -->
+    <!-- a multi-
+         line comment -->
+    <!-- a comment with an expression -->
     Hello World!
     Hello World!
     <img alt="'Hello World!'" />
