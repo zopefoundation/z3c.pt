@@ -4,7 +4,7 @@ import re
 
 import io
 import utils
-import expressions
+import parsing
 import clauses
 
 # set up namespace
@@ -49,7 +49,7 @@ def interpolate(string):
         return None
 
     left = m.start()
-    exp = expressions.search(string[left+3:])
+    exp = parsing.search(string[left+3:])
     right = left+4+len(exp)
 
     m = interpolation_regex.search(string[:right])
@@ -157,7 +157,7 @@ class Element(lxml.etree.ElementBase):
                 format += '%s%s'
                 exp = m.group('expression')
 
-                if len(expressions.value(exp)) == 1:
+                if len(parsing.value(exp)) == 1:
                     terms.extend(("'%s'" % text.replace("'", "\\'"), exp))
                 else:
                     var = stream.save()
@@ -381,35 +381,35 @@ class Element(lxml.etree.ElementBase):
         return attributes
 
     define = attribute(
-        "{http://xml.zope.org/namespaces/tal}define", expressions.definitions)
+        "{http://xml.zope.org/namespaces/tal}define", parsing.definitions)
     condition = attribute(
-        "{http://xml.zope.org/namespaces/tal}condition", expressions.value)
+        "{http://xml.zope.org/namespaces/tal}condition", parsing.value)
     repeat = attribute(
-        "{http://xml.zope.org/namespaces/tal}repeat", expressions.definition)
+        "{http://xml.zope.org/namespaces/tal}repeat", parsing.definition)
     attributes = attribute(
-        "{http://xml.zope.org/namespaces/tal}attributes", expressions.definitions)
+        "{http://xml.zope.org/namespaces/tal}attributes", parsing.definitions)
     content = attribute(
-        "{http://xml.zope.org/namespaces/tal}content", expressions.value)
+        "{http://xml.zope.org/namespaces/tal}content", parsing.value)
     replace = attribute(
-        "{http://xml.zope.org/namespaces/tal}replace", expressions.value)
+        "{http://xml.zope.org/namespaces/tal}replace", parsing.value)
     omit = attribute(
-        "{http://xml.zope.org/namespaces/tal}omit-tag", expressions.value)
+        "{http://xml.zope.org/namespaces/tal}omit-tag", parsing.value)
     i18n_translate = attribute(
-        "{http://xml.zope.org/namespaces/i18n}translate", expressions.name)
+        "{http://xml.zope.org/namespaces/i18n}translate", parsing.name)
     i18n_attributes = attribute(
-        "{http://xml.zope.org/namespaces/i18n}attributes", expressions.mapping)
+        "{http://xml.zope.org/namespaces/i18n}attributes", parsing.mapping)
     i18n_domain = attribute(
-        "{http://xml.zope.org/namespaces/i18n}domain", expressions.name)
+        "{http://xml.zope.org/namespaces/i18n}domain", parsing.name)
     i18n_name = attribute(
-        "{http://xml.zope.org/namespaces/i18n}name", expressions.name)
+        "{http://xml.zope.org/namespaces/i18n}name", parsing.name)
 
 class TALElement(Element):
-    define = attribute("define", expressions.definitions)
-    replace = attribute("replace", expressions.value)
-    repeat = attribute("repeat", expressions.definition)
-    attributes = attribute("attributes", expressions.value)
-    content = attribute("content", expressions.value)
-    omit = attribute("omit-tag", expressions.value, u"")
+    define = attribute("define", parsing.definitions)
+    replace = attribute("replace", parsing.value)
+    repeat = attribute("repeat", parsing.definition)
+    attributes = attribute("attributes", parsing.value)
+    content = attribute("content", parsing.value)
+    omit = attribute("omit-tag", parsing.value, u"")
     
     def _static_attributes(self):
         attributes = {}

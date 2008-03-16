@@ -1,11 +1,10 @@
-from expressions import value
 from utils import unicode_required_flag
-
 from cgi import escape
 
 class Assign(object):
     """
       >>> from z3c.pt.io import CodeIO; stream = CodeIO()
+      >>> from z3c.pt.parsing import value
 
     Simple assignment:
 
@@ -63,7 +62,8 @@ class Assign(object):
 class Define(object):
     """
       >>> from z3c.pt.io import CodeIO; stream = CodeIO()
-
+      >>> from z3c.pt.parsing import value
+      
     Variable scope:
 
       >>> define = Define("a", value("b"))
@@ -209,7 +209,8 @@ class Define(object):
 class Condition(object):
     """
       >>> from z3c.pt.io import CodeIO
-
+      >>> from z3c.pt.parsing import value
+      
     Unlimited scope:
     
       >>> stream = CodeIO()
@@ -325,6 +326,7 @@ class Group(object):
 class Tag(object):
     """
       >>> from z3c.pt.io import CodeIO
+      >>> from z3c.pt.parsing import value
       >>> from StringIO import StringIO
       >>> from cgi import escape as _escape
       
@@ -423,6 +425,7 @@ class Tag(object):
 class Repeat(object):
     """
       >>> from z3c.pt.io import CodeIO; stream = CodeIO()
+      >>> from z3c.pt.parsing import value
 
     We need to set up the repeat object.
 
@@ -447,7 +450,7 @@ class Repeat(object):
         
     def __init__(self, v, e, scope=()):
         self.variable = v
-        self.define = Define(v, value("None"))
+        self.define = Define(v, ("None",))
         self.assign = Assign(e)
 
     def begin(self, stream):
@@ -480,6 +483,7 @@ class Repeat(object):
 class Write(object):
     """
       >>> from z3c.pt.io import CodeIO; stream = CodeIO()
+      >>> from z3c.pt.parsing import value
       >>> from StringIO import StringIO
 
       >>> _out = StringIO()
@@ -536,6 +540,7 @@ class Write(object):
 class Out(object):
     """
       >>> from z3c.pt.io import CodeIO; stream = CodeIO()
+      >>> from z3c.pt.parsing import value
       >>> from StringIO import StringIO
       >>> _out = StringIO()
       
