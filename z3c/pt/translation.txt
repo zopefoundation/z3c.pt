@@ -1,9 +1,9 @@
 Translation
------------
+===========
 
 This document contains functional template tests.
 
-We use a generic render-method for convenience.
+A generic render-method is used for convenience.
 
   >>> def render(body, translator, **kwargs):
   ...    source, _globals = translator(body)
@@ -11,11 +11,18 @@ We use a generic render-method for convenience.
   ...    exec source in _globals, _locals
   ...    return _locals['render'](**kwargs)
 
-We'll first register the Python expression translator.
+Expressions
+-----------
+  
+First we'll register the expression translation utilities:
+
+  >>> from zope.component import provideUtility
 
   >>> from z3c.pt.expressions import PythonTranslation
-  >>> from zope.component import provideUtility
   >>> provideUtility(PythonTranslation(), name="python")
+
+  >>> from z3c.pt.expressions import PathTranslation
+  >>> provideUtility(PathTranslation(), name="path")
 
 TAL templates
 -------------
@@ -28,7 +35,8 @@ development and is not meant to be easy on the eye.
 
   >>> body = """\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal"
+  ...      tal:default-expression="python">
   ...   <span id="test"
   ...         class="dummy"
   ...         tal:define="a 'abc'"
@@ -65,7 +73,16 @@ development and is not meant to be easy on the eye.
   ...   <img alt="La Peña, oh ${'La Peña'}" />
   ...   ${unicode('La Pe\xc3\xb1a', 'utf-8')}
   ...   <img alt="${unicode('La Pe\xc3\xb1a', 'utf-8')}" />
-  ...   <img alt="Hello ${unicode('La Pe\xc3\xb1a', 'utf-8').encode('utf-8')}!" />  
+  ...   <img alt="Hello ${unicode('La Pe\xc3\xb1a', 'utf-8').encode('utf-8')}!" />
+  ...   <tal:path-expression-testing 
+  ...         define="request object();
+  ...                 mydict {'a': 1, 'c': {'a': 2}}">
+  ...       <div tal:default-expression="path">
+  ...          <span tal:replace="mydict/a" />
+  ...          <span tal:replace="mydict/b|mydict/a" />
+  ...          <span tal:replace="mydict/c/a" />
+  ...       </div>
+  ...   </tal:path-expression-testing>
   ... </div>
   ... """
 
@@ -117,7 +134,14 @@ development and is not meant to be easy on the eye.
     <img alt="La Peña, oh La Peña" />
     La Peña
     <img alt="La Peña" />
-    <img alt="Hello La Peña!" />  
+    <img alt="Hello La Peña!" />
+  <BLANKLINE>
+        <div>
+           1
+           1
+           2
+        </div>
+  <BLANKLINE>
   </div>
 
 Text templates

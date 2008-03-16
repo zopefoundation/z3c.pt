@@ -8,7 +8,22 @@ class IExpressionTranslation(interface.Interface):
         usually be the identity function."""
     
     def value(string):
-        """Translate ``string`` to a Python value-expression."""
+        """Translate ``string`` to a value-expression tuple.
+
+        Specification:
+
+           value :: = expression [ |* value ]
+           expresion ::= an expression string
+
+           *) Using | as _logical or_ is not supported.
+
+        """
+
+    def validate(string):
+        """Raises exception if ``string`` is not a valid exception."""
+
+    def translate(string):
+        """Translates ``string``."""
         
     def search(string):
         """Extracts the longest valid expression from the beginning of

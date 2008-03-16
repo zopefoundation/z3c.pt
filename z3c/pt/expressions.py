@@ -1,5 +1,8 @@
 import zope.interface
+import zope.traversing.adapters
+
 import parser
+import re
 
 from interfaces import IExpressionTranslation
 
@@ -213,36 +216,27 @@ class ExpressionTranslation(object):
 
         return defs[0]
 
-class PythonTranslation(ExpressionTranslation):
     def value(self, string):
         """
-        Specification:
+        We need to implement a ``value``-method. Let's define that an
+        expression is valid if it contains an odd number of
+        characters.
+        
+        >>> class MockExpressionTranslation(ExpressionTranslation):
+        ...     def validate(self, string):
+        ...         return True
+        ...
+        ...     def translate(self, string):
+        ...         return '<translated %s>' % string
+        
+        >>> value = MockExpressionTranslation().value
 
-        value :: = python_expression [ |* value ]
-        python_expresion ::= a python expression string
+        >>> value('a')
+        ('<translated a>',)
 
-        *) Using | as logical or is not supported.
-
-            >>> value = PythonTranslation().value
-            
-            >>> value("4 + 5")
-            ['4 + 5']
-
-        Complex expressions:
-
-            >>> value("a.non_defined_method() | 1")
-            ['a.non_defined_method() ', '1']
-
-        Expression with non-semantic horizontal bar.
-
-            >>> value("'|'")
-            ["'|'"]
-
-        Expression with non-semantic horizontal bar and semantic bar.
-
-            >>> value("a.non_defined_method() | '|'")
-            ['a.non_defined_method() ', "'|'"]
-
+        >>> value('a|b')
+        ('<translated a>', '<translated b>')
+    
         """
 
         string = string.replace('\n', '').strip()
@@ -261,16 +255,64 @@ class PythonTranslation(ExpressionTranslation):
             expr = string[i:j].lstrip()
 
             try:
-                # we use the ``parser`` module to determine if
-                # an expression is a valid python expression
-                parser.expr(expr.encode('utf-8'))
-            except SyntaxError, e:
+                self.validate(expr)
+            except Exception, e:
                 if j < len(string):
                     continue
 
                 raise e
 
-            expressions.append(expr)
+            expressions.append(self.translate(expr))
             i = j + 1
 
-        return expressions
+        return tuple(expressions)
+
+class PythonTranslation(ExpressionTranslation):
+    def validate(self, string):
+        """We use the ``parser`` module to determine if
+        an expression is a valid python expression."""
+        
+        parser.expr(string.encode('utf-8'))
+
+    def translate(self, string):
+        return string
+
+class PathTranslation(ExpressionTranslation):
+    path_regex = re.compile(r'^([A-Za-z_]+)(/[A-Za-z_@-]+)+$')
+
+    @classmethod
+    def traverse(cls, base, request, *path_items):
+        """See ``zope.app.pagetemplate.engine``."""
+
+        for i in range(len(path_items)):
+            name = path_items[i]
+            
+            # special-case dicts for performance reasons        
+            if getattr(base, '__class__', None) == dict:
+                base = base[name]
+            else:
+                base = zope.traversing.adapters.traversePathElement(
+                    base, name, path_items[i+1:], request=request)
+                
+        return base
+
+    def validate(self, string):
+        if not self.path_regex.match(string):
+            raise ValueError("Not a valid path-expression.")
+
+    def translate(self, string):
+        """
+            >>> translate = PathTranslation().translate
+            >>> translate("a/b")
+            "_path(a, request, 'b')"
+
+            >>> translate("context/@@view")
+            "_path(context, request, '@@view')"
+        """
+
+        parts = string.split('/')
+
+        base = parts[0]
+        components = [repr(part) for part in parts[1:]]
+                
+        return '_path(%s, request, %s)' % (base, ', '.join(components))

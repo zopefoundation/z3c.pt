@@ -5,6 +5,7 @@ from cStringIO import StringIO
 import sys
 import cgi
 import logging
+import expressions
 
 # check if we're able to coerce unicode to str
 try:
@@ -13,7 +14,10 @@ try:
 except UnicodeEncodeError:
     unicode_required_flag = True
     log = logging.getLogger('z3c.pt')
-    log.info("Default system encoding is set to '%s'; the template engine will perform better if an encoding that coerces gracefully to unicode is used ('utf-8' recommended)." % sys.getdefaultencoding())
+    log.info("Default system encoding is set to '%s'; "
+             "the template engine will perform better if "
+             "an encoding that coerces gracefully to "
+             "unicode is used ('utf-8' recommended)." % sys.getdefaultencoding())
 
 def handler(key=None):
     def decorate(f):
@@ -36,7 +40,10 @@ def initialize_helpers():
 
 def initialize_stream():
     return StringIO()
-    
+
+def initialize_traversal():
+    return expressions.PathTranslation.traverse
+
 def getLanguage(request):
     return ''
 

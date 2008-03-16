@@ -9,6 +9,7 @@ def render(%starget_language=None):
 \t(_attributes, repeat) = utils.initialize_tal()
 \t(_domain, _translate) = utils.initialize_i18n()
 \t(_escape, _marker) = utils.initialize_helpers()
+\t_path = utils.initialize_traversal()
 
 \t_target_language = target_language
 %s
