@@ -10,14 +10,14 @@ Casual benchmarks pegs it 12x more performant than ``zope.pagetemplate``.
 In a nutshell:
 
 * Templates are bytecode-compiled
-* Only Python-expressions are supported
-* Depends only on lxml
-* Adds support for expression interpolation
-* Limited support for CSS, Javascript and other non-XML documents
+* Supports Python and Zope path traversal expressions
+* Introduces expression interpolation using the ${<expression>}-format
+* Non-XML friendly
 
 See the README.txt inside the package for instructions on usage.
 
 Note: The METAL macro language is not supported.
+
 
 Template and expression language
 --------------------------------
@@ -53,8 +53,13 @@ specification*. Some notable changes:
 
 7. Attribute-values are always escaped; document expressions are
    never.
+
+8. Default expression type can be set using ``tal:default-expression``.
+   This is an alternative to providing the expression type before each
+   expression.
    
 .. _TAL: http://wiki.zope.org/ZPT/TALSpecification14
+
 
 Development
 -----------
@@ -63,4 +68,3 @@ If you want to use the code directly from trunk, provide
 ``z3c.pt==dev`` as your dependency.
 
 http://svn.zope.org/z3c.pt/trunk#egg=z3c.pt-dev
-
