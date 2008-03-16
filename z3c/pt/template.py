@@ -4,7 +4,8 @@ import codegen
 
 class BaseTemplate(object):
     registry = {}
-
+    default_expression = 'python'
+    
     def __init__(self, body):
         self.body = body
         self.signature = hash(body)        
@@ -14,7 +15,8 @@ class BaseTemplate(object):
         return NotImplementedError("Must be implemented by subclass.")
 
     def cook(self, params):
-        source, _globals = self.translate(self.body, params)
+        source, _globals = self.translate(
+            self.body, params=params, default_expression=self.default_expression)
         suite = codegen.Suite(source)
 
         self.source = source

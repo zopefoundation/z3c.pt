@@ -11,15 +11,21 @@ We use a generic render-method for convenience.
   ...    exec source in _globals, _locals
   ...    return _locals['render'](**kwargs)
 
+We'll first register the Python expression translator.
+
+  >>> from z3c.pt.expressions import PythonTranslation
+  >>> from zope.component import provideUtility
+  >>> provideUtility(PythonTranslation(), name="python")
+
 TAL templates
 -------------
-
-  >>> from z3c.pt.translation import translate_xml
 
 For the functional testing of TAL templates we provide a complex
 template that covers most cases. It's been developed alongside
 development and is not meant to be easy on the eye.
-  
+
+  >>> from z3c.pt.translation import translate_xml
+
   >>> body = """\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      xmlns:tal="http://xml.zope.org/namespaces/tal">

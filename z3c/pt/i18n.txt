@@ -31,6 +31,12 @@ Let's provide German mock translations for all msgids:
 Translation of tag contents
 ---------------------------
 
+We'll first register the Python expression translator.
+
+  >>> from z3c.pt.expressions import PythonTranslation
+  >>> from zope.component import provideUtility
+  >>> provideUtility(PythonTranslation(), name="python")
+
 First, a simple example:
 
   >>> body = """\

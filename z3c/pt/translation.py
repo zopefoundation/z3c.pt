@@ -1,55 +1,41 @@
+from zope import component
+
 from StringIO import StringIO
 import lxml.etree
 import re
 
-import io
+import generation
 import utils
-import parsing
+import expressions
 import clauses
+import interfaces
 
-# set up namespace
-lookup = lxml.etree.ElementNamespaceClassLookup()
-parser = lxml.etree.XMLParser()
-parser.setElementClassLookup(lookup)
-
-xhtml = lxml.etree.Namespace('http://www.w3.org/1999/xhtml')
-tal = lxml.etree.Namespace('http://xml.zope.org/namespaces/tal')
-
-wrapper = """\
-def render(%starget_language=None):
-\tglobal utils
-
-\t_out = utils.initialize_stream()
-    
-\t(_attributes, repeat) = utils.initialize_tal()
-\t(_domain, _translate) = utils.initialize_i18n()
-\t(_escape, _marker) = utils.initialize_helpers()
-
-\t_target_language = target_language
-%s
-\treturn _out.getvalue().decode('utf-8')
-"""
 interpolation_regex = re.compile(r'([^\\]\$|^\$){(?P<expression>.*)}')
 
-def attribute(ns, factory, default=None):
+def attribute(ns, factory=None, default=None):
     def get(self):
         value = self.attrib.get(ns)
         if value is not None:
-            return factory(value)
+            if factory is None:
+                return value
+
+            f = factory(self._translator())
+            return f(value)
         elif default is not None:
             return default
+        
     def set(self, value):
         self.attrib[ns] = value
 
     return property(get, set)
 
-def interpolate(string):
+def interpolate(string, translator):
     m = interpolation_regex.search(string)
     if m is None:
         return None
 
     left = m.start()
-    exp = parsing.search(string[left+3:])
+    exp = translator.search(string[left+3:])
     right = left+4+len(exp)
 
     m = interpolation_regex.search(string[:right])
@@ -65,10 +51,10 @@ def interpolate(string):
 class Element(lxml.etree.ElementBase):
     def begin(self, stream):
         stream.scope.append(set())
-        stream.begin(self.clauses())
+        stream.begin(self._clauses())
         
     def end(self, stream):
-        stream.end(self.clauses())
+        stream.end(self._clauses())
         stream.scope.pop()
 
     def body(self, stream):
@@ -103,9 +89,10 @@ class Element(lxml.etree.ElementBase):
 
     def interpolate(self, stream):
         # interpolate text
+        translator = self._translator()
         if self.text is not None:
             while self.text:
-                m = interpolate(self.text)
+                m = interpolate(self.text, translator)
                 if m is None:
                     break
 
@@ -119,7 +106,7 @@ class Element(lxml.etree.ElementBase):
         # interpolate tail
         if self.tail is not None:
             while self.tail:
-                m = interpolate(self.tail)
+                m = interpolate(self.tail, translator)
                 if m is None:
                     break
 
@@ -143,7 +130,7 @@ class Element(lxml.etree.ElementBase):
 
             while value:
                 string = value[i:]
-                m = interpolate(string)
+                m = interpolate(string, translator)
                 if m is None:
                     break
 
@@ -157,7 +144,7 @@ class Element(lxml.etree.ElementBase):
                 format += '%s%s'
                 exp = m.group('expression')
 
-                if len(parsing.value(exp)) == 1:
+                if len(translator.value(exp)) == 1:
                     terms.extend(("'%s'" % text.replace("'", "\\'"), exp))
                 else:
                     var = stream.save()
@@ -188,7 +175,7 @@ class Element(lxml.etree.ElementBase):
                 else:
                     self.attrib[define] = '%s %s' % (name, expression)
                 
-    def clauses(self):
+    def _clauses(self):
         _ = []
 
         # i18n domain
@@ -272,7 +259,7 @@ class Element(lxml.etree.ElementBase):
                     
                     subclauses = []
                     subclauses.append(clauses.Define('_out', ['utils.initialize_stream()']))
-                    subclauses.append(clauses.Group(element.clauses()))
+                    subclauses.append(clauses.Group(element._clauses()))
                     subclauses.append(clauses.Assign(['_out.getvalue()'],
                                                      "%s['%s']" % (mapping, name)))
 
@@ -380,36 +367,48 @@ class Element(lxml.etree.ElementBase):
 
         return attributes
 
-    define = attribute(
-        "{http://xml.zope.org/namespaces/tal}define", parsing.definitions)
-    condition = attribute(
-        "{http://xml.zope.org/namespaces/tal}condition", parsing.value)
-    repeat = attribute(
-        "{http://xml.zope.org/namespaces/tal}repeat", parsing.definition)
-    attributes = attribute(
-        "{http://xml.zope.org/namespaces/tal}attributes", parsing.definitions)
-    content = attribute(
-        "{http://xml.zope.org/namespaces/tal}content", parsing.value)
-    replace = attribute(
-        "{http://xml.zope.org/namespaces/tal}replace", parsing.value)
-    omit = attribute(
-        "{http://xml.zope.org/namespaces/tal}omit-tag", parsing.value)
-    i18n_translate = attribute(
-        "{http://xml.zope.org/namespaces/i18n}translate", parsing.name)
-    i18n_attributes = attribute(
-        "{http://xml.zope.org/namespaces/i18n}attributes", parsing.mapping)
-    i18n_domain = attribute(
-        "{http://xml.zope.org/namespaces/i18n}domain", parsing.name)
-    i18n_name = attribute(
-        "{http://xml.zope.org/namespaces/i18n}name", parsing.name)
+    def _translator(self):
+        while self.default_expression is None:
+            self = self.getparent()
+            if self is None:
+                raise ValueError("Default expression not set.")
+            
+        return component.getUtility(
+            interfaces.IExpressionTranslation, name=self.default_expression)
 
+    define = attribute(
+        "{http://xml.zope.org/namespaces/tal}define", lambda p: p.definitions)
+    condition = attribute(
+        "{http://xml.zope.org/namespaces/tal}condition", lambda p: p.value)
+    repeat = attribute(
+        "{http://xml.zope.org/namespaces/tal}repeat", lambda p: p.definition)
+    attributes = attribute(
+        "{http://xml.zope.org/namespaces/tal}attributes", lambda p: p.definitions)
+    content = attribute(
+        "{http://xml.zope.org/namespaces/tal}content", lambda p: p.value)
+    replace = attribute(
+        "{http://xml.zope.org/namespaces/tal}replace", lambda p: p.value)
+    omit = attribute(
+        "{http://xml.zope.org/namespaces/tal}omit-tag", lambda p: p.value)
+    i18n_translate = attribute(
+        "{http://xml.zope.org/namespaces/i18n}translate")
+    i18n_attributes = attribute(
+        "{http://xml.zope.org/namespaces/i18n}attributes", lambda p: p.mapping)
+    i18n_domain = attribute(
+        "{http://xml.zope.org/namespaces/i18n}domain")
+    i18n_name = attribute(
+        "{http://xml.zope.org/namespaces/i18n}name")
+    default_expression = attribute(
+        "{http://xml.zope.org/namespaces/tal}default-expression")
+    
 class TALElement(Element):
-    define = attribute("define", parsing.definitions)
-    replace = attribute("replace", parsing.value)
-    repeat = attribute("repeat", parsing.definition)
-    attributes = attribute("attributes", parsing.value)
-    content = attribute("content", parsing.value)
-    omit = attribute("omit-tag", parsing.value, u"")
+    define = attribute("define", lambda p: p.definitions)
+    replace = attribute("replace", lambda p: p.value)
+    repeat = attribute("repeat", lambda p: p.definition)
+    attributes = attribute("attributes", lambda p: p.value)
+    content = attribute("content", lambda p: p.value)
+    omit = attribute("omit-tag", lambda p: p.value, u"")
+    default_expression = attribute("default-expression", lambda p: p.name)
     
     def _static_attributes(self):
         attributes = {}
@@ -428,38 +427,50 @@ class TALElement(Element):
 
         return attributes
 
-xhtml[None] = Element
-tal[None] = TALElement
+# set up namespaces for XML parsing
+lookup = lxml.etree.ElementNamespaceClassLookup()
+parser = lxml.etree.XMLParser()
+parser.setElementClassLookup(lookup)
 
-def translate_xml(body, params=[]):
+lxml.etree.Namespace('http://www.w3.org/1999/xhtml')[None] = Element
+lxml.etree.Namespace('http://xml.zope.org/namespaces/tal')[None] = TALElement
+
+def translate_xml(body, *args, **kwargs):
     tree = lxml.etree.parse(StringIO(body), parser)
     root = tree.getroot()
-    return translate_etree(root, params=params)
+    return translate_etree(root, *args, **kwargs)
 
-def translate_etree(root, params=[]):
+def translate_etree(root, params=[], default_expression='python'):
     if None not in root.nsmap:
         raise ValueError, "Must set default namespace."
-        
-    stream = io.CodeIO(indentation=1, indentation_string="\t")
 
+    # set up code generation stream
+    stream = generation.CodeIO(indentation=1, indentation_string="\t")
     stream.scope.append(set(params + ['_out']))
 
+    # set default expression name
+    key = '{http://xml.zope.org/namespaces/tal}default-expression'
+    if key not in root.attrib:
+        root.attrib[key] = default_expression
+
+    # visit root
     root.interpolate(stream)
     root.visit(stream)
 
-    code = stream.getvalue()
+    # prepare template arguments
     args = ', '.join(params)
     if args: args += ', '
-    
-    return wrapper % (args, code), {'utils': utils}
 
-def translate_text(body, params=[]):
+    code = stream.getvalue()
+    return generation.wrapper % (args, code), {'utils': utils}
+
+def translate_text(body, *args, **kwargs):
     xml = parser.makeelement(
         '{http://www.w3.org/1999/xhtml}text',
         nsmap={None: 'http://www.w3.org/1999/xhtml'})
     xml.text = body
     xml.attrib['{http://xml.zope.org/namespaces/tal}omit-tag'] = ''
-    return translate_etree(xml, params=params)    
+    return translate_etree(xml, *args, **kwargs)
     
 def _translate(expressions, mapping=None, default=None):
     return [("_translate(%s, domain=_domain, mapping=%s, " + \

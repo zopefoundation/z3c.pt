@@ -1,5 +1,20 @@
 from StringIO import StringIO
 
+wrapper = """\
+def render(%starget_language=None):
+\tglobal utils
+
+\t_out = utils.initialize_stream()
+    
+\t(_attributes, repeat) = utils.initialize_tal()
+\t(_domain, _translate) = utils.initialize_i18n()
+\t(_escape, _marker) = utils.initialize_helpers()
+
+\t_target_language = target_language
+%s
+\treturn _out.getvalue().decode('utf-8')
+"""
+
 class CodeIO(StringIO):
     """
     A high-level I/O class to write Python code to a stream.
@@ -16,7 +31,7 @@ class CodeIO(StringIO):
 
     t_prefix = '_tmp'
     v_prefix = '_var'
-    
+
     def __init__(self, indentation=0, indentation_string="\t"):
         StringIO.__init__(self)
         self.indentation = indentation
