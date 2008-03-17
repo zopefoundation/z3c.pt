@@ -11,48 +11,136 @@ A generic render-method is used for convenience.
   ...    exec source in _globals, _locals
   ...    return _locals['render'](**kwargs)
 
-TAL templates
--------------
+TAL
+---
 
-For the functional testing of TAL templates we provide a complex
-template that covers most cases. It's been developed alongside
-development and is not meant to be easy on the eye.
+We use the XML translator.
 
   >>> from z3c.pt.translation import translate_xml
 
-  >>> body = """\
+Basic HTML:
+
+  >>> print render("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal"
-  ...      tal:default-expression="python">
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   <img alt="'Hello World!'" />
+  ... </div>""", translate_xml)
+    <div>
+      <img alt="'Hello World!'" />
+    </div>
+    
+Attributes and contents:
+  
+  >>> print render("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
   ...   <span id="test"
   ...         class="dummy"
   ...         tal:define="a 'abc'"
-  ...         tal:attributes="class 'def' + a; style 'position: absolute'"
+  ...         tal:attributes="class 'def' + a; style 'hij'"
   ...         tal:content="a + 'ghi'" />
-  ...   <ul>
-  ...     <li tal:repeat="i range(5)">
-  ...       <span tal:replace="'Item ' + str(i) + ')'" />
-  ...     </li>
-  ...   </ul>
-  ...   <!-- a comment -->
-  ...   <!-- a multi-
-  ...        line comment -->
-  ...   <!-- a comment with an ${'expression'} -->
-  ...   <tal:example replace="'Hello World!'" />
-  ...   <tal:div content="'Hello World!'" />
-  ...   <img alt="'Hello World!'" />
-  ...   <tal:multiple repeat="i range(5)" replace="i" />
-  ...   <p tal:omit-tag="">No paragraph here.</p>
-  ...   <p tal:omit-tag="True">No paragraph here either.</p>
-  ...   <p tal:omit-tag="False">A paragraph here.</p>
   ...   <span tal:replace="'Hello World!'">Hello Universe!</span>
   ...   <span tal:content="None" />
   ...   <span tal:attributes="class lambda: 'Hello'"
   ...         tal:content="lambda: 'World'" />
+  ... </div>""", translate_xml)
+    <div>
+      <span id="test" style="hij" class="defabc">abcghi</span>
+      Hello World!
+      <span></span>
+      <span class="Hello">World</span>
+    </div>
+
+Repeats:
+
+  >>> print render("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   <ul>
+  ...     <li tal:repeat="i range(5)"><span tal:replace="'Item ' + str(i) + ')'" /></li>
+  ...   </ul>
+  ... </div>""", translate_xml)
+    <div>
+      <ul>
+        <li>Item 0)</li>
+        <li>Item 1)</li>
+        <li>Item 2)</li>
+        <li>Item 3)</li>
+        <li>Item 4)</li>
+      </ul>
+    </div>
+
+Comments:
+
+  >>> print render("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   <!-- a comment -->
+  ...   <!-- a multi-
+  ...        line comment -->
+  ...   <!-- a comment with an ${'expression'} -->
+  ... </div>""", translate_xml)
+    <div>
+      <!-- a comment -->
+      <!-- a multi-
+           line comment -->
+      <!-- a comment with an expression -->
+    </div>
+
+Namespacing:
+
+  >>> print render("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   <tal:example replace="'Hello World!'" />
+  ...   <tal:div content="'Hello World!'" />
+  ...   <tal:multiple repeat="i range(3)" replace="i" />
+  ... </div>""", translate_xml)
+    <div>
+      Hello World!
+      Hello World!
+      0
+      1
+      2
+    </div>
+
+Omitting tags:
+
+  >>> print render("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   <p tal:omit-tag="">No paragraph here.</p>
+  ...   <p tal:omit-tag="True">No paragraph here either.</p>
+  ...   <p tal:omit-tag="False">A paragraph here.</p>
+  ... </div>""", translate_xml)
+    <div>
+      No paragraph here.
+      No paragraph here either.
+      <p>A paragraph here.</p>
+    </div>
+
+Unicode:
+
+  >>> print render("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
   ...   <img tal:attributes="title '%sHello%s' % (chr(60), chr(62))" />
   ...   <span tal:replace="structure: '%sbr /%s' % (chr(60), chr(62))" />
   ...   <span tal:replace="'%sbr /%s' % (chr(60), chr(62))" />
   ...   <span tal:content="unicode('La Pe\xc3\xb1a', 'utf-8')" />
+  ... </div>""", translate_xml)
+    <div>
+      <img title="&lt;Hello&gt;" />
+      <br />
+      &lt;br /&gt;
+      <span>La Peña</span>
+    </div>
+
+Interpolation:
+
+  >>> print render("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
   ...   <span>inter${'pol' + 'ati'}on</span>is ${int('test') | 'convenient'}!
   ...   <span tal:define="hello 'Hello'" class="${hello} World!" />
   ...   <span class="my-${'class'} item${'Last'}" />
@@ -62,6 +150,23 @@ development and is not meant to be easy on the eye.
   ...   ${unicode('La Pe\xc3\xb1a', 'utf-8')}
   ...   <img alt="${unicode('La Pe\xc3\xb1a', 'utf-8')}" />
   ...   <img alt="Hello ${unicode('La Pe\xc3\xb1a', 'utf-8').encode('utf-8')}!" />
+  ... </div>""", translate_xml)
+    <div>
+      <span>interpolation</span>is convenient!
+      <span class="Hello World!" />
+      <span class="my-class itemLast" />
+      <span style="position: absolute" class="my-class itemLast" />
+      <img alt="La Peña, oh La Peña" />
+      La Peña
+      <img alt="La Peña" />
+      <img alt="Hello La Peña!" />
+    </div>
+
+Changing default expression:
+
+  >>> print render("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
   ...   <tal:path-expression-testing 
   ...         define="request object();
   ...                 mydict {'a': 1, 'c': {'a': 2}}">
@@ -75,61 +180,8 @@ development and is not meant to be easy on the eye.
   ...       <span tal:replace="path: mydict/b|True" />
   ...       <span tal:replace="int('a')|path: mydict/a" />
   ...   </tal:path-expression-testing>
-  ...   <span tal:replace="nocall: dir" />
-  ...   <span tal:condition="not: False">Hello World</span>
-  ... </div>
-  ... """
-
-  >>> print render(body, translate_xml)
+  ... </div>""", translate_xml)
   <div>
-    <span id="test" style="position: absolute" class="defabc">abcghi</span>
-    <ul>
-      <li>
-	Item 0)
-      </li>
-    <li>
-	Item 1)
-      </li>
-    <li>
-	Item 2)
-      </li>
-    <li>
-	Item 3)
-      </li>
-    <li>
-	Item 4)
-      </li>
-    </ul>
-    <!-- a comment -->
-    <!-- a multi-
-         line comment -->
-    <!-- a comment with an expression -->
-    Hello World!
-    Hello World!
-    <img alt="'Hello World!'" />
-    0
-    1
-    2
-    3
-    4
-    No paragraph here.
-    No paragraph here either.
-    <p>A paragraph here.</p>
-    Hello World!
-    <span></span>
-    <span class="Hello">World</span>
-    <img title="&lt;Hello&gt;" />
-    <br />
-    &lt;br /&gt;
-    <span>La Peña</span>
-    <span>interpolation</span>is convenient!
-    <span class="Hello World!" />
-    <span class="my-class itemLast" />
-    <span style="position: absolute" class="my-class itemLast" />
-    <img alt="La Peña, oh La Peña" />
-    La Peña
-    <img alt="La Peña" />
-    <img alt="Hello La Peña!" />
   <BLANKLINE>
         <div>
            1
@@ -141,9 +193,22 @@ development and is not meant to be easy on the eye.
         True
         1
   <BLANKLINE>
-    &lt;built-in function dir&gt;
-    <span>Hello World</span>
   </div>
+
+Pragmas:
+
+  >>> print render("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   <span tal:replace="nocall: dir" />
+  ...   <span tal:replace="nocall: structure: dir" />
+  ...   <span tal:condition="not: False">Hello World</span>
+  ... </div>""", translate_xml)
+    <div>
+      &lt;built-in function dir&gt;
+      <built-in function dir>
+      <span>Hello World</span>
+    </div>
 
 Text templates
 --------------
