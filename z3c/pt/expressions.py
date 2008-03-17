@@ -12,7 +12,7 @@ from utils import value
 class ExpressionTranslation(object):
     zope.interface.implements(IExpressionTranslation)
 
-    pragma = re.compile(r'^(?P<pragma>[a-z]+):')
+    pragma = re.compile(r'^(?P<pragma>[a-z]+):\s*')
     
     def name(self, string):
         return string
