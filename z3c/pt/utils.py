@@ -1,11 +1,5 @@
-import zope.i18n
-
-from cStringIO import StringIO
-
 import sys
-import cgi
 import logging
-import expressions
 
 # check if we're able to coerce unicode to str
 try:
@@ -29,24 +23,6 @@ def handler(key=None):
         return g
     return decorate
 
-def initialize_i18n():
-    return (None, zope.i18n.translate)
-
-def initialize_tal():
-    return ({}, repeatdict())
-
-def initialize_helpers():
-    return (cgi.escape, object())
-
-def initialize_stream():
-    return StringIO()
-
-def initialize_traversal():
-    return expressions.PathTranslation.traverse
-
-def getLanguage(request):
-    return ''
-
 s_counter = 0
 
 class scope(list):
@@ -58,6 +34,12 @@ class scope(list):
     def __hash__(self):
         return self.hash
 
+class value(tuple):
+    def __new__(cls, options, *args):
+        inst = tuple.__new__(cls, *args)
+        inst.options = options
+        return inst
+    
 class repeatitem(object):
     def __init__(self, iterator, length):
         self.length = length

@@ -5,6 +5,10 @@
   <utility
      name="python"
      factory=".expressions.PythonTranslation" />
-  
+
+  <utility
+     name="path"
+     factory=".expressions.PathTranslation" />
+
 </configure>
  

@@ -210,6 +210,7 @@ class Condition(object):
     """
       >>> from z3c.pt.generation import CodeIO
       >>> from z3c.pt.testing import value
+      >>> from cgi import escape as _escape
       
     Unlimited scope:
     
@@ -260,15 +261,23 @@ class Condition(object):
           
     """
       
-    def __init__(self, expression, clauses=None, finalize=True):
-        self.assign = Assign(expression)
+    def __init__(self, value, clauses=None, finalize=True):
+        self.assign = Assign(value)
+        try:
+            self.inverse = value.options.get('not')
+        except:
+            import pdb; pdb.set_trace()
+            
         self.clauses = clauses
         self.finalize = finalize
         
     def begin(self, stream):
         temp = stream.save()
         self.assign.begin(stream, temp)
-        stream.write("if %s:" % temp)
+        if self.inverse:
+            stream.write("if not(%s):" % temp)
+        else:
+            stream.write("if %s:" % temp)
         stream.indent()
         if self.clauses:
             for clause in self.clauses:
@@ -381,16 +390,17 @@ class Tag(object):
 
         temp = stream.save()
         
-        for attribute, expression in dynamic:
-            assign = Assign(expression)
+        for attribute, value in dynamic:
+            assign = Assign(value)
             assign.begin(stream, temp)
             
             # only include attribute if value is non-trivial
             stream.write("if %s is not None:" % temp)
             stream.indent()
 
-            # if callable, evaluate method
-            stream.write("if callable(%s): %s = %s()" % (temp, temp, temp))
+            if not value.options.get('nocall'):
+                # if callable, evaluate method
+                stream.write("if callable(%s): %s = %s()" % (temp, temp, temp))
 
             if unicode_required_flag:
                 stream.write("if isinstance(%s, unicode):" % temp)
@@ -485,7 +495,8 @@ class Write(object):
       >>> from z3c.pt.generation import CodeIO; stream = CodeIO()
       >>> from z3c.pt.testing import value
       >>> from StringIO import StringIO
-
+      >>> from cgi import escape as _escape
+      
       >>> _out = StringIO()
       >>> write = Write(value("'New York'"))
       >>> write.begin(stream)
@@ -502,22 +513,25 @@ class Write(object):
       'New York, New York!'
     """
     
-    def __init__(self, expressions):
-        self.assign = Assign(expressions)
-        self.expressions = expressions
-        self.count = len(expressions)
+    def __init__(self, value):
+        self.assign = Assign(value)
+        self.value = value
+        self.count = len(value)
         
     def begin(self, stream):
         temp = stream.save()
 
         if self.count == 1:
-            expr = self.expressions[0]
+            expr = self.value[0]
         else:
             self.assign.begin(stream, temp)
             expr = temp
 
         stream.write("_urf = %s" % expr)
-        stream.write("if callable(_urf): _urf = _urf()")
+
+        if not self.value.options.get('nocall'):
+            stream.write("if callable(_urf): _urf = _urf()")
+            
         stream.write("if _urf is None: _urf = ''")
 
         if unicode_required_flag:
@@ -527,10 +541,16 @@ class Write(object):
             stream.outdent()
             stream.write("else:")
             stream.indent()
-            stream.write("_out.write(str(_urf))")
+            if self.value.options.get('structure'):
+                stream.write("_out.write(str(_urf))")
+            else:
+                stream.write("_out.write(_escape(str(_urf)))")
             stream.outdent()
         else:
-            stream.write("_out.write(str(_urf))")
+            if self.value.options.get('structure'):
+                stream.write("_out.write(str(_urf))")
+            else:
+                stream.write("_out.write(_escape(str(_urf)))")
             
     def end(self, stream):
         if self.count != 1:

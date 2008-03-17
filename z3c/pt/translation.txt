@@ -63,6 +63,7 @@ development and is not meant to be easy on the eye.
   ...   <span tal:attributes="class lambda: 'Hello'"
   ...         tal:content="lambda: 'World'" />
   ...   <img tal:attributes="title '%sHello%s' % (chr(60), chr(62))" />
+  ...   <span tal:replace="structure: '%sbr /%s' % (chr(60), chr(62))" />
   ...   <span tal:replace="'%sbr /%s' % (chr(60), chr(62))" />
   ...   <span tal:content="unicode('La Pe\xc3\xb1a', 'utf-8')" />
   ...   <span>inter${'pol' + 'ati'}on</span>is ${int('test') | 'convenient'}!
@@ -81,8 +82,14 @@ development and is not meant to be easy on the eye.
   ...          <span tal:replace="mydict/a" />
   ...          <span tal:replace="mydict/b|mydict/a" />
   ...          <span tal:replace="mydict/c/a" />
+  ...          <span tal:replace="python: 5+5" />
   ...       </div>
+  ...       <span tal:replace="path: mydict/a" />
+  ...       <span tal:replace="path: mydict/b|True" />
+  ...       <span tal:replace="int('a')|path: mydict/a" />
   ...   </tal:path-expression-testing>
+  ...   <span tal:replace="nocall: dir" />
+  ...   <span tal:condition="not: False">Hello World</span>
   ... </div>
   ... """
 
@@ -126,6 +133,7 @@ development and is not meant to be easy on the eye.
     <span class="Hello">World</span>
     <img title="&lt;Hello&gt;" />
     <br />
+    &lt;br /&gt;
     <span>La Peña</span>
     <span>interpolation</span>is convenient!
     <span class="Hello World!" />
@@ -140,8 +148,14 @@ development and is not meant to be easy on the eye.
            1
            1
            2
+           10
         </div>
+        1
+        True
+        1
   <BLANKLINE>
+    &lt;built-in function dir&gt;
+    <span>Hello World</span>
   </div>
 
 Text templates

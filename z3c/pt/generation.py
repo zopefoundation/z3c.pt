@@ -1,22 +1,44 @@
-from StringIO import StringIO
+import zope.i18n
+
+import cgi
+import StringIO
+import cStringIO
+
+import expressions
+import utils
 
 wrapper = """\
 def render(%starget_language=None):
-\tglobal utils
+\tglobal generation
 
-\t_out = utils.initialize_stream()
+\t_out = generation.initialize_stream()
     
-\t(_attributes, repeat) = utils.initialize_tal()
-\t(_domain, _translate) = utils.initialize_i18n()
-\t(_escape, _marker) = utils.initialize_helpers()
-\t_path = utils.initialize_traversal()
+\t(_attributes, repeat) = generation.initialize_tal()
+\t(_domain, _translate) = generation.initialize_i18n()
+\t(_escape, _marker) = generation.initialize_helpers()
+\t_path = generation.initialize_traversal()
 
 \t_target_language = target_language
 %s
 \treturn _out.getvalue().decode('utf-8')
 """
 
-class CodeIO(StringIO):
+def initialize_i18n():
+    return (None, zope.i18n.translate)
+
+def initialize_tal():
+    return ({}, utils.repeatdict())
+
+def initialize_helpers():
+    return (cgi.escape, object())
+
+def initialize_stream():
+    return cStringIO.StringIO()
+
+def initialize_traversal():
+    return expressions.PathTranslation.traverse
+
+class CodeIO(StringIO.StringIO):
     """
     A high-level I/O class to write Python code to a stream.
     Indentation is managed using ``indent`` and ``outdent``.
@@ -34,7 +56,7 @@ class CodeIO(StringIO):
     v_prefix = '_var'
 
     def __init__(self, indentation=0, indentation_string="\t"):
-        StringIO.__init__(self)
+        StringIO.StringIO.__init__(self)
         self.indentation = indentation
         self.indentation_string = indentation_string
         self.queue = u''
@@ -74,12 +96,12 @@ class CodeIO(StringIO):
         
     def write(self, string):
         self.cook()
-        StringIO.write(
+        StringIO.StringIO.write(
             self, self.indentation_string * self.indentation + string + '\n')
 
     def getvalue(self):
         self.cook()
-        return StringIO.getvalue(self)
+        return StringIO.StringIO.getvalue(self)
 
     def begin(self, clauses):
         if isinstance(clauses, (list, tuple)):

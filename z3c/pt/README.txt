@@ -95,7 +95,7 @@ File system:
   
   >>> print view.view_page_template_file(test=u'test')
   <div>
-    <span><ViewPageTemplateView object at ...</span>
+    <span>&lt;ViewPageTemplateView object at ...&gt;</span>
     <span>context</span>
     <span>request</span>
     <span>test</span>
@@ -105,7 +105,7 @@ Inline:
   
   >>> print view.view_page_template(test=u'test')
   <div>
-    <span><ViewPageTemplateView object at ...</span>
+    <span>&lt;ViewPageTemplateView object at ...&gt;</span>
     <span>context</span>
     <span>request</span>
     <span>test</span>

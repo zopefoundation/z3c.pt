@@ -1,14 +1,18 @@
 import zope.interface
+import zope.component
 import zope.traversing.adapters
 
 import parser
 import re
 
 from interfaces import IExpressionTranslation
+from utils import value
 
 class ExpressionTranslation(object):
     zope.interface.implements(IExpressionTranslation)
 
+    pragma = re.compile(r'^(?P<pragma>[a-z]+):')
+    
     def name(self, string):
         return string
     
@@ -246,8 +250,34 @@ class ExpressionTranslation(object):
 
         expressions = []
 
+        # reset pragmas
+        translator = self
+
+        options = {'nocall': False,
+                   'structure': False,
+                   'not': False}
+
         i = j = 0
         while i < len(string):
+            match = self.pragma.match(string[i:])
+            if match is not None:
+                pragma = match.group('pragma').lower()
+
+                utility = zope.component.queryUtility(
+                    IExpressionTranslation, name=pragma)
+                
+                if utility is not None:
+                    translator = utility
+                    pragma = None
+
+                if pragma in options:
+                    options[pragma] = True
+                    pragma = None
+                    
+                if pragma is None:
+                    i += match.end()
+                    continue
+            
             j = string.find('|', j + 1)
             if j == -1:
                 j = len(string)
@@ -255,17 +285,19 @@ class ExpressionTranslation(object):
             expr = string[i:j].lstrip()
 
             try:
-                self.validate(expr)
+                translator.validate(expr)
             except Exception, e:
                 if j < len(string):
                     continue
 
                 raise e
 
-            expressions.append(self.translate(expr))
+            expressions.append(translator.translate(expr))
+            translator = self
+            
             i = j + 1
 
-        return tuple(expressions)
+        return value(options, expressions)
 
 class PythonTranslation(ExpressionTranslation):
     def validate(self, string):

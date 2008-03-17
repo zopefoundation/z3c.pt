@@ -1,6 +1,17 @@
 Changelog
 ---------
 
+Version 0.8dev
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Result of 'replace' and 'content' is now escaped by default.
+
+- Added support for 'nocall', 'not' and 'structure'-pragmas.
+
+- Added support for path-expressions.
+
+- Abstracted expression translation engine.
+
 Version 0.7 - March 10, 2008
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

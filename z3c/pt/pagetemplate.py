@@ -15,8 +15,8 @@ class PageTemplateFile(template.BaseTemplateFile):
         return translation.translate_xml
 
 class ViewPageTemplate(property):
-    def __init__(self, body):
-        self.template = PageTemplate(body)
+    def __init__(self, body, **kwargs):
+        self.template = PageTemplate(body, **kwargs)
         property.__init__(self, self.render)
 
     def render(self, view):
@@ -28,6 +28,6 @@ class ViewPageTemplate(property):
         return template        
     
 class ViewPageTemplateFile(ViewPageTemplate):
-    def __init__(self, filename):
-        self.template = PageTemplateFile(filename)
+    def __init__(self, filename, **kwargs):
+        self.template = PageTemplateFile(filename, **kwargs)
         property.__init__(self, self.render)

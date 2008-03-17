@@ -5,10 +5,10 @@ import lxml.etree
 import re
 
 import generation
-import utils
 import expressions
 import clauses
 import interfaces
+import utils
 
 interpolation_regex = re.compile(r'([^\\]\$|^\$){(?P<expression>.*)}')
 
@@ -180,7 +180,8 @@ class Element(lxml.etree.ElementBase):
 
         # i18n domain
         if self.i18n_domain is not None:
-            _.append(clauses.Define("_domain", [repr(self.i18n_domain)]))
+            _.append(clauses.Define(
+                "_domain", utils.value({}, (repr(self.i18n_domain),))))
 
         # defines
         if self.define is not None:
@@ -258,10 +259,11 @@ class Element(lxml.etree.ElementBase):
                     name = element.i18n_name
                     
                     subclauses = []
-                    subclauses.append(clauses.Define('_out', ['utils.initialize_stream()']))
+                    subclauses.append(clauses.Define(
+                        '_out', utils.value({}, ('generation.initialize_stream()',))))
                     subclauses.append(clauses.Group(element._clauses()))
-                    subclauses.append(clauses.Assign(['_out.getvalue()'],
-                                                     "%s['%s']" % (mapping, name)))
+                    subclauses.append(clauses.Assign(
+                        utils.value({}, ('_out.getvalue()',)), "%s['%s']" % (mapping, name)))
 
                     _.append(clauses.Group(subclauses))
 
@@ -271,9 +273,9 @@ class Element(lxml.etree.ElementBase):
 
                 # write translation to output if successful, otherwise
                 # fallback to default rendition; 
-
-                _.append(clauses.Condition(['_result is not _marker'],
-                                           [clauses.Write(['_result'])]))
+                result = utils.value({}, ('_result',))
+                condition = utils.value({}, ('_result is not _marker',))
+                _.append(clauses.Condition(condition, [clauses.Write(result)]))
 
                 subclauses = []
                 if self.text:
@@ -281,8 +283,9 @@ class Element(lxml.etree.ElementBase):
                 for element in self:
                     name = element.i18n_name
                     if name:
-                        subclauses.append(clauses.Write(["%s['%s']" % (mapping, name)]))
-                        #subclauses.append(clauses.Out(element.tail))
+                        value = utils.value(
+                            {'structure': True}, ("%s['%s']" % (mapping, name),))
+                        subclauses.append(clauses.Write(value))
                     else:
                         subclauses.append(clauses.Out(lxml.etree.tostring(element)))
 
@@ -462,7 +465,7 @@ def translate_etree(root, params=[], default_expression='python'):
     if args: args += ', '
 
     code = stream.getvalue()
-    return generation.wrapper % (args, code), {'utils': utils}
+    return generation.wrapper % (args, code), {'generation': generation}
 
 def translate_text(body, *args, **kwargs):
     xml = parser.makeelement(
@@ -473,9 +476,11 @@ def translate_text(body, *args, **kwargs):
     return translate_etree(xml, *args, **kwargs)
     
 def _translate(expressions, mapping=None, default=None):
-    return [("_translate(%s, domain=_domain, mapping=%s, " + \
-             "target_language=_target_language, default=%s)") %
-            (exp, mapping, default) for exp in expressions]
+    format = "_translate(%s, domain=_domain, mapping=%s, "\
+             "target_language=_target_language, default=%s)"
+    
+    return utils.value(
+        {}, tuple(format % (exp, mapping, default) for exp in expressions))
 
 def _not(expressions):
-    return ["not (%s)" % exp for exp in expressions]
+    return utils.value({}, tuple("not (%s)" % exp for exp in expressions))

@@ -6,10 +6,13 @@ class BaseTemplate(object):
     registry = {}
     default_expression = 'python'
     
-    def __init__(self, body):
+    def __init__(self, body, default_expression=None):
         self.body = body
         self.signature = hash(body)        
 
+        if default_expression:
+            self.default_expression = default_expression
+            
     @property
     def translate(self):
         return NotImplementedError("Must be implemented by subclass.")
@@ -18,9 +21,9 @@ class BaseTemplate(object):
         source, _globals = self.translate(
             self.body, params=params, default_expression=self.default_expression)
         suite = codegen.Suite(source)
-
-        self.source = source
         
+        self.source = source
+
         _globals.update(suite._globals)
         _locals = {}
 
