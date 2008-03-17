@@ -28,13 +28,6 @@ Templates structured as plain text are supported:
 ``ViewTextTemplate``, ``ViewTextTemplateFile``
        See above.
 
-Setup
------
-
-  >>> from zope.configuration.xmlconfig import XMLConfig
-  >>> import z3c.pt
-  >>> XMLConfig('configure.zcml', z3c.pt)()
-       
 Page template classes
 ---------------------
 

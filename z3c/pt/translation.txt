@@ -11,19 +11,6 @@ A generic render-method is used for convenience.
   ...    exec source in _globals, _locals
   ...    return _locals['render'](**kwargs)
 
-Expressions
------------
-  
-First we'll register the expression translation utilities:
-
-  >>> from zope.component import provideUtility
-
-  >>> from z3c.pt.expressions import PythonTranslation
-  >>> provideUtility(PythonTranslation(), name="python")
-
-  >>> from z3c.pt.expressions import PathTranslation
-  >>> provideUtility(PathTranslation(), name="path")
-
 TAL templates
 -------------
 
