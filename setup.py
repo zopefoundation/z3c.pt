@@ -28,6 +28,7 @@ setup(name='z3c.pt',
           'zope.component',
           'zope.i18n',
           'zope.traversing',
+          'zope.security',
           # -*- Extra requirements: -*-
       ],
       entry_points="""

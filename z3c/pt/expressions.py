@@ -1,6 +1,7 @@
 import zope.interface
 import zope.component
 import zope.traversing.adapters
+import zope.security.proxy
 
 import parser
 import re
@@ -325,7 +326,9 @@ class PathTranslation(ExpressionTranslation):
             else:
                 base = zope.traversing.adapters.traversePathElement(
                     base, name, path_items[i+1:], request=request)
-                
+
+            base = zope.security.proxy.ProxyFactory(base)
+            
         return base
 
     def validate(self, string):
