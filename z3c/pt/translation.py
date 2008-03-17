@@ -208,7 +208,7 @@ class Element(lxml.etree.ElementBase):
         
         # tag
         if self.replace is None:
-            selfclosing = self.text is None and not dynamic
+            selfclosing = self.text is None and not dynamic and len(self) == 0
             tag = clauses.Tag(self.tag, self._attributes(), selfclosing=selfclosing)
 
             if self.omit:
