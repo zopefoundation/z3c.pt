@@ -14,8 +14,6 @@ In a nutshell:
 * Support for expression interpolation using the ${<expression>}-format
 * Non-XML friendly
 
-See the README.txt inside the package for instructions on usage.
-
 Note: The METAL macro language is not supported.
 
 
