@@ -4,13 +4,20 @@ Changelog
 Version 0.8dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Added support for 'nocall' and 'not' (for path-expressions).
+
+- Added support for path- and string-expressions.
+
+- Abstracted expression translation engine. Expression implementations
+  are now pluggable. Expression name pragmas are supported throughout.
+
+- Formalized expression types
+
+- Added support for 'structure'-keyword for replace and content.
+
 - Result of 'replace' and 'content' is now escaped by default.
 
-- Added support for 'nocall', 'not' and 'structure'-pragmas.
-
-- Added support for path-expressions.
-
-- Abstracted expression translation engine.
+- Benchmark is now built as a custom testrunner
 
 Version 0.7 - March 10, 2008
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

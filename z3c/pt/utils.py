@@ -1,4 +1,5 @@
 import sys
+import re
 import logging
 
 # check if we're able to coerce unicode to str
@@ -34,12 +35,6 @@ class scope(list):
     def __hash__(self):
         return self.hash
 
-class value(tuple):
-    def __new__(cls, options, *args):
-        inst = tuple.__new__(cls, *args)
-        inst.options = options
-        return inst
-    
 class repeatitem(object):
     def __init__(self, iterator, length):
         self.length = length

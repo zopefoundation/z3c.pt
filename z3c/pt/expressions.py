@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import zope.interface
 import zope.component
 import zope.traversing.adapters
@@ -7,27 +9,26 @@ import parser
 import re
 
 from interfaces import IExpressionTranslation
-from utils import value
+
+import types
 
 class ExpressionTranslation(object):
     zope.interface.implements(IExpressionTranslation)
 
-    pragma = re.compile(r'^(?P<pragma>[a-z]+):\s*')
-    
+    re_pragma = re.compile(r'^\s*(?P<pragma>[a-z]+):\s*')
+    re_interpolation = re.compile(r'(?P<prefix>[^\\]\$|^\$){((?P<expression>.*)})?')
+
     def name(self, string):
         return string
     
-    def value(self, string):
-        return NotImplementedError("Must be implemented by subclass.")
-
     def search(self, string):
         """
-        We need to implement a ``value``-method. Let's define that an
+        We need to implement a ``validate``-method. Let's define that an
         expression is valid if it contains an odd number of
         characters.
         
           >>> class MockExpressionTranslation(ExpressionTranslation):
-          ...     def value(self, string):
+          ...     def validate(self, string):
           ...         if len(string) % 2 == 0: raise SyntaxError()
 
           >>> search = MockExpressionTranslation().search
@@ -49,7 +50,7 @@ class ExpressionTranslation(object):
             expression = string[left:right]
 
             try:
-                e = self.value(expression)
+                e = self.validate(expression)
                 current = expression
             except SyntaxError, e:
                 if right == len(string):
@@ -62,19 +63,19 @@ class ExpressionTranslation(object):
 
         return current
 
-    def variable(self, string):
+    def declaration(self, string):
         """
-          >>> variable = ExpressionTranslation().variable
+          >>> declaration = ExpressionTranslation().declaration
 
         Single variable:
 
-          >>> variable("variable")
-          ('variable',)
+          >>> declaration("variable")
+          declaration('variable',)
 
         Multiple variables:
 
-          >>> variable("variable1, variable2")
-          ('variable1', 'variable2')
+          >>> declaration("variable1, variable2")
+          declaration('variable1', 'variable2')
         """
 
         variables = []
@@ -90,20 +91,20 @@ class ExpressionTranslation(object):
 
             variables.append(var)
 
-        return tuple(variables)
+        return types.declaration(variables)
 
     def mapping(self, string):
         """
           >>> mapping = ExpressionTranslation().mapping
           
           >>> mapping("abc def")
-          [('abc', 'def')]
+          mapping(('abc', 'def'),)
 
           >>> mapping("abc")
-          [('abc', None)]
+          mapping(('abc', None),)
 
           >>> mapping("abc; def ghi")
-          [('abc', None), ('def', 'ghi')]
+          mapping(('abc', None), ('def', 'ghi'))
 
         """
 
@@ -122,48 +123,49 @@ class ExpressionTranslation(object):
             else:
                 raise ValueError, "Invalid mapping (%s)." % string
 
-        return mappings
+        return types.mapping(mappings)
 
     def definitions(self, string):
         """
-        We need to subclass the parser and implement a simple
-        ``value``-method.
-
-          >>> class MockExpressionTranslation(ExpressionTranslation):
-          ...     def value(self, string):
-          ...         return (string.strip(),)
-
-          >>> definitions = MockExpressionTranslation().definitions
-
+        
+        >>> class MockExpressionTranslation(ExpressionTranslation):
+        ...     def expression(self, string):
+        ...         return types.value(string.strip())
+        
+        >>> definitions = MockExpressionTranslation().definitions
+        
         Single define:
-
-          >>> definitions("variable expression")
-          ((['variable'], ('expression',)),)
-
+        
+        >>> definitions("variable expression")
+        definitions((declaration('variable',), value('expression')),)
+        
         Multiple defines:
-
-          >>> definitions("variable1 expression1; variable2 expression2")
-          ((['variable1'], ('expression1',)), (['variable2'], ('expression2',)))
-          
+        
+        >>> definitions("variable1 expression1; variable2 expression2")
+        definitions((declaration('variable1',), value('expression1')),
+                    (declaration('variable2',), value('expression2')))
+        
         Tuple define:
-
-          >>> definitions("(variable1, variable2) (expression1, expression2)")
-          ((['variable1', 'variable2'], ('(expression1, expression2)',)),)
-
+        
+        >>> definitions("(variable1, variable2) (expression1, expression2)")
+        definitions((declaration('variable1', 'variable2'),
+                    value('(expression1, expression2)')),)
+        
         A define clause that ends in a semicolon:
-
-          >>> definitions("variable expression;")
-          ((['variable'], ('expression',)),)
-
+        
+        >>> definitions("variable expression;")
+        definitions((declaration('variable',), value('expression')),)
+        
         A define clause with a trivial expression (we do allow this):
-
-          >>> definitions("variable")
-          ((['variable'], None),)
-
+        
+        >>> definitions("variable")
+        definitions((declaration('variable',), None),)
+        
         A proper define clause following one with a trivial expression:
-
-          >>> definitions("variable1 expression; variable2")
-          ((['variable1'], ('expression',)), (['variable2'], None))
+        
+        >>> definitions("variable1 expression; variable2")
+        definitions((declaration('variable1',), value('expression')),
+                    (declaration('variable2',), None))
 
         """
 
@@ -181,15 +183,15 @@ class ExpressionTranslation(object):
                 j = string.find(')', i+1)
                 if j == -1:
                     raise ValueError, "Invalid variable tuple definition (%s)." % string
-                var = self.variable(string[i+1:j])
+                var = self.declaration(string[i+1:j])
                 j += 1
             else:
                 j = string.find(' ', i + 1)
                 if j == -1:
-                    var = self.variable(string[i:])
+                    var = self.declaration(string[i:])
                     j = len(string)
                 else:
-                    var = self.variable(string[i:j])
+                    var = self.declaration(string[i:j])
 
             # get expression
             i = j
@@ -199,20 +201,21 @@ class ExpressionTranslation(object):
                     j = len(string)
 
                 try:
-                    expr = self.value(string[i:j])
+                    expr = self.expression(string[i:j])
                 except SyntaxError, e:
                     if j < len(string):
                         continue
+                        
                     raise e
                 break
             else:
                 expr = None
 
-            defines.append((list(var), expr))
+            defines.append((var, expr))
 
             i = j + 1
 
-        return tuple(defines)
+        return types.definitions(defines)
 
     def definition(self, string):
         defs = self.definitions(string)
@@ -221,63 +224,90 @@ class ExpressionTranslation(object):
 
         return defs[0]
 
-    def value(self, string):
+    def output(self, string):
         """
-        We need to implement a ``value``-method. Let's define that an
-        expression is valid if it contains an odd number of
-        characters.
+        >>> class MockExpressionTranslation(ExpressionTranslation):
+        ...     def validate(self, string):
+        ...         return True
+        ...
+        ...     def translate(self, string):
+        ...         return types.value(string)
+
+        >>> output = MockExpressionTranslation().output
+
+        >>> output("context/title")
+        escape(value('context/title'),)
+
+        >>> output("context/pretty_title_or_id|context/title")
+        escape(value('context/pretty_title_or_id'), value('context/title'))
+
+        >>> output("structure context/title")
+        value('context/title')
+        
+        """
+        
+        if string.startswith('structure '):
+            return self.expression(string[len('structure'):])
+        
+        expression = self.expression(string)
+
+        if isinstance(expression, types.parts):
+            return types.escape(expression)
+
+        return types.escape((expression,))
+            
+    def expression(self, string):
+        """We need to implement the ``validate`` and
+        ``translate``-methods. Let's define that an expression is
+        valid if it contains an odd number of characters.
         
         >>> class MockExpressionTranslation(ExpressionTranslation):
         ...     def validate(self, string):
         ...         return True
         ...
         ...     def translate(self, string):
-        ...         return '<translated %s>' % string
-        
-        >>> value = MockExpressionTranslation().value
+        ...         return types.value(string)
 
-        >>> value('a')
-        ('<translated a>',)
+        >>> expression = MockExpressionTranslation().expression
 
-        >>> value('a|b')
-        ('<translated a>', '<translated b>')
+        >>> expression('a')
+        value('a')
+
+        >>> expression('a|b')
+        parts(value('a'), value('b'))
     
         """
 
+        if string is None:
+            import pdb; pdb.set_trace()
+            
         string = string.replace('\n', '').strip()
 
         if not string:
-            return []
+            return types.parts()
 
-        expressions = []
+        parts = []
 
-        # reset pragmas
+        # default translator is ``self``
         translator = self
-
-        options = {'nocall': False,
-                   'structure': False,
-                   'not': False}
 
         i = j = 0
         while i < len(string):
-            match = self.pragma.match(string[i:])
-            if match is not None:
-                pragma = match.group('pragma').lower()
+            if translator is self:
+                match = self.re_pragma.match(string[i:])
+                if match is not None:
+                    pragma = match.group('pragma')
 
-                utility = zope.component.queryUtility(
-                    IExpressionTranslation, name=pragma)
-                
-                if utility is not None:
-                    translator = utility
-                    pragma = None
+                    translator = \
+                        zope.component.queryUtility(
+                            IExpressionTranslation, name=pragma) or \
+                        zope.component.queryAdapter(
+                            self, IExpressionTranslation, name=pragma) or \
+                        self
 
-                if pragma in options:
-                    options[pragma] = True
-                    pragma = None
-                    
-                if pragma is None:
-                    i += match.end()
-                    continue
+                    if translator is not self:
+                        i += match.end()
+                        continue
             
             j = string.find('|', j + 1)
             if j == -1:
@@ -293,12 +323,63 @@ class ExpressionTranslation(object):
 
                 raise e
 
-            expressions.append(translator.translate(expr))
+            value = translator.translate(expr)
+            parts.append(value)
             translator = self
             
             i = j + 1
 
-        return value(options, expressions)
+        if len(parts) == 1:
+            return parts[0]
+
+        return types.parts(parts)
+
+    def interpolate(self, string):
+        """Search for an interpolation and return a match.
+
+        >>> class MockExpressionTranslation(ExpressionTranslation):
+        ...     def validate(self, string):
+        ...         if '}' in string: raise SyntaxError
+        ...
+        ...     def translate(self, string):
+        ...         return types.value(string)
+
+        >>> interpolate = MockExpressionTranslation().interpolate
+        
+        >>> interpolate('${abc}').group('expression')
+        'abc'
+
+        >>> interpolate('abc${def}').group('expression')
+        'def'
+
+        >>> interpolate('abc${def}ghi${jkl}').group('expression')
+        'def'
+
+        >>> interpolate('${abc')
+        Traceback (most recent call last):
+          ...
+        SyntaxError: Interpolation expressions must of the form ${<expression>} (${abc)
+        
+        """
+
+        m = self.re_interpolation.search(string)
+        if m is None:
+            return None
+
+        expression = m.group('expression')
+
+        if expression:
+            left = m.start()+len(m.group('prefix'))
+            exp = self.search(string[left+1:])
+            right = left+2+len(exp)
+            m = self.re_interpolation.search(string[:right])
+            
+        if expression is None or m is None:
+            raise SyntaxError(
+                "Interpolation expressions must of the "
+                "form ${<expression>} (%s)" % string)
+
+        return m
 
 class PythonTranslation(ExpressionTranslation):
     def validate(self, string):
@@ -308,13 +389,87 @@ class PythonTranslation(ExpressionTranslation):
         parser.expr(string.encode('utf-8'))
 
     def translate(self, string):
-        return string
+        if isinstance(string, unicode):
+            string = string.encode('utf-8')
+
+        return types.value(string)
+            
+class StringTranslation(ExpressionTranslation):
+    zope.component.adapts(IExpressionTranslation)
+
+    def __init__(self, translator):
+        self.translator = translator
+
+    def validate(self, string):
+        self.interpolate(string)
+
+    def translate(self, string):
+        return types.join(self.split(string))
+        
+    def split(self, string):
+        """Split up an interpolation string expression into parts that
+        are either unicode strings or ``value``-tuples.
+
+        >>> class MockTranslation(ExpressionTranslation):
+        ...     def validate(self, string):
+        ...         if '}' in string: raise SyntaxError
+        ...
+        ...     def translate(self, string):
+        ...         return types.value(string)
+        
+        >>> class MockStringTranslation(StringTranslation):
+        ...     pass
+        
+        >>> split = MockStringTranslation(MockTranslation()).split
+
+        >>> split("${abc}")
+        (value('abc'),)
+
+        >>> split("abc${def}")
+        ('abc', value('def'))
+
+        >>> split("${def}abc")
+        (value('def'), 'abc')
+
+        >>> split("abc${def}ghi")
+        ('abc', value('def'), 'ghi')
+
+        >>> split("abc${def}ghi${jkl}")
+        ('abc', value('def'), 'ghi', value('jkl'))
+
+        >>> split("abc${def | ghi}")
+        ('abc', parts(value('def '), value('ghi')))
+
+        >>> print split("abc${La Peña}")
+        ('abc', value('La Pe\\xc3\\xb1a'))
+        
+        """
+
+        m = self.translator.interpolate(string)
+        if m is None:
+            return (string,)
+
+        parts = []
+        
+        start = m.start()
+        if start > 0:
+            text = string[:m.start()+1]
+            parts.append(text)
+
+        expression = m.group('expression')
+        parts.append(self.translator.expression(expression))
+
+        rest = string[m.end():]
+        if len(rest):
+            parts.extend(self.split(rest))
+
+        return tuple(parts)
 
 class PathTranslation(ExpressionTranslation):
-    path_regex = re.compile(r'^([A-Za-z_]+)(/[A-Za-z_@-]+)+$')
+    path_regex = re.compile(r'^((nocall|not):\s*)*([A-Za-z_]+)(/[A-Za-z_@-]+)*$')
 
     @classmethod
-    def traverse(cls, base, request, *path_items):
+    def traverse(cls, base, request, call, *path_items):
         """See ``zope.app.pagetemplate.engine``."""
 
         for i in range(len(path_items)):
@@ -326,8 +481,11 @@ class PathTranslation(ExpressionTranslation):
             else:
                 base = zope.traversing.adapters.traversePathElement(
                     base, name, path_items[i+1:], request=request)
-
+                    
             base = zope.security.proxy.ProxyFactory(base)
+
+        if call and callable(base):
+            base = base()
             
         return base
 
@@ -339,15 +497,52 @@ class PathTranslation(ExpressionTranslation):
         """
             >>> translate = PathTranslation().translate
             >>> translate("a/b")
-            "_path(a, request, 'b')"
+            value("_path(a, request, True, 'b')")
 
             >>> translate("context/@@view")
-            "_path(context, request, '@@view')"
+            value("_path(context, request, True, '@@view')")
+
+            >>> translate("nocall: context/@@view")
+            value("_path(context, request, False, '@@view')")
+
+            >>> translate("not: context/@@view")
+            value("not(_path(context, request, True, '@@view'))")
+
         """
+
+        nocall = False
+        negate = False
+
+        while string:
+            m = self.re_pragma.match(string)
+            if m is None:
+                break
+
+            string = string[m.end():]
+            pragma = m.group('pragma').lower()
+
+            if pragma == 'nocall':
+                nocall = True
+            elif pragma == 'not':
+                negate = True
+            else:
+                raise ValueError("Invalid pragma: %s" % pragma)
 
         parts = string.split('/')
 
+        # map 'nothing' to 'None'
+        parts = map(lambda part: part == 'nothing' and 'None' or part, parts)
+        
         base = parts[0]
         components = [repr(part) for part in parts[1:]]
-                
-        return '_path(%s, request, %s)' % (base, ', '.join(components))
+
+        if not components:
+            components = ()
+
+        value = types.value(
+            '_path(%s, request, %s, %s)' % (base, not nocall, ', '.join(components)))
+
+        if negate:
+            value = types.value('not(%s)' % value)
+
+        return value

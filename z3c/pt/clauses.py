@@ -1,60 +1,146 @@
+# -*- coding: utf-8 -*-
+
 from utils import unicode_required_flag
 from cgi import escape
 
+import types
+
 class Assign(object):
     """
-      >>> from z3c.pt.generation import CodeIO; stream = CodeIO()
-      >>> from z3c.pt.testing import value
+    >>> from z3c.pt.generation import CodeIO; stream = CodeIO()
+    >>> from z3c.pt.testing import pyexp
 
-    Simple assignment:
-
-      >>> assign = Assign(value("1"))
-      >>> assign.begin(stream, 'a')
-      >>> exec stream.getvalue()
-      >>> a == 1
-      True
-      >>> assign.end(stream)
-
-    Try-except chain:
-
-      >>> assign = Assign(value("float('abc') | 1"))
-      >>> assign.begin(stream, 'b')
-      >>> exec stream.getvalue()
-      >>> b == 1
-      True
-      >>> assign.end(stream)
-
-    Try-except chain part 2: 
-
-      >>> assign = Assign(value("'abc' | 1"))
-      >>> assign.begin(stream, 'b')
-      >>> exec stream.getvalue()
-      >>> b == 'abc'
-      True
-      >>> assign.end(stream)
-     """
+    We'll define some values for use in the tests.
     
-    def __init__(self, expressions, variable=None):
-        self.expressions = expressions
-        self.variable = variable
+    >>> one = types.value("1")
+    >>> bad_float = types.value("float('abc')")
+    >>> abc = types.value("'abc'")
+    >>> ghi = types.value("'ghi'")
+    >>> utf8_encoded = types.value("'La Peña'")
+    >>> exclamation = types.value("'!'")
+        
+    Simple value assignment:
+    
+    >>> assign = Assign(one)
+    >>> assign.begin(stream, 'a')
+    >>> exec stream.getvalue()
+    >>> a == 1
+    True
+    >>> assign.end(stream)
+    
+    Try-except parts (bad, good):
+    
+    >>> assign = Assign(types.parts((bad_float, one)))
+    >>> assign.begin(stream, 'b')
+    >>> exec stream.getvalue()
+    >>> b == 1
+    True
+    >>> assign.end(stream)
+    
+    Try-except parts (good, bad):
+    
+    >>> assign = Assign(types.parts((one, bad_float)))
+    >>> assign.begin(stream, 'b')
+    >>> exec stream.getvalue()
+    >>> b == 1
+    True
+    >>> assign.end(stream)
+    
+    Join:
 
+    >>> assign = Assign(types.join((abc, ghi)))
+    >>> assign.begin(stream, 'b')
+    >>> exec stream.getvalue()
+    >>> b == 'abcghi'
+    True
+    >>> assign.end(stream)
+
+    Join with try-except parts:
+    
+    >>> assign = Assign(types.join((types.parts((bad_float, abc, ghi)), ghi)))
+    >>> assign.begin(stream, 'b')
+    >>> exec stream.getvalue()
+    >>> b == 'abcghi'
+    True
+    >>> assign.end(stream)
+
+    UTF-8 coercing:
+
+    >>> assign = Assign(types.join((utf8_encoded, exclamation)))
+    >>> assign.begin(stream, 'b')
+    >>> exec stream.getvalue()
+    >>> b == 'La Peña!'
+    True
+    >>> assign.end(stream)
+
+    UTF-8 coercing with unicode:
+    
+    >>> assign = Assign(types.join((utf8_encoded, u"!")))
+    >>> assign.begin(stream, 'b')
+    >>> exec stream.getvalue()
+    >>> b == 'La Peña!'
+    True
+    >>> assign.end(stream)
+
+    """
+
+    def __init__(self, parts, variable=None):
+        if not isinstance(parts, types.parts):
+            parts = types.parts((parts,))
+        
+        self.parts = parts
+        self.variable = variable
+        
     def begin(self, stream, variable=None):
         """First n - 1 expressions must be try-except wrapped."""
 
         variable = variable or self.variable
-            
-        for expression in self.expressions[:-1]:
+
+        for value in self.parts[:-1]:
             stream.write("try:")
             stream.indent()
-            stream.write("%s = %s" % (variable, expression))
+
+            self._assign(variable, value, stream)
+            
             stream.outdent()
             stream.write("except Exception, e:")
             stream.indent()
 
-        expression = self.expressions[-1]
-        stream.write("%s = %s" % (variable, expression))
+        value = self.parts[-1]
+        self._assign(variable, value, stream)
+        
+        stream.outdent(len(self.parts)-1)
 
-        stream.outdent(len(self.expressions)-1)
+    def _assign(self, variable, value, stream):
+        if isinstance(value, types.value):
+            stream.write("%s = %s" % (variable, value))
+        elif isinstance(value, types.join):
+            parts = []
+            _v_count = 0
+            
+            for part in value:
+                if isinstance(part, (types.parts, types.join)):
+                    _v = stream.save()
+                    assign = Assign(part, _v)
+                    assign.begin(stream)
+                    assign.end(stream)
+                    _v_count +=1
+                    parts.append(_v)
+                elif isinstance(part, types.value):
+                    parts.append(part)
+                elif isinstance(part, unicode):
+                    parts.append(repr(part.encode('utf-8')))
+                elif isinstance(part, str):
+                    parts.append(repr(part))
+                else:
+                    raise ValueError("Not able to handle %s" % type(part))
+                    
+            format = "%s"*len(parts)
+
+            stream.write("%s = '%s' %% (%s)" % (variable, format, ",".join(parts)))
+            
+            for i in range(_v_count):
+                stream.restore()
         
     def end(self, stream):
         pass
@@ -62,11 +148,11 @@ class Assign(object):
 class Define(object):
     """
       >>> from z3c.pt.generation import CodeIO; stream = CodeIO()
-      >>> from z3c.pt.testing import value
+      >>> from z3c.pt.testing import pyexp
       
     Variable scope:
 
-      >>> define = Define("a", value("b"))
+      >>> define = Define("a", pyexp("b"))
       >>> b = object()
       >>> define.begin(stream)
       >>> exec stream.getvalue()
@@ -85,8 +171,8 @@ class Define(object):
     Multiple defines:
 
       >>> stream = CodeIO()
-      >>> define1 = Define("a", value("b"))
-      >>> define2 = Define("c", value("d"))
+      >>> define1 = Define("a", pyexp("b"))
+      >>> define2 = Define("c", pyexp("d"))
       >>> d = object()
       >>> define1.begin(stream)
       >>> define2.begin(stream)
@@ -112,7 +198,7 @@ class Define(object):
     Tuple assignments:
 
       >>> stream = CodeIO()
-      >>> define = Define(['e', 'f'], value("[1, 2]"))
+      >>> define = Define(['e', 'f'], pyexp("[1, 2]"))
       >>> define.begin(stream)
       >>> exec stream.getvalue()
       >>> e == 1 and f == 2
@@ -134,7 +220,7 @@ class Define(object):
     Using semicolons in expressions within a define:
 
       >>> stream = CodeIO()
-      >>> define = Define("a", value("';'"))
+      >>> define = Define("a", pyexp("';'"))
       >>> define.begin(stream)
       >>> exec stream.getvalue()
       >>> a
@@ -147,7 +233,7 @@ class Define(object):
       >>> a = 1
       >>> stream.scope[-1].add('a')
       >>> stream.scope.append(set())
-      >>> define = Define("a", value("2"))
+      >>> define = Define("a", pyexp("2"))
       >>> define.begin(stream)
       >>> define.end(stream)
       >>> exec stream.getvalue()
@@ -209,14 +295,14 @@ class Define(object):
 class Condition(object):
     """
       >>> from z3c.pt.generation import CodeIO
-      >>> from z3c.pt.testing import value
+      >>> from z3c.pt.testing import pyexp
       >>> from cgi import escape as _escape
       
     Unlimited scope:
     
       >>> stream = CodeIO()
-      >>> true = Condition(value("True"))
-      >>> false = Condition(value("False"))
+      >>> true = Condition(pyexp("True"))
+      >>> false = Condition(pyexp("False"))
       >>> true.begin(stream)
       >>> stream.write("print 'Hello'")
       >>> true.end(stream)
@@ -233,8 +319,8 @@ class Condition(object):
       >>> stream = CodeIO()
       >>> from StringIO import StringIO
       >>> _out = StringIO()
-      >>> true = Condition(value("True"), [Write(value("'Hello'"))])
-      >>> false = Condition(value("False"), [Write(value("'Hallo'"))])
+      >>> true = Condition(pyexp("True"), [Write(pyexp("'Hello'"))])
+      >>> false = Condition(pyexp("False"), [Write(pyexp("'Hallo'"))])
       >>> true.begin(stream)
       >>> true.end(stream)
       >>> false.begin(stream)
@@ -248,8 +334,8 @@ class Condition(object):
       >>> stream = CodeIO()
       >>> from StringIO import StringIO
       >>> _out = StringIO()
-      >>> true = Condition(value("True"), [Tag('div')], finalize=False)
-      >>> false = Condition(value("False"), [Tag('span')], finalize=False)
+      >>> true = Condition(pyexp("True"), [Tag('div')], finalize=False)
+      >>> false = Condition(pyexp("False"), [Tag('span')], finalize=False)
       >>> true.begin(stream)
       >>> stream.out("Hello World!")
       >>> true.end(stream)
@@ -263,21 +349,13 @@ class Condition(object):
       
     def __init__(self, value, clauses=None, finalize=True):
         self.assign = Assign(value)
-        try:
-            self.inverse = value.options.get('not')
-        except:
-            import pdb; pdb.set_trace()
-            
         self.clauses = clauses
         self.finalize = finalize
         
     def begin(self, stream):
         temp = stream.save()
         self.assign.begin(stream, temp)
-        if self.inverse:
-            stream.write("if not(%s):" % temp)
-        else:
-            stream.write("if %s:" % temp)
+        stream.write("if %s:" % temp)
         stream.indent()
         if self.clauses:
             for clause in self.clauses:
@@ -335,12 +413,14 @@ class Group(object):
 class Tag(object):
     """
       >>> from z3c.pt.generation import CodeIO
-      >>> from z3c.pt.testing import value
+      >>> from z3c.pt.testing import pyexp
       >>> from StringIO import StringIO
       >>> from cgi import escape as _escape
+
+      Dynamic attribute:
       
       >>> _out = StringIO(); stream = CodeIO()
-      >>> tag = Tag('div', dict(alt=value(repr('Hello World!'))))
+      >>> tag = Tag('div', dict(alt=pyexp(repr('Hello World!'))))
       >>> tag.begin(stream)
       >>> stream.out('Hello Universe!')
       >>> tag.end(stream)
@@ -348,6 +428,8 @@ class Tag(object):
       >>> _out.getvalue()
       '<div alt="Hello World!">Hello Universe!</div>'
 
+      Self-closing tag:
+      
       >>> _out = StringIO(); stream = CodeIO()
       >>> tag = Tag('br', {}, True)
       >>> tag.begin(stream)
@@ -355,7 +437,18 @@ class Tag(object):
       >>> exec stream.getvalue()
       >>> _out.getvalue()
       '<br />'
+
+      Unicode:
       
+      >>> _out = StringIO(); stream = CodeIO()
+      >>> tag = Tag('div', dict(alt=pyexp(repr('La Peña'))))
+      >>> tag.begin(stream)
+      >>> stream.out('Hello Universe!')
+      >>> tag.end(stream)
+      >>> exec stream.getvalue()
+      >>> _out.getvalue() == '<div alt="La Peña">Hello Universe!</div>'
+      True
+            
     """
 
     def __init__(self, tag, attributes={}, selfclosing=False):
@@ -374,13 +467,13 @@ class Tag(object):
 
         # static attributes
         static = filter(
-            lambda (attribute, expression): \
-            not isinstance(expression, (tuple, list)),
+            lambda (attribute, value): \
+            not isinstance(value, types.expression),
             self.attributes.items())
 
         dynamic = filter(
-            lambda (attribute, expression): \
-            isinstance(expression, (tuple, list)),
+            lambda (attribute, value): \
+            isinstance(value, types.expression),
             self.attributes.items())
 
         for attribute, expression in static:
@@ -389,7 +482,7 @@ class Tag(object):
                 escape(expression, '"')))
 
         temp = stream.save()
-        
+
         for attribute, value in dynamic:
             assign = Assign(value)
             assign.begin(stream, temp)
@@ -398,9 +491,9 @@ class Tag(object):
             stream.write("if %s is not None:" % temp)
             stream.indent()
 
-            if not value.options.get('nocall'):
-                # if callable, evaluate method
-                stream.write("if callable(%s): %s = %s()" % (temp, temp, temp))
+            #if not value.options.get('nocall'):
+            #    # if callable, evaluate method
+            #    stream.write("if callable(%s): %s = %s()" % (temp, temp, temp))
 
             if unicode_required_flag:
                 stream.write("if isinstance(%s, unicode):" % temp)
@@ -435,7 +528,7 @@ class Tag(object):
 class Repeat(object):
     """
       >>> from z3c.pt.generation import CodeIO; stream = CodeIO()
-      >>> from z3c.pt.testing import value
+      >>> from z3c.pt.testing import pyexp
 
     We need to set up the repeat object.
 
@@ -444,7 +537,7 @@ class Repeat(object):
 
     Simple repeat loop and repeat data structure:
 
-      >>> _repeat = Repeat("i", value("range(5)"))
+      >>> _repeat = Repeat("i", pyexp("range(5)"))
       >>> _repeat.begin(stream)
       >>> stream.write("r = repeat['i']")
       >>> stream.write("print (i, r.index, r.start, r.end, r.number(), r.odd(), r.even())")
@@ -492,46 +585,65 @@ class Repeat(object):
 
 class Write(object):
     """
-      >>> from z3c.pt.generation import CodeIO; stream = CodeIO()
-      >>> from z3c.pt.testing import value
-      >>> from StringIO import StringIO
-      >>> from cgi import escape as _escape
-      
-      >>> _out = StringIO()
-      >>> write = Write(value("'New York'"))
-      >>> write.begin(stream)
-      >>> write.end(stream)
-      >>> exec stream.getvalue()
-      >>> _out.getvalue()
-      'New York'
-      >>> _out = StringIO()
-      >>> write = Write(value("undefined | ', New York!'"))
-      >>> write.begin(stream)
-      >>> write.end(stream)
-      >>> exec stream.getvalue()
-      >>> _out.getvalue()
-      'New York, New York!'
+    >>> from z3c.pt.generation import CodeIO; stream = CodeIO()
+    >>> from z3c.pt.testing import pyexp
+    >>> from StringIO import StringIO
+    >>> from cgi import escape as _escape
+
+    Basic write:
+    
+    >>> _out = StringIO()
+    >>> write = Write(pyexp("'New York'"))
+    >>> write.begin(stream)
+    >>> write.end(stream)
+    >>> exec stream.getvalue()
+    >>> _out.getvalue()
+    'New York'
+
+    Try-except parts:
+
+    >>> stream = CodeIO()
+    >>> _out = StringIO()
+    >>> write = Write(pyexp("undefined | 'New Delhi'"))
+    >>> write.begin(stream)
+    >>> write.end(stream)
+    >>> exec stream.getvalue()
+    >>> _out.getvalue()
+    'New Delhi'
+
+    Unicode:
+
+    >>> stream = CodeIO()
+    >>> _out = StringIO()
+    >>> write = Write(types.value("unicode('La Pe\xc3\xb1a', 'utf-8')"))
+    >>> write.begin(stream)
+    >>> write.end(stream)
+    >>> exec stream.getvalue()
+    >>> _out.getvalue() == 'La Pe\xc3\xb1a'
+    True
+    
     """
+
+    value = assign = None
     
     def __init__(self, value):
-        self.assign = Assign(value)
-        self.value = value
-        self.count = len(value)
+        if isinstance(value, types.parts):
+            self.assign = Assign(value)
+        else:
+            self.value = value
+
+        self.structure = not isinstance(value, types.escape)
         
     def begin(self, stream):
         temp = stream.save()
 
-        if self.count == 1:
-            expr = self.value[0]
+        if self.value:
+            expr = self.value
         else:
             self.assign.begin(stream, temp)
             expr = temp
 
         stream.write("_urf = %s" % expr)
-
-        if not self.value.options.get('nocall'):
-            stream.write("if callable(_urf): _urf = _urf()")
-            
         stream.write("if _urf is None: _urf = ''")
 
         if unicode_required_flag:
@@ -541,26 +653,26 @@ class Write(object):
             stream.outdent()
             stream.write("else:")
             stream.indent()
-            if self.value.options.get('structure'):
+            if self.structure:
                 stream.write("_out.write(str(_urf))")
             else:
                 stream.write("_out.write(_escape(str(_urf)))")
             stream.outdent()
         else:
-            if self.value.options.get('structure'):
+            if self.structure:
                 stream.write("_out.write(str(_urf))")
             else:
                 stream.write("_out.write(_escape(str(_urf)))")
             
     def end(self, stream):
-        if self.count != 1:
+        if self.assign:
             self.assign.end(stream)
         stream.restore()
 
 class Out(object):
     """
       >>> from z3c.pt.generation import CodeIO; stream = CodeIO()
-      >>> from z3c.pt.testing import value
+      >>> from z3c.pt.testing import pyexp
       >>> from StringIO import StringIO
       >>> _out = StringIO()
       

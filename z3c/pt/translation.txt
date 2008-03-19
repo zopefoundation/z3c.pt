@@ -8,8 +8,9 @@ A generic render-method is used for convenience.
   >>> def render(body, translator, **kwargs):
   ...    source, _globals = translator(body)
   ...    _locals = {}
+  ...    _globals.update(kwargs)
   ...    exec source in _globals, _locals
-  ...    return _locals['render'](**kwargs)
+  ...    return _locals['render']()
 
 TAL
 ---
@@ -41,14 +42,11 @@ Attributes and contents:
   ...         tal:content="a + 'ghi'" />
   ...   <span tal:replace="'Hello World!'">Hello Universe!</span>
   ...   <span tal:content="None" />
-  ...   <span tal:attributes="class lambda: 'Hello'"
-  ...         tal:content="lambda: 'World'" />
   ... </div>""", translate_xml)
     <div>
       <span id="test" style="hij" class="defabc">abcghi</span>
       Hello World!
       <span></span>
-      <span class="Hello">World</span>
     </div>
 
 Repeats:
@@ -124,8 +122,17 @@ Unicode:
   >>> print render("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   <img alt="La Peña" />
+  ... </div>""", translate_xml)
+    <div>
+      <img alt="La Peña" />
+    </div>
+
+  >>> print render("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
   ...   <img tal:attributes="title '%sHello%s' % (chr(60), chr(62))" />
-  ...   <span tal:replace="structure: '%sbr /%s' % (chr(60), chr(62))" />
+  ...   <span tal:replace="structure '%sbr /%s' % (chr(60), chr(62))" />
   ...   <span tal:replace="'%sbr /%s' % (chr(60), chr(62))" />
   ...   <span tal:content="unicode('La Pe\xc3\xb1a', 'utf-8')" />
   ... </div>""", translate_xml)
@@ -146,22 +153,33 @@ Interpolation:
   ...   <span class="my-${'class'} item${'Last'}" />
   ...   <span style="position: ${'abs'}olute"
   ...         class="my-${int('test') | 'class'} item${'Last'}" />
-  ...   <img alt="La Peña, oh ${'La Peña'}" />
-  ...   ${unicode('La Pe\xc3\xb1a', 'utf-8')}
-  ...   <img alt="${unicode('La Pe\xc3\xb1a', 'utf-8')}" />
-  ...   <img alt="Hello ${unicode('La Pe\xc3\xb1a', 'utf-8').encode('utf-8')}!" />
   ... </div>""", translate_xml)
     <div>
       <span>interpolation</span>is convenient!
       <span class="Hello World!" />
       <span class="my-class itemLast" />
       <span style="position: absolute" class="my-class itemLast" />
+    </div>
+
+  >>> print render("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   <img alt="${'La Peña'}" />
+  ...   <img alt="Hello ${'La Peña'}" />
+  ...   <img alt="La Peña, oh ${'La Peña'}" />
+  ...   ${unicode('La Pe\xc3\xb1a', 'utf-8')}
+  ...   <img alt="${unicode('La Pe\xc3\xb1a', 'utf-8')}" />
+  ...   <img alt="Hello ${unicode('La Pe\xc3\xb1a', 'utf-8').encode('utf-8')}!" />
+  ... </div>""", translate_xml)
+    <div>
+      <img alt="La Peña" />
+      <img alt="Hello La Peña" />
       <img alt="La Peña, oh La Peña" />
       La Peña
       <img alt="La Peña" />
       <img alt="Hello La Peña!" />
     </div>
-
+  
 Changing default expression:
 
   >>> print render("""\
@@ -200,14 +218,13 @@ Pragmas:
   >>> print render("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   <span tal:replace="nocall: dir" />
-  ...   <span tal:replace="nocall: structure: dir" />
-  ...   <span tal:condition="not: False">Hello World</span>
-  ... </div>""", translate_xml)
+  ...   <span tal:default-expression="path"
+  ...         tal:replace="structure nocall: dir" />
+  ...   <span tal:replace="structure dir" />
+  ... </div>""", translate_xml, request=object())
     <div>
-      &lt;built-in function dir&gt;
       <built-in function dir>
-      <span>Hello World</span>
+      <built-in function dir>
     </div>
 
 Text templates

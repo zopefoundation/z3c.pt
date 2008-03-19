@@ -86,7 +86,7 @@ class CodeIO(StringIO.StringIO):
 
     def out(self, string):
         self.queue += string
-
+            
     def cook(self):
         if self.queue:
             queue = self.queue
@@ -95,14 +95,22 @@ class CodeIO(StringIO.StringIO):
                        queue.replace('\n', '\\n').replace("'", "\\'"))
         
     def write(self, string):
+        if isinstance(string, str):
+            string = string.decode('utf-8')
+        
         self.cook()
         StringIO.StringIO.write(
             self, self.indentation_string * self.indentation + string + '\n')
 
+        try:
+            self.getvalue()
+        except UnicodeDecodeError:
+            import pdb; pdb.set_trace()
+
     def getvalue(self):
         self.cook()
         return StringIO.StringIO.getvalue(self)
-
+            
     def begin(self, clauses):
         if isinstance(clauses, (list, tuple)):
             for clause in clauses:

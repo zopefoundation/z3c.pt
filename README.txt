@@ -5,13 +5,13 @@ The z3c.pt package provides an alternative implementation of the TAL
 template language including i18n. It also provides a simple text
 template class that allows expression interpolation.
 
-Casual benchmarks pegs it 12x more performant than ``zope.pagetemplate``.
+Casual benchmarks pegs it 11x more performant than ``zope.pagetemplate``.
 
 In a nutshell:
 
 * Templates are bytecode-compiled
-* Supports Python and Zope path traversal expressions
-* Introduces expression interpolation using the ${<expression>}-format
+* Pluggable expression implementation
+* Support for expression interpolation using the ${<expression>}-format
 * Non-XML friendly
 
 See the README.txt inside the package for instructions on usage.
@@ -34,22 +34,18 @@ specification*. Some notable changes:
 
       tal:repeat="i <some generator>"
 
-3. Attribute-access to dictionary entries is allowed, e.g.
+3. Attribute-access to dictionary entries is allowed in
+   Python-expressions, e.g.
 
       dictionary.key
 
    can be used instead of ``dictionary['key']``.
 
-4. Expressions that return a callable are called.
-
-5. Expression interpolation is allowed:
+4. Expression interpolation is allowed in attributes and HTML content.
 
        <a href="mailto:${context.email}">${context.email}</a>
 
-6. Attribute-values are always escaped; document expressions are
-   never.
-
-7. Default expression type can be set using ``tal:default-expression``.
+5. Default expression type can be set using ``tal:default-expression``.
    This is an alternative to providing the expression type before each
    expression.
    
@@ -59,7 +55,8 @@ specification*. Some notable changes:
 Development
 -----------
 
-If you want to use the code directly from trunk, provide
-``z3c.pt==dev`` as your dependency.
+If you want to use the code directly from trunk (recommended only for
+development and testing usage), provide ``z3c.pt==dev`` as your
+dependency.
 
 http://svn.zope.org/z3c.pt/trunk#egg=z3c.pt-dev

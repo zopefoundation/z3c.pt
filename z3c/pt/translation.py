@@ -2,15 +2,13 @@ from zope import component
 
 from StringIO import StringIO
 import lxml.etree
-import re
 
 import generation
 import expressions
 import clauses
 import interfaces
 import utils
-
-interpolation_regex = re.compile(r'([^\\]\$|^\$){(?P<expression>.*)}')
+import types
 
 def attribute(ns, factory=None, default=None):
     def get(self):
@@ -29,25 +27,6 @@ def attribute(ns, factory=None, default=None):
 
     return property(get, set)
 
-def interpolate(string, translator):
-    m = interpolation_regex.search(string)
-    if m is None:
-        return None
-
-    left = m.start()
-    exp = translator.search(string[left+3:])
-    right = left+4+len(exp)
-
-    m = interpolation_regex.search(string[:right])
-
-    if m is None:
-        interpolation = string[left:right]
-        raise SyntaxError(
-            "Interpolation expressions must of the "
-            "form ${<expression>} (%s)" % interpolation)
-
-    return m
-
 class Element(lxml.etree.ElementBase):
     def begin(self, stream):
         stream.scope.append(set())
@@ -60,23 +39,8 @@ class Element(lxml.etree.ElementBase):
     def body(self, stream):
         skip = self.replace or self.content or self.i18n_translate is not None
         if not skip:
-            for element in list(self):
-                if isinstance(element, lxml.etree._Comment):
-                    index = self.index(element)
-
-                    t = parser.makeelement(
-                        '{http://xml.zope.org/namespaces/tal}comment')
-
-                    t.attrib['omit-tag'] = ''
-                    t.tail = element.tail
-                    t.text = '<!--' + element.text + '-->'
-
-                    for child in element.getchildren():
-                        t.append(child)
-
-                    self.remove(element)
-                    self.insert(index, t)
-                
+            for element in [e for e in self if isinstance(e, lxml.etree._Comment)]:
+                self._wrap_comment(element)
             for element in self:
                 element.interpolate(stream)
             for element in self:
@@ -88,11 +52,13 @@ class Element(lxml.etree.ElementBase):
         self.end(stream)
 
     def interpolate(self, stream):
-        # interpolate text
+        """The current interpolation strategy is to translate the
+        interpolation statements into TAL."""
+        
         translator = self._translator()
         if self.text is not None:
             while self.text:
-                m = interpolate(self.text, translator)
+                m = translator.interpolate(self.text)
                 if m is None:
                     break
 
@@ -106,7 +72,7 @@ class Element(lxml.etree.ElementBase):
         # interpolate tail
         if self.tail is not None:
             while self.tail:
-                m = interpolate(self.tail, translator)
+                m = translator.interpolate(self.tail)
                 if m is None:
                     break
 
@@ -122,58 +88,14 @@ class Element(lxml.etree.ElementBase):
         for name in self._static_attributes():
             value = self.attrib[name]
 
-            i = 0
-            format = ''
-            terms = []
+            if translator.interpolate(value):
+                del self.attrib[name]
 
-            defines = []
-
-            while value:
-                string = value[i:]
-                m = interpolate(string, translator)
-                if m is None:
-                    break
-
-                start = m.start()
-                if start > 0:
-                    text = string[:m.start()+1]
+                attributes = '{http://xml.zope.org/namespaces/tal}attributes'
+                if attributes in self.attrib:
+                    self.attrib[attributes] += '; %s string: %s' % (name, value)
                 else:
-                    text = ''
-                i += m.end()
-
-                format += '%s%s'
-                exp = m.group('expression')
-
-                if len(translator.value(exp)) == 1:
-                    terms.extend(("'%s'" % text.replace("'", "\\'"), exp))
-                else:
-                    var = stream.save()
-                    defines.append((var, m.group('expression')))
-                    terms.extend(("'%s'" % text.replace("'", "\\'"), var))
-
-            if not terms:
-                continue
-
-            if i < len(value):
-                format += '%s'
-                terms.append("'%s'" % value[i:].replace("'", "\\'"))
-
-            value = "'%s'" % format + '%%(%s,)' % ",".join(terms)
-
-            del self.attrib[name]
-
-            attributes = '{http://xml.zope.org/namespaces/tal}attributes'
-            if attributes in self.attrib:
-                self.attrib[attributes] += '; %s %s' % (name, value)
-            else:
-                self.attrib[attributes] = '%s %s' % (name, value)
-
-            define = '{http://xml.zope.org/namespaces/tal}define'
-            for name, expression in defines:
-                if define in self.attrib:
-                    self.attrib[define] += '; %s %s' % (name, expression)
-                else:
-                    self.attrib[define] = '%s %s' % (name, expression)
+                    self.attrib[attributes] = '%s string: %s' % (name, value)
                 
     def _clauses(self):
         _ = []
@@ -181,7 +103,7 @@ class Element(lxml.etree.ElementBase):
         # i18n domain
         if self.i18n_domain is not None:
             _.append(clauses.Define(
-                "_domain", utils.value({}, (repr(self.i18n_domain),))))
+                "_domain", types.value(repr(self.i18n_domain))))
 
         # defines
         if self.define is not None:
@@ -236,7 +158,6 @@ class Element(lxml.etree.ElementBase):
                     raise ValueError, "Can't use message id with dynamic content translation."
                 _.append(clauses.Translate())
 
-            # TODO: structure
             _.append(clauses.Write(expression))
         else:
             if self.i18n_translate is not None:
@@ -251,7 +172,7 @@ class Element(lxml.etree.ElementBase):
 
                 if elements:
                     mapping = '_mapping'
-                    _.append(clauses.Assign(['{}'], mapping))
+                    _.append(clauses.Assign(types.value('{}'), mapping))
                 else:
                     mapping = 'None'
                     
@@ -260,21 +181,21 @@ class Element(lxml.etree.ElementBase):
                     
                     subclauses = []
                     subclauses.append(clauses.Define(
-                        '_out', utils.value({}, ('generation.initialize_stream()',))))
+                        '_out', types.value('generation.initialize_stream()')))
                     subclauses.append(clauses.Group(element._clauses()))
                     subclauses.append(clauses.Assign(
-                        utils.value({}, ('_out.getvalue()',)), "%s['%s']" % (mapping, name)))
+                        types.value('_out.getvalue()'), "%s['%s']" % (mapping, name)))
 
                     _.append(clauses.Group(subclauses))
 
                 _.append(clauses.Assign(
-                    _translate([repr(msgid)], mapping=mapping, default='_marker'),
+                    _translate(types.value(repr(msgid)), mapping=mapping, default='_marker'),
                     '_result'))
 
                 # write translation to output if successful, otherwise
                 # fallback to default rendition; 
-                result = utils.value({}, ('_result',))
-                condition = utils.value({}, ('_result is not _marker',))
+                result = types.value('_result')
+                condition = types.value('_result is not _marker')
                 _.append(clauses.Condition(condition, [clauses.Write(result)]))
 
                 subclauses = []
@@ -283,8 +204,7 @@ class Element(lxml.etree.ElementBase):
                 for element in self:
                     name = element.i18n_name
                     if name:
-                        value = utils.value(
-                            {'structure': True}, ("%s['%s']" % (mapping, name),))
+                        value = types.value("%s['%s']" % (mapping, name))
                         subclauses.append(clauses.Write(value))
                     else:
                         subclauses.append(clauses.Out(lxml.etree.tostring(element)))
@@ -293,6 +213,22 @@ class Element(lxml.etree.ElementBase):
                     _.append(clauses.Else(subclauses))
 
         return _
+
+    def _wrap_comment(self, element):
+        index = self.index(element)
+
+        t = parser.makeelement(
+            '{http://xml.zope.org/namespaces/tal}comment')
+
+        t.attrib['omit-tag'] = ''
+        t.tail = element.tail
+        t.text = '<!--' + element.text + '-->'
+
+        for child in element.getchildren():
+            t.append(child)
+
+        self.remove(element)
+        self.insert(index, t)
     
     def _msgid(self):
         """Create an i18n msgid from the tag contents."""
@@ -343,25 +279,20 @@ class Element(lxml.etree.ElementBase):
         # translated attributes
         if self.i18n_attributes:
             for variable, msgid in self.i18n_attributes:
-                if variable in static:
-                    static_expression = repr(attributes[variable])
-
                 if msgid:
                     if variable in dynamic:
                         raise ValueError, "Message id not allowed in conjunction with " + \
                                           "a dynamic attribute."
 
-                    expression = [repr(msgid)]
+                    value = types.value(msgid)
 
                     if variable in static:
-                        expression = _translate(expression, default=static_expression)            
+                        expression = _translate(value, default=attributes[variable])
                     else:
-                        expression = _translate(expression)
+                        expression = _translate(value)
                 else:
-                    if variable in dynamic:
+                    if variable in dynamic or variable in static:
                         expression = _translate(attributes[variable])
-                    elif variable in static:
-                        expression = _translate(static_expression)                
                     else:
                         raise ValueError, "Must be either static or dynamic attribute " + \
                                           "when no message id is supplied."
@@ -382,17 +313,17 @@ class Element(lxml.etree.ElementBase):
     define = attribute(
         "{http://xml.zope.org/namespaces/tal}define", lambda p: p.definitions)
     condition = attribute(
-        "{http://xml.zope.org/namespaces/tal}condition", lambda p: p.value)
+        "{http://xml.zope.org/namespaces/tal}condition", lambda p: p.expression)
     repeat = attribute(
         "{http://xml.zope.org/namespaces/tal}repeat", lambda p: p.definition)
     attributes = attribute(
         "{http://xml.zope.org/namespaces/tal}attributes", lambda p: p.definitions)
     content = attribute(
-        "{http://xml.zope.org/namespaces/tal}content", lambda p: p.value)
+        "{http://xml.zope.org/namespaces/tal}content", lambda p: p.output)
     replace = attribute(
-        "{http://xml.zope.org/namespaces/tal}replace", lambda p: p.value)
+        "{http://xml.zope.org/namespaces/tal}replace", lambda p: p.output)
     omit = attribute(
-        "{http://xml.zope.org/namespaces/tal}omit-tag", lambda p: p.value)
+        "{http://xml.zope.org/namespaces/tal}omit-tag", lambda p: p.expression)
     i18n_translate = attribute(
         "{http://xml.zope.org/namespaces/i18n}translate")
     i18n_attributes = attribute(
@@ -406,11 +337,11 @@ class Element(lxml.etree.ElementBase):
     
 class TALElement(Element):
     define = attribute("define", lambda p: p.definitions)
-    replace = attribute("replace", lambda p: p.value)
+    replace = attribute("replace", lambda p: p.output)
     repeat = attribute("repeat", lambda p: p.definition)
-    attributes = attribute("attributes", lambda p: p.value)
-    content = attribute("content", lambda p: p.value)
-    omit = attribute("omit-tag", lambda p: p.value, u"")
+    attributes = attribute("attributes", lambda p: p.expression)
+    content = attribute("content", lambda p: p.output)
+    omit = attribute("omit-tag", lambda p: p.expression, u"")
     default_expression = attribute("default-expression", lambda p: p.name)
     
     def _static_attributes(self):
@@ -475,12 +406,11 @@ def translate_text(body, *args, **kwargs):
     xml.attrib['{http://xml.zope.org/namespaces/tal}omit-tag'] = ''
     return translate_etree(xml, *args, **kwargs)
     
-def _translate(expressions, mapping=None, default=None):
+def _translate(value, mapping=None, default=None):
     format = "_translate(%s, domain=_domain, mapping=%s, "\
              "target_language=_target_language, default=%s)"
     
-    return utils.value(
-        {}, tuple(format % (exp, mapping, default) for exp in expressions))
+    return types.value(format % (value, mapping, default))
 
-def _not(expressions):
-    return utils.value({}, tuple("not (%s)" % exp for exp in expressions))
+def _not(value):
+    return types.value("not (%s)" % value)

@@ -10,5 +10,9 @@
      name="path"
      factory=".expressions.PathTranslation" />
 
+  <adapter
+     name="string"
+     factory=".expressions.StringTranslation" />
+  
 </configure>
  
