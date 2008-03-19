@@ -502,7 +502,7 @@ class PathTranslation(ExpressionTranslation):
 
     def validate(self, string):
         if not self.path_regex.match(string):
-            raise ValueError("Not a valid path-expression.")
+            raise SyntaxError("Not a valid path-expression.")
 
     def translate(self, string):
         """
