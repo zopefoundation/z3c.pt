@@ -2,18 +2,20 @@
 
 import zope.interface
 import zope.component
-import zope.traversing.adapters
+import zope.security
 import zope.security.proxy
+import zope.traversing.adapters
 
 import parser
 import re
 
-from interfaces import IExpressionTranslation
-
+import interfaces
 import types
 
+_marker = object()
+
 class ExpressionTranslation(object):
-    zope.interface.implements(IExpressionTranslation)
+    zope.interface.implements(interfaces.IExpressionTranslation)
 
     re_pragma = re.compile(r'^\s*(?P<pragma>[a-z]+):\s*')
     re_interpolation = re.compile(r'(?P<prefix>[^\\]\$|^\$){((?P<expression>.*)})?')
@@ -300,9 +302,9 @@ class ExpressionTranslation(object):
 
                     translator = \
                         zope.component.queryUtility(
-                            IExpressionTranslation, name=pragma) or \
+                            interfaces.IExpressionTranslation, name=pragma) or \
                         zope.component.queryAdapter(
-                            self, IExpressionTranslation, name=pragma) or \
+                            self, interfaces.IExpressionTranslation, name=pragma) or \
                         self
 
                     if translator is not self:
@@ -395,7 +397,7 @@ class PythonTranslation(ExpressionTranslation):
         return types.value(string)
             
 class StringTranslation(ExpressionTranslation):
-    zope.component.adapts(IExpressionTranslation)
+    zope.component.adapts(interfaces.IExpressionTranslation)
 
     def __init__(self, translator):
         self.translator = translator
@@ -472,21 +474,30 @@ class PathTranslation(ExpressionTranslation):
     def traverse(cls, base, request, call, *path_items):
         """See ``zope.app.pagetemplate.engine``."""
 
+        _callable = callable(base)
+        
         for i in range(len(path_items)):
             name = path_items[i]
-            
-            # special-case dicts for performance reasons        
-            if getattr(base, '__class__', None) == dict:
-                base = base[name]
-            else:
-                base = zope.traversing.adapters.traversePathElement(
-                    base, name, path_items[i+1:], request=request)
-                    
-            base = zope.security.proxy.ProxyFactory(base)
 
-        if call and callable(base):
+            next = getattr(base, name, _marker)
+            if next is not _marker:
+                base = next()
+            else:
+                # special-case dicts for performance reasons        
+                if getattr(base, '__class__', None) == dict:
+                    base = base[name]
+                else:
+                    base = zope.traversing.adapters.traversePathElement(
+                        base, name, path_items[i+1:], request=request)
+
+            _callable = callable(base)
+
+            if not isinstance(base, (basestring, tuple, list)):
+                base = zope.security.proxy.ProxyFactory(base)
+
+        if call and _callable:
             base = base()
-            
+                
         return base
 
     def validate(self, string):
