@@ -19,6 +19,13 @@ See the README.txt inside the package for instructions on usage.
 Note: The METAL macro language is not supported.
 
 
+Usage
+-----
+
+See README.txt inside package for general usage; to register the
+default expression types, load the package component configuration
+file (configure.zcml).
+
 Template and expression language
 --------------------------------
 
