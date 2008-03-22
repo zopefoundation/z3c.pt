@@ -527,7 +527,7 @@ class Tag(object):
 
 class Repeat(object):
     """
-      >>> from z3c.pt.generation import CodeIO; stream = CodeIO()
+      >>> from z3c.pt.generation import CodeIO
       >>> from z3c.pt.testing import pyexp
 
     We need to set up the repeat object.
@@ -537,6 +537,7 @@ class Repeat(object):
 
     Simple repeat loop and repeat data structure:
 
+      >>> stream = CodeIO()
       >>> _repeat = Repeat("i", pyexp("range(5)"))
       >>> _repeat.begin(stream)
       >>> stream.write("r = repeat['i']")
@@ -548,12 +549,20 @@ class Repeat(object):
       (3, 3, False, False, 4, True, False)
       (4, 4, False, True, 5, False, True)
       >>> _repeat.end(stream)
-      
+
+    A repeat over an empty set.
+    
+      >>> stream = CodeIO()
+      >>> _repeat = Repeat("j", pyexp("range(0).__iter__()"))
+      >>> _repeat.begin(stream)
+      >>> _repeat.end(stream)
+      >>> exec stream.getvalue()
+
     """
         
     def __init__(self, v, e, scope=()):
         self.variable = v
-        self.define = Define(v, ("None",))
+        self.define = Define(v, types.value("None"))
         self.assign = Assign(e)
 
     def begin(self, stream):
@@ -573,12 +582,12 @@ class Repeat(object):
         stream.write("while %s:" % iterator)
         stream.indent()
         stream.write("%s = %s.next()" % (variable, iterator))
-
+        
     def end(self, stream):
         # cook before leaving loop
-        stream.cook()
-        
+        stream.cook()        
         stream.outdent()
+        
         self.define.end(stream)
         self.assign.end(stream)
         stream.restore()
