@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+Version 0.8.x
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Added template source annotations on exceptions raised while
+  rendering a template.
+
 Version 0.8 - March 19, 2008
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
