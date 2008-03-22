@@ -378,25 +378,20 @@ def translate_etree(root, params=[], default_expression='python'):
     if None not in root.nsmap:
         raise ValueError, "Must set default namespace."
 
-    # set up code generation stream
-    stream = generation.CodeIO(indentation=1, indentation_string="\t")
-    stream.scope.append(set(params + ['_out']))
-
     # set default expression name
     key = '{http://xml.zope.org/namespaces/tal}default-expression'
     if key not in root.attrib:
         root.attrib[key] = default_expression
 
+    # set up code generation stream
+    generator = generation.Generator(params)
+    stream = generator.stream
+
     # visit root
     root.interpolate(stream)
     root.visit(stream)
 
-    # prepare template arguments
-    args = ', '.join(params)
-    if args: args += ', '
-
-    code = stream.getvalue()
-    return generation.wrapper % (args, code), {'generation': generation}
+    return generator
 
 def translate_text(body, *args, **kwargs):
     xml = parser.makeelement(

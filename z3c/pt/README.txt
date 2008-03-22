@@ -1,7 +1,9 @@
 z3c.pt
 ======
 
-This document demonstrates the high-level API of the package.
+This document demonstrates the high-level API of the package including
+error handling.
+
 
 Overview
 --------
@@ -28,6 +30,7 @@ Templates structured as plain text are supported:
 ``ViewTextTemplate``, ``ViewTextTemplateFile``
        See above.
 
+       
 Page template classes
 ---------------------
 
@@ -36,7 +39,7 @@ Initialized with a string:
   >>> from z3c.pt import PageTemplate
   >>> template = PageTemplate("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal/python">
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
   ...   Hello World!
   ... </div>
   ... """)
@@ -58,6 +61,7 @@ Providing the path to a template file:
   </div>
 
 Keyword-parameters are passed on to the template namespace as-is.
+
 
 View template classes
 ---------------------
@@ -104,6 +108,7 @@ Inline:
     <span>test</span>
   </div>
 
+  
 Text template classes
 ---------------------
 
@@ -126,3 +131,47 @@ Text template classes
   #region {
       background: #ccc;
   }
+
+
+Error handling
+--------------
+
+When an exception is raised which does not expose a bug in the TAL
+translation machinery, we expect the exception to contain the part of
+the template source that caused the exception.
+
+Exception while evaluating expression:
+
+  >>> from z3c.pt import PageTemplate
+  >>> PageTemplate("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   <span tal:content="range()" />
+  ... </div>""").render()
+  Traceback (most recent call last):
+    ...
+  TypeError: While rendering template, range expected at least 1 arguments, got 0 ("range()").
+
+Exception while evaluating definition:
+
+  >>> from z3c.pt import PageTemplate
+  >>> PageTemplate("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   <span tal:define="dummy range()" />
+  ... </div>""").render()
+  Traceback (most recent call last):
+    ...
+  TypeError: While rendering template, range expected at least 1 arguments, got 0 ("range()").
+
+Exception while evaluating interpolation:
+
+  >>> from z3c.pt import PageTemplate
+  >>> PageTemplate("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   <span>${range()}</span>
+  ... </div>""").render()
+  Traceback (most recent call last):
+    ...
+  TypeError: While rendering template, range expected at least 1 arguments, got 0 ("range()").

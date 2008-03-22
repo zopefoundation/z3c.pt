@@ -1,7 +1,7 @@
 import os
 import sys
 import codegen
-
+     
 class BaseTemplate(object):
     registry = {}
     default_expression = 'python'
@@ -18,17 +18,21 @@ class BaseTemplate(object):
         return NotImplementedError("Must be implemented by subclass.")
 
     def cook(self, params):
-        source, _globals = self.translate(
+        generator = self.translate(
             self.body, params=params, default_expression=self.default_expression)
+        
+        source, _globals = generator()
+         
         suite = codegen.Suite(source)
         
         self.source = source
-
+        self.annotations = generator.stream.annotations
+        
         _globals.update(suite._globals)
         _locals = {}
 
         exec suite.code in _globals, _locals
-        
+
         return _locals['render']
 
     def render(self, **kwargs):
@@ -38,8 +42,26 @@ class BaseTemplate(object):
         if not template:
             self.registry[signature] = template = self.cook(kwargs.keys())
 
-        return template(**kwargs)
+        try:
+            return template(**kwargs)
+        except Exception, e:
+            etype, value, tb = sys.exc_info()
+            lineno = tb.tb_next.tb_lineno-1
+
+            annotations = self.annotations
+
+            while lineno >= 0:
+                if lineno in annotations:
+                    annotation = annotations.get(lineno)
+                    break
+
+                lineno -= 1
+            else:
+                annotation = None
             
+            raise e.__class__(
+                "While rendering template, %s (\"%s\")." % (str(e), str(annotation)))
+        
     def __call__(self, **kwargs):
         return self.render(**kwargs)
 

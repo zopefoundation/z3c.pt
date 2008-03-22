@@ -7,6 +7,8 @@ import cStringIO
 import expressions
 import utils
 
+import z3c.pt.generation
+
 wrapper = """\
 def render(%starget_language=None):
 \tglobal generation
@@ -38,16 +40,32 @@ def initialize_stream():
 def initialize_traversal():
     return expressions.PathTranslation.traverse
 
+class Generator(object):
+    def __init__(self, params):
+        self.params = tuple(params)
+        self.stream = CodeIO(indentation=1, indentation_string="\t")
+
+        # initialize variable scope
+        self.stream.scope.append(set(params + ['_out']))
+
+    def __call__(self):
+        # prepare template arguments
+        args = ', '.join(self.params)
+        if args: args += ', '
+
+        code = self.stream.getvalue()
+
+        return wrapper % (args, code), {'generation': z3c.pt.generation}
+        
 class CodeIO(StringIO.StringIO):
-    """
-    A high-level I/O class to write Python code to a stream.
-    Indentation is managed using ``indent`` and ``outdent``.
+    """A I/O stream class that provides facilities to generate Python code.
 
-    Also:
-    
-    * Convenience methods for keeping track of temporary
-    variables (see ``save``, ``restore`` and ``getvariable``).
+    * Indentation is managed using ``indent`` and ``outdent``.
 
+    * Annotations can be assigned on a per-line basis using ``annotate``.
+
+    * Convenience methods for keeping track of temporary variables
+   
     * Methods to process clauses (see ``begin`` and ``end``).
     
     """
@@ -61,10 +79,12 @@ class CodeIO(StringIO.StringIO):
         self.indentation_string = indentation_string
         self.queue = u''
         self.scope = [set()]
+        self.annotations = {}
         
         self._variables = {}
         self.t_counter = 0
-
+        self.l_counter = 0
+        
     def save(self):
         self.t_counter += 1
         return "%s%d" % (self.t_prefix, self.t_counter)
@@ -84,28 +104,28 @@ class CodeIO(StringIO.StringIO):
             self.cook()
             self.indentation -= amount
 
+    def annotate(self, item):
+        self.annotations[self.l_counter] = item
+
     def out(self, string):
         self.queue += string
-            
+        
     def cook(self):
         if self.queue:
             queue = self.queue
             self.queue = ''
             self.write("_out.write('%s')" %
                        queue.replace('\n', '\\n').replace("'", "\\'"))
-        
+            
     def write(self, string):
         if isinstance(string, str):
             string = string.decode('utf-8')
+
+        self.l_counter += len(string.split('\n'))-1
         
         self.cook()
         StringIO.StringIO.write(
             self, self.indentation_string * self.indentation + string + '\n')
-
-        try:
-            self.getvalue()
-        except UnicodeDecodeError:
-            import pdb; pdb.set_trace()
 
     def getvalue(self):
         self.cook()

@@ -6,7 +6,8 @@ This document contains functional template tests.
 A generic render-method is used for convenience.
 
   >>> def render(body, translator, **kwargs):
-  ...    source, _globals = translator(body)
+  ...    generator = translator(body)
+  ...    source, _globals = generator()
   ...    _locals = {}
   ...    _globals.update(kwargs)
   ...    exec source in _globals, _locals

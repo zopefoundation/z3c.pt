@@ -112,6 +112,8 @@ class Assign(object):
         stream.outdent(len(self.parts)-1)
 
     def _assign(self, variable, value, stream):
+        stream.annotate(value)
+        
         if isinstance(value, types.value):
             stream.write("%s = %s" % (variable, value))
         elif isinstance(value, types.join):
