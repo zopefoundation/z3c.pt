@@ -150,7 +150,7 @@ Exception while evaluating expression:
   ... </div>""").render()
   Traceback (most recent call last):
     ...
-  TypeError: While rendering template, range expected at least 1 arguments, got 0 ("range()").
+  TypeError: range expected at least 1 arguments, got 0
 
 Exception while evaluating definition:
 
@@ -162,7 +162,7 @@ Exception while evaluating definition:
   ... </div>""").render()
   Traceback (most recent call last):
     ...
-  TypeError: While rendering template, range expected at least 1 arguments, got 0 ("range()").
+  TypeError: range expected at least 1 arguments, got 0
 
 Exception while evaluating interpolation:
 
@@ -174,4 +174,4 @@ Exception while evaluating interpolation:
   ... </div>""").render()
   Traceback (most recent call last):
     ...
-  TypeError: While rendering template, range expected at least 1 arguments, got 0 ("range()").
+  TypeError: range expected at least 1 arguments, got 0

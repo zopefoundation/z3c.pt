@@ -1,7 +1,8 @@
 import os
 import sys
 import codegen
-     
+import traceback
+
 class BaseTemplate(object):
     registry = {}
     default_expression = 'python'
@@ -45,9 +46,12 @@ class BaseTemplate(object):
         try:
             return template(**kwargs)
         except Exception, e:
+            __traceback_info__ = getattr(e, '__traceback_info__', None)
+            if __traceback_info__ is not None:
+                raise e
+            
             etype, value, tb = sys.exc_info()
             lineno = tb.tb_next.tb_lineno-1
-
             annotations = self.annotations
 
             while lineno >= 0:
@@ -57,13 +61,21 @@ class BaseTemplate(object):
 
                 lineno -= 1
             else:
-                annotation = None
+                annotation = "n/a"
+
+            e.__traceback_info__ = "While rendering %s, an exception was "\
+                                   "raised evaluating ``%s``:\n\n" % \
+                                   (repr(self), str(annotation))
             
-            raise e.__class__(
-                "While rendering template, %s (\"%s\")." % (str(e), str(annotation)))
+            e.__traceback_info__ += "".join(traceback.format_tb(tb))
+            
+            raise e            
         
     def __call__(self, **kwargs):
         return self.render(**kwargs)
+
+    def __repr__(self):
+        return u"<%s %d>" % (self.__class__.__name__, id(self))
 
 class BaseTemplateFile(BaseTemplate):
     def __init__(self, filename):
@@ -113,3 +125,6 @@ class BaseTemplateFile(BaseTemplate):
             return os.path.getmtime(self.filename)
         except OSError:
             return 0
+
+    def __repr__(self):
+        return u"<%s %s>" % (self.__class__.__name__, self.filename)

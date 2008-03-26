@@ -4,6 +4,9 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Made sure the traceback from the *first* template exception
+  is carried over to __traceback_info__
+
 - Added template source annotations on exceptions raised while
   rendering a template.
 
