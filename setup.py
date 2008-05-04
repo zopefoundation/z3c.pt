@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '0.8.2'
+version = '0.8.3'
 
 setup(name='z3c.pt',
       version=version,
@@ -23,7 +23,7 @@ setup(name='z3c.pt',
       zip_safe=False,
       install_requires=[
           'setuptools',
-          'lxml<=1.3.6',
+          'lxml',
           'zope.interface',
           'zope.component',
           'zope.i18n',
