@@ -42,8 +42,18 @@ class repeatitem(object):
         
     @property
     def index(self):
-        return self.length - len(self.iterator) - 1
-        
+        try:
+            length = len(self.iterator)
+        except TypeError:
+            length = self.iterator.__length_hint__()
+        except:
+            raise TypeError("Unable to determine length.")
+
+        try:
+            return self.length - length - 1
+        except TypeError:
+            return None
+            
     @property
     def start(self):
         return self.index == 0
@@ -62,19 +72,17 @@ class repeatitem(object):
         return not self.odd()
 
 class repeatdict(dict):
-    def __setitem__(self, key, iterator):
-        try:
-            length = len(iterator)
-        except TypeError:
-            length = None
-            
-        dict.__setitem__(self, key, (iterator, length))
+    def insert(self, key, iterable):
+        length = len(iterable)
+        iterator = iterable.__iter__()
+        self[key] = (iterator, length)
+        return iterator
         
     def __getitem__(self, key):
         value, length = dict.__getitem__(self, key)
 
         if not isinstance(value, repeatitem):
             value = repeatitem(value, length)
-            self.__setitem__(key, value)
-
+            self[key] = (value, length)
+            
         return value

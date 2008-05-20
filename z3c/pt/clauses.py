@@ -544,6 +544,7 @@ class Repeat(object):
       >>> _repeat.begin(stream)
       >>> stream.write("r = repeat['i']")
       >>> stream.write("print (i, r.index, r.start, r.end, r.number(), r.odd(), r.even())")
+      >>> _repeat.end(stream)
       >>> exec stream.getvalue()
       (0, 0, True, False, 1, False, True)
       (1, 1, False, False, 2, True, False)
@@ -555,7 +556,7 @@ class Repeat(object):
     A repeat over an empty set.
     
       >>> stream = CodeIO()
-      >>> _repeat = Repeat("j", pyexp("range(0).__iter__()"))
+      >>> _repeat = Repeat("j", pyexp("range(0)"))
       >>> _repeat.begin(stream)
       >>> _repeat.end(stream)
       >>> exec stream.getvalue()
@@ -578,16 +579,24 @@ class Repeat(object):
         self.define.begin(stream)
 
         # initialize iterator
-        stream.write("repeat['%s'] = %s = %s.__iter__()" % (variable, iterator, iterator))
-
+        stream.write("%s = repeat.insert('%s', %s)" % (iterator, variable, iterator))
+        
         # loop
-        stream.write("while %s:" % iterator)
+        stream.write("try:")
+        stream.indent()
+        stream.write("while True:")
         stream.indent()
         stream.write("%s = %s.next()" % (variable, iterator))
         
     def end(self, stream):
         # cook before leaving loop
-        stream.cook()        
+        stream.cook()
+        
+        stream.outdent()
+        stream.outdent()
+        stream.write("except StopIteration:")
+        stream.indent()
+        stream.write("pass")
         stream.outdent()
         
         self.define.end(stream)

@@ -5,7 +5,7 @@ The z3c.pt package provides an alternative implementation of the TAL
 template language including i18n. It also provides a simple text
 template class that allows expression interpolation.
 
-Casual benchmarks pegs it 11x more performant than ``zope.pagetemplate``.
+Casual benchmarks pegs it 10x more performant than ``zope.pagetemplate``.
 
 In a nutshell:
 

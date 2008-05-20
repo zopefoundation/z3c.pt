@@ -275,14 +275,18 @@ Bad XML
   >>> render(body, translate_xml)
   Traceback (most recent call last):
     ...
-  XMLSyntaxError: line 1: Couldn't find end of Start Tag div line 1
+  XMLSyntaxError: Couldn't find end of Start Tag div line 1, line 1, column 11
 
 Missing namespace definition:
-    We expect the engine to render the attributes as static.
+    We expect the engine to raise an exception*
+
+*) This test only passes on lxml 2.x.
 
   >>> body = """\
   ... <div xmlns="http://www.w3.org/1999/xhtml" tal:content="'Hello World'" />
   ... """
 
   >>> print render(body, translate_xml)
-  <div content="'Hello World'" />
+  Traceback (most recent call last):
+    ...
+  XMLSyntaxError: Namespace prefix tal for content on div is not defined, line 1, column 23

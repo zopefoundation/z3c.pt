@@ -366,8 +366,12 @@ lookup = lxml.etree.ElementNamespaceClassLookup()
 parser = lxml.etree.XMLParser()
 parser.setElementClassLookup(lookup)
 
-lookup.get_namespace('http://www.w3.org/1999/xhtml')[None] = Element
-lookup.get_namespace('http://xml.zope.org/namespaces/tal')[None] = TALElement
+try:
+    lookup.get_namespace('http://www.w3.org/1999/xhtml')[None] = Element
+    lookup.get_namespace('http://xml.zope.org/namespaces/tal')[None] = TALElement
+except AttributeError:
+    lxml.etree.Namespace('http://www.w3.org/1999/xhtml')[None] = Element
+    lxml.etree.Namespace('http://xml.zope.org/namespaces/tal')[None] = TALElement
 
 def translate_xml(body, *args, **kwargs):
     tree = lxml.etree.parse(StringIO(body), parser)
