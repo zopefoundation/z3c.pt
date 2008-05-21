@@ -280,9 +280,6 @@ class ExpressionTranslation(object):
     
         """
 
-        if string is None:
-            import pdb; pdb.set_trace()
-            
         string = string.replace('\n', '').strip()
 
         if not string:
