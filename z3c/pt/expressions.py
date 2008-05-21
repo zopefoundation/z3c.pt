@@ -301,13 +301,14 @@ class ExpressionTranslation(object):
                         zope.component.queryUtility(
                             interfaces.IExpressionTranslation, name=pragma) or \
                         zope.component.queryAdapter(
-                            self, interfaces.IExpressionTranslation, name=pragma) or \
-                        self
-
-                    if translator is not self:
+                            self, interfaces.IExpressionTranslation, name=pragma)
+                    
+                    if translator is not None:
                         i += match.end()
                         continue
-            
+
+                    translator = self
+
             j = string.find('|', j + 1)
             if j == -1:
                 j = len(string)

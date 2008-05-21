@@ -196,6 +196,7 @@ Changing default expression:
   ...          <span tal:replace="python: 5+5" />
   ...       </div>
   ...       <span tal:replace="path: mydict/a" />
+  ...       <span tal:replace="python: 1+1" />
   ...       <span tal:replace="path: mydict/b|True" />
   ...       <span tal:replace="int('a')|path: mydict/a" />
   ...   </tal:path-expression-testing>
@@ -209,6 +210,7 @@ Changing default expression:
            10
         </div>
         1
+        2
         True
         1
   <BLANKLINE>
