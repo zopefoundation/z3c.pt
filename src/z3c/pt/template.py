@@ -3,30 +3,38 @@ import sys
 import codegen
 import traceback
 
+from z3c.pt import config
+
 class BaseTemplate(object):
     registry = {}
     default_expression = 'python'
     
     def __init__(self, body, default_expression=None):
         self.body = body
-        self.signature = hash(body)        
+        self.signature = hash(body)
+        self.source = ''
 
         if default_expression:
             self.default_expression = default_expression
-            
+
     @property
     def translate(self):
         return NotImplementedError("Must be implemented by subclass.")
+
+    def source_write(self):
+        # Hook for writing out the source code to the file system
+        return
 
     def cook(self, params):
         generator = self.translate(
             self.body, params=params, default_expression=self.default_expression)
         
         source, _globals = generator()
-         
-        suite = codegen.Suite(source)
         
+        suite = codegen.Suite(source)
+
         self.source = source
+        self.source_write()
         self.annotations = generator.stream.annotations
         
         _globals.update(suite._globals)
@@ -103,6 +111,18 @@ class BaseTemplateFile(BaseTemplate):
 
     filename = property(_get_filename, _set_filename)
 
+    @property
+    def source_filename(self):
+        return "%s.source" % self.filename
+
+    def source_write(self):
+        if self.source_filename and config.DEBUG_MODE:
+            try:
+                fs = open(self.source_filename, 'w')
+                fs.write(self.source)
+            finally:
+                fs.close()
+
     def render(self, **kwargs):
         if self._cook_check():
             self.body = open(self.filename, 'r').read()
@@ -110,9 +130,9 @@ class BaseTemplateFile(BaseTemplate):
             self._v_last_read = self.mtime()
 
         return BaseTemplate.render(self, **kwargs)
-            
+
     def _cook_check(self):
-        if self._v_last_read and not __debug__:
+        if self._v_last_read and not config.DEBUG_MODE:
             return
 
         if self.mtime() == self._v_last_read:
@@ -123,7 +143,7 @@ class BaseTemplateFile(BaseTemplate):
     def mtime(self):
         try:
             return os.path.getmtime(self.filename)
-        except OSError:
+        except (IOError, OSError):
             return 0
 
     def __repr__(self):

@@ -4,6 +4,12 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- In debug mode the actual source code for file templates is written out to
+  a <filename>.source file, to make it easier to inspect it.
+
+- Make debug mode setting explicit in a config.py. Currently it is bound to
+  Python's __debug__, which is False when run with -O and otherwise True.
+
 - Use a simplified UnicodeWrite clause for the result of _translate calls,
   as the result value is guaranteed to be Unicode.
 
