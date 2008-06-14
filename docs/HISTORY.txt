@@ -4,6 +4,8 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Added more benchmark tests for the file variants.
+
 - Optimized 'is None' handling in Tag clause similar to the Write clause.
 
 - Made the _out.write method directly available as _write in all scopes, so
