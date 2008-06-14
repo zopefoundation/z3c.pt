@@ -28,11 +28,20 @@ def timing(func, *args, **kwargs):
         i += 1
         t2 = time.time()
     return 100*(t2-t1)/i
-           
-class BenchmarkTestCase(unittest.TestCase):
+
+class BaseTestCase(unittest.TestCase):
 
     table = [dict(a=1,b=2,c=3,d=4,e=5,f=6,g=7,h=8,i=9,j=10) \
              for x in range(1000)]
+
+    def setUp(suite):
+        zope.component.testing.setUp(suite)
+        zope.configuration.xmlconfig.XMLConfig('configure.zcml', z3c.pt)()
+
+    def tearDown(suite):
+        zope.component.testing.tearDown(suite)
+
+class BenchmarkTestCase(BaseTestCase):
 
     helloworld_z3c = z3c.pt.PageTemplate("""\
     <div xmlns="http://www.w3.org/1999/xhtml">
@@ -96,13 +105,6 @@ class BenchmarkTestCase(unittest.TestCase):
     </tr>
     </table>""", 'text/xhtml')
 
-    def setUp(suite):
-        zope.component.testing.setUp(suite)
-        zope.configuration.xmlconfig.XMLConfig('configure.zcml', z3c.pt)()
-
-    def tearDown(suite):
-        zope.component.testing.tearDown(suite)
-
     @benchmark(u"Hello World")
     def testHelloWorld(self):
         t_z3c = timing(self.helloworld_z3c)
@@ -146,6 +148,29 @@ class BenchmarkTestCase(unittest.TestCase):
         print "                   %.2fX" % (t_zope/t_z3c)
 
 
+class FileBenchmarkTestCase(BaseTestCase):
+
+    @benchmark(u"Big table (python) File")
+    def testBigTablePythonFile(self):
+        table = self.table
+
+        files = os.path.abspath(os.path.join(__file__, '..', 'input'))
+        def testfile(name):
+            return os.path.join(files, name)
+
+        z3cfile = z3c.pt.PageTemplateFile(
+            testfile('bigtable_python_z3c.pt'))
+
+        zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
+            testfile('bigtable_python_zope.pt'))
+
+        t_z3c = timing(z3cfile.render, table=table)
+        t_zope = timing(zopefile, table=table)
+
+        print "z3c.pt:            %.2f" % t_z3c
+        print "zope.pagetemplate: %.2f" % t_zope
+        print "                   %.2fX" % (t_zope/t_z3c)
+
 # Use a custom context to add real i18n lookup
 
 from zope.i18n import translate
@@ -171,10 +196,7 @@ def _pt_getEngineContext(namespace):
     return _getContext(engine, namespace)
 
 
-class I18NBenchmarkTestCase(unittest.TestCase):
-
-    table = [dict(a=1,b=2,c=3,d=4,e=5,f=6,g=7,h=8,i=9,j=10) \
-             for x in range(1000)]
+class I18NBenchmarkTestCase(BaseTestCase):
 
     bigtable_i18n_z3c = z3c.pt.PageTemplate("""\
     <table xmlns="http://www.w3.org/1999/xhtml"
@@ -211,13 +233,6 @@ class I18NBenchmarkTestCase(unittest.TestCase):
     </tr>
     </table>""", 'text/xhtml')
 
-    def setUp(suite):
-        zope.component.testing.setUp(suite)
-        zope.configuration.xmlconfig.XMLConfig('configure.zcml', z3c.pt)()
-
-    def tearDown(suite):
-        zope.component.testing.tearDown(suite)
-
     @benchmark(u"Internationalization")
     def testI18N(self):
         table = self.table
@@ -232,6 +247,7 @@ class I18NBenchmarkTestCase(unittest.TestCase):
 def test_suite():
     return unittest.TestSuite((
         unittest.makeSuite(BenchmarkTestCase),
+        unittest.makeSuite(FileBenchmarkTestCase),
         unittest.makeSuite(I18NBenchmarkTestCase),
         ))
 

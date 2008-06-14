@@ -87,6 +87,9 @@ class BaseTemplate(object):
 
 class BaseTemplateFile(BaseTemplate):
     def __init__(self, filename):
+        self.body = None
+        self.source = ''
+
         if not os.path.isabs(filename):
             package_name = sys._getframe(2).f_globals['__name__']
             module = sys.modules[package_name]
@@ -101,7 +104,7 @@ class BaseTemplateFile(BaseTemplate):
         # make sure file exists
         os.lstat(filename)
         self.filename = filename
-                
+
     def _get_filename(self):
         return getattr(self, '_filename', None)
 

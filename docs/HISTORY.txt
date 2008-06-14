@@ -4,6 +4,8 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Slightly refactored benchmark tests and added tests for the file variants.
+
 - In debug mode the actual source code for file templates is written out to
   a <filename>.source file, to make it easier to inspect it.
 

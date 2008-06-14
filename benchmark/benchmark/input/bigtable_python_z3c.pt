@@ -1,0 +1,10 @@
+<table xmlns="http://www.w3.org/1999/xhtml"
+       xmlns:tal="http://xml.zope.org/namespaces/tal">
+  <tr tal:repeat="row table">
+    <td tal:repeat="c row.values()">
+      <span tal:define="d c + 1"
+            tal:attributes="class 'column-' + str(d)"
+            tal:content="d" />
+    </td>
+  </tr>
+</table>
