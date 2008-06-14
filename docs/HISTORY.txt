@@ -4,6 +4,8 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Optimized 'is None' handling in Write clause.
+
 - Slightly refactored benchmark tests and added tests for the file variants.
 
 - In debug mode the actual source code for file templates is written out to

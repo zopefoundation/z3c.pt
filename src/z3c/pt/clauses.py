@@ -664,14 +664,13 @@ class Write(object):
             expr = temp
 
         stream.write("_urf = %s" % expr)
-        stream.write("if _urf is None: _urf = ''")
 
         if unicode_required_flag:
             stream.write("if isinstance(_urf, unicode):")
             stream.indent()
             stream.write("_out.write(_urf.encode('utf-8'))")
             stream.outdent()
-            stream.write("else:")
+            stream.write("elif _urf is not None:")
             stream.indent()
             if self.structure:
                 stream.write("_out.write(str(_urf))")
@@ -679,11 +678,14 @@ class Write(object):
                 stream.write("_out.write(_escape(str(_urf)))")
             stream.outdent()
         else:
+            stream.write("if _urf is not None:")
+            stream.indent()
             if self.structure:
                 stream.write("_out.write(str(_urf))")
             else:
                 stream.write("_out.write(_escape(str(_urf)))")
-            
+            stream.outdent()
+
     def end(self, stream):
         if self.assign:
             self.assign.end(stream)
