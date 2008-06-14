@@ -4,6 +4,8 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Optimized 'is None' handling in Tag clause similar to the Write clause.
+
 - Made the _out.write method directly available as _write in all scopes, so
   we avoid the method lookup call each time.
 

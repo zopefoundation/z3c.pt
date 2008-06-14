@@ -486,32 +486,28 @@ class Tag(object):
             assign = Assign(value)
             assign.begin(stream, temp)
             
-            # only include attribute if value is non-trivial
-            stream.write("if %s is not None:" % temp)
-            stream.indent()
-
-            #if not value.options.get('nocall'):
-            #    # if callable, evaluate method
-            #    stream.write("if callable(%s): %s = %s()" % (temp, temp, temp))
-
             if unicode_required_flag:
                 stream.write("if isinstance(%s, unicode):" % temp)
                 stream.indent()
                 stream.write("%s = %s.encode('utf-8')" % (temp, temp))
+                stream.write("_write(' %s=\"'+_escape(%s, \"\\\"\")+'\"')" %
+                             (attribute, temp))
                 stream.outdent()
-                stream.write("else:")
+                stream.write("elif %s is not None:" % temp)
                 stream.indent()
                 stream.write("%s = str(%s)" % (temp, temp))
+                stream.write("_write(' %s=\"'+_escape(%s, \"\\\"\")+'\"')" %
+                             (attribute, temp))
                 stream.outdent()
             else:
+                stream.write("if %s is not None:" % temp)
+                stream.indent()
                 stream.write("%s = str(%s)" % (temp, temp))
-                
-            stream.write("_write(' %s=\"' + _escape(%s, \"\\\"\"))" %
-                         (attribute, temp))
-            stream.out('"')
-            
+                stream.write("_write(' %s=\"'+_escape(%s, \"\\\"\")+'\"')" %
+                             (attribute, temp))
+                stream.outdent()
+
             assign.end(stream)
-            stream.outdent()
 
         stream.restore()
 
