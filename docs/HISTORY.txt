@@ -4,6 +4,9 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Made the _out.write method directly available as _write in all scopes, so
+  we avoid the method lookup call each time.
+
 - Optimized 'is None' handling in Write clause.
 
 - Slightly refactored benchmark tests and added tests for the file variants.

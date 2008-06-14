@@ -13,8 +13,7 @@ wrapper = """\
 def render(%starget_language=None):
 \tglobal generation
 
-\t_out = generation.initialize_stream()
-    
+\t(_out, _write) = generation.initialize_stream()
 \t(_attributes, repeat) = generation.initialize_tal()
 \t(_domain, _translate) = generation.initialize_i18n()
 \t(_escape, _marker) = generation.initialize_helpers()
@@ -35,7 +34,8 @@ def initialize_helpers():
     return (cgi.escape, object())
 
 def initialize_stream():
-    return cStringIO.StringIO()
+    out = cStringIO.StringIO()
+    return (out, out.write)
 
 def initialize_traversal():
     return expressions.PathTranslation.traverse
@@ -46,7 +46,7 @@ class Generator(object):
         self.stream = CodeIO(indentation=1, indentation_string="\t")
 
         # initialize variable scope
-        self.stream.scope.append(set(params + ['_out']))
+        self.stream.scope.append(set(params + ['_out', '_write']))
 
     def __call__(self):
         # prepare template arguments
@@ -114,7 +114,7 @@ class CodeIO(StringIO.StringIO):
         if self.queue:
             queue = self.queue
             self.queue = ''
-            self.write("_out.write('%s')" %
+            self.write("_write('%s')" %
                        queue.replace('\n', '\\n').replace("'", "\\'"))
             
     def write(self, string):

@@ -298,6 +298,7 @@ class Condition(object):
     """
       >>> from z3c.pt.generation import CodeIO
       >>> from z3c.pt.testing import pyexp
+      >>> from StringIO import StringIO
       >>> from cgi import escape as _escape
       
     Unlimited scope:
@@ -318,9 +319,7 @@ class Condition(object):
 
     Finalized limited scope:
 
-      >>> stream = CodeIO()
-      >>> from StringIO import StringIO
-      >>> _out = StringIO()
+      >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
       >>> true = Condition(pyexp("True"), [Write(pyexp("'Hello'"))])
       >>> false = Condition(pyexp("False"), [Write(pyexp("'Hallo'"))])
       >>> true.begin(stream)
@@ -333,9 +332,7 @@ class Condition(object):
 
     Open limited scope:
 
-      >>> stream = CodeIO()
-      >>> from StringIO import StringIO
-      >>> _out = StringIO()
+      >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
       >>> true = Condition(pyexp("True"), [Tag('div')], finalize=False)
       >>> false = Condition(pyexp("False"), [Tag('span')], finalize=False)
       >>> true.begin(stream)
@@ -421,7 +418,7 @@ class Tag(object):
 
       Dynamic attribute:
       
-      >>> _out = StringIO(); stream = CodeIO()
+      >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
       >>> tag = Tag('div', dict(alt=pyexp(repr('Hello World!'))))
       >>> tag.begin(stream)
       >>> stream.out('Hello Universe!')
@@ -432,7 +429,7 @@ class Tag(object):
 
       Self-closing tag:
       
-      >>> _out = StringIO(); stream = CodeIO()
+      >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
       >>> tag = Tag('br', {}, True)
       >>> tag.begin(stream)
       >>> tag.end(stream)
@@ -442,7 +439,7 @@ class Tag(object):
 
       Unicode:
       
-      >>> _out = StringIO(); stream = CodeIO()
+      >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
       >>> tag = Tag('div', dict(alt=pyexp(repr('La Peña'))))
       >>> tag.begin(stream)
       >>> stream.out('Hello Universe!')
@@ -509,7 +506,7 @@ class Tag(object):
             else:
                 stream.write("%s = str(%s)" % (temp, temp))
                 
-            stream.write("_out.write(' %s=\"' + _escape(%s, \"\\\"\"))" %
+            stream.write("_write(' %s=\"' + _escape(%s, \"\\\"\"))" %
                          (attribute, temp))
             stream.out('"')
             
@@ -605,14 +602,14 @@ class Repeat(object):
 
 class Write(object):
     """
-    >>> from z3c.pt.generation import CodeIO; stream = CodeIO()
+    >>> from z3c.pt.generation import CodeIO
     >>> from z3c.pt.testing import pyexp
     >>> from StringIO import StringIO
     >>> from cgi import escape as _escape
 
     Basic write:
     
-    >>> _out = StringIO()
+    >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
     >>> write = Write(pyexp("'New York'"))
     >>> write.begin(stream)
     >>> write.end(stream)
@@ -622,8 +619,7 @@ class Write(object):
 
     Try-except parts:
 
-    >>> stream = CodeIO()
-    >>> _out = StringIO()
+    >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
     >>> write = Write(pyexp("undefined | 'New Delhi'"))
     >>> write.begin(stream)
     >>> write.end(stream)
@@ -633,15 +629,13 @@ class Write(object):
 
     Unicode:
 
-    >>> stream = CodeIO()
-    >>> _out = StringIO()
+    >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
     >>> write = Write(types.value("unicode('La Pe\xc3\xb1a', 'utf-8')"))
     >>> write.begin(stream)
     >>> write.end(stream)
     >>> exec stream.getvalue()
     >>> _out.getvalue() == 'La Pe\xc3\xb1a'
     True
-    
     """
 
     value = assign = None
@@ -668,22 +662,22 @@ class Write(object):
         if unicode_required_flag:
             stream.write("if isinstance(_urf, unicode):")
             stream.indent()
-            stream.write("_out.write(_urf.encode('utf-8'))")
+            stream.write("_write(_urf.encode('utf-8'))")
             stream.outdent()
             stream.write("elif _urf is not None:")
             stream.indent()
             if self.structure:
-                stream.write("_out.write(str(_urf))")
+                stream.write("_write(str(_urf))")
             else:
-                stream.write("_out.write(_escape(str(_urf)))")
+                stream.write("_write(_escape(str(_urf)))")
             stream.outdent()
         else:
             stream.write("if _urf is not None:")
             stream.indent()
             if self.structure:
-                stream.write("_out.write(str(_urf))")
+                stream.write("_write(str(_urf))")
             else:
-                stream.write("_out.write(_escape(str(_urf)))")
+                stream.write("_write(_escape(str(_urf)))")
             stream.outdent()
 
     def end(self, stream):
@@ -698,8 +692,7 @@ class UnicodeWrite(Write):
 
     Basic write:
 
-    >>> stream = CodeIO()
-    >>> _out = StringIO()
+    >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
     >>> write = Write(types.value("'New York'"))
     >>> write.begin(stream)
     >>> write.end(stream)
@@ -709,8 +702,7 @@ class UnicodeWrite(Write):
 
     Unicode:
 
-    >>> stream = CodeIO()
-    >>> _out = StringIO()
+    >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
     >>> write = Write(types.value("unicode('La Pe\xc3\xb1a', 'utf-8')"))
     >>> write.begin(stream)
     >>> write.end(stream)
@@ -720,8 +712,7 @@ class UnicodeWrite(Write):
 
     Invalid:
 
-    >>> stream = CodeIO()
-    >>> _out = StringIO()
+    >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
     >>> write = Write(types.value("None"))
     >>> write.begin(stream)
     >>> write.end(stream)
@@ -739,15 +730,15 @@ class UnicodeWrite(Write):
             self.assign.begin(stream, temp)
             expr = temp
 
-        stream.write("_out.write(%s.encode('utf-8'))" % expr)
+        stream.write("_write(%s.encode('utf-8'))" % expr)
 
 class Out(object):
     """
-      >>> from z3c.pt.generation import CodeIO; stream = CodeIO()
+      >>> from z3c.pt.generation import CodeIO
       >>> from z3c.pt.testing import pyexp
       >>> from StringIO import StringIO
-      >>> _out = StringIO()
       
+      >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
       >>> out = Out('Hello World!')
       >>> out.begin(stream)
       >>> out.end(stream)

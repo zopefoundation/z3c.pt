@@ -181,7 +181,7 @@ class Element(lxml.etree.ElementBase):
                     
                     subclauses = []
                     subclauses.append(clauses.Define(
-                        '_out', types.value('generation.initialize_stream()')))
+                        ('_out', '_write'), types.value('generation.initialize_stream()')))
                     subclauses.append(clauses.Group(element._clauses()))
                     subclauses.append(clauses.Assign(
                         types.value('_out.getvalue()'), "%s['%s']" % (mapping, name)))
