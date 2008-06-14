@@ -30,6 +30,10 @@ def timing(func, *args, **kwargs):
     return 100*(t2-t1)/i
            
 class BenchmarkTestCase(unittest.TestCase):
+
+    table = [dict(a=1,b=2,c=3,d=4,e=5,f=6,g=7,h=8,i=9,j=10) \
+             for x in range(1000)]
+
     helloworld_z3c = z3c.pt.PageTemplate("""\
     <div xmlns="http://www.w3.org/1999/xhtml">
     Hello World!
@@ -66,6 +70,21 @@ class BenchmarkTestCase(unittest.TestCase):
     </tr>
     </table>""")
 
+    bigtable_i18n_z3c = z3c.pt.PageTemplate("""\
+    <table xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+    xmlns:tal="http://xml.zope.org/namespaces/tal">
+    <tr tal:repeat="row table">
+    <span i18n:translate="label_default">Default</span>
+    <td tal:repeat="c row.values()">
+    <span tal:define="d c + 1"
+    tal:attributes="class 'column-' + str(d)"
+    tal:content="d" i18n:attributes="class" />
+    <span i18n:translate="">Default</span>
+    </td>
+    </tr>
+    </table>""")
+
     bigtable_python_zope = zope.pagetemplate.pagetemplate.PageTemplate()
     bigtable_python_zope.pt_edit("""\
     <table xmlns="http://www.w3.org/1999/xhtml"
@@ -92,6 +111,22 @@ class BenchmarkTestCase(unittest.TestCase):
     </tr>
     </table>""", 'text/xhtml')
 
+    bigtable_i18n_zope = zope.pagetemplate.pagetemplate.PageTemplate()
+    bigtable_i18n_zope.pt_edit("""\
+    <table xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+    xmlns:tal="http://xml.zope.org/namespaces/tal">
+    <tr tal:repeat="row python: options['table']">
+    <span i18n:translate="label_default">Default</span>
+    <td tal:repeat="c python: row.values()">
+    <span tal:define="d python: c + 1"
+    tal:attributes="class python:'column-'+str(d)"
+    tal:content="d" i18n:attributes="class" />
+    <span i18n:translate="">Default</span>
+    </td>
+    </tr>
+    </table>""", 'text/xhtml')
+
     def setUp(suite):
         zope.component.testing.setUp(suite)
         zope.configuration.xmlconfig.XMLConfig('configure.zcml', z3c.pt)()
@@ -110,8 +145,7 @@ class BenchmarkTestCase(unittest.TestCase):
 
     @benchmark(u"Big table (python)")
     def testBigTablePython(self):
-        table = [dict(a=1,b=2,c=3,d=4,e=5,f=6,g=7,h=8,i=9,j=10) \
-                 for x in range(1000)]
+        table = self.table
 
         t_z3c = timing(self.bigtable_python_z3c, table=table)
         t_zope = timing(self.bigtable_python_zope, table=table)
@@ -122,8 +156,7 @@ class BenchmarkTestCase(unittest.TestCase):
 
     @benchmark(u"Big table (path)")
     def testBigTablePath(self):
-        table = [dict(a=1,b=2,c=3,d=4,e=5,f=6,g=7,h=8,i=9,j=10) \
-                 for x in range(1000)]
+        table = self.table
 
         t_z3c = timing(self.bigtable_path_z3c, table=table, request=object())
         t_zope = timing(self.bigtable_path_zope, table=table)
@@ -134,11 +167,21 @@ class BenchmarkTestCase(unittest.TestCase):
 
     @benchmark(u"Compilation")
     def testCompilation(self):
-        table = [dict(a=1,b=2,c=3,d=4,e=5,f=6,g=7,h=8,i=9,j=10) \
-                 for x in range(1000)]
+        table = self.table
 
         t_z3c = timing(self.bigtable_python_z3c.cook, ['table'])
         t_zope = timing(self.bigtable_python_zope._cook)
+
+        print "z3c.pt:            %.2f" % t_z3c
+        print "zope.pagetemplate: %.2f" % t_zope
+        print "                   %.2fX" % (t_zope/t_z3c)
+
+    @benchmark(u"Internationalization")
+    def testI18N(self):
+        table = self.table
+
+        t_z3c = timing(self.bigtable_i18n_z3c, table=table)
+        t_zope = timing(self.bigtable_i18n_zope, table=table)
 
         print "z3c.pt:            %.2f" % t_z3c
         print "zope.pagetemplate: %.2f" % t_zope

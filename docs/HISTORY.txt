@@ -4,6 +4,8 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Added simple benchmark test for i18n handling.
+
 - Added more tests for i18n attributes handling.
 
 - Don't generate empty mappings for expressions with a trailing semicolon.
