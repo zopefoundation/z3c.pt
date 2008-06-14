@@ -18,6 +18,7 @@ setup(name='benchmark',
       zip_safe=False,
       install_requires=[
          'zope.pagetemplate',
+         'zope.tales',
          'z3c.pt',
       ],
       entry_points="""

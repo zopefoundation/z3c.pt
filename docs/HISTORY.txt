@@ -7,7 +7,7 @@ Version 0.8.x
 - Use a simplified UnicodeWrite clause for the result of _translate calls,
   as the result value is guaranteed to be Unicode.
 
-- Added simple benchmark test for i18n handling.
+- Added benchmark tests for i18n handling.
 
 - Added more tests for i18n attributes handling.
 

@@ -70,22 +70,6 @@ class BenchmarkTestCase(unittest.TestCase):
     </tr>
     </table>""")
 
-    bigtable_i18n_z3c = z3c.pt.PageTemplate("""\
-    <table xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:i18n="http://xml.zope.org/namespaces/i18n"
-    xmlns:tal="http://xml.zope.org/namespaces/tal"
-    i18n:domain="domain">
-    <tr tal:repeat="row table">
-    <span i18n:translate="label_default">Default</span>
-    <td tal:repeat="c row.values()">
-    <span tal:define="d c + 1"
-    tal:attributes="class 'column-' + str(d)"
-    tal:content="d" i18n:attributes="class" />
-    <span i18n:translate="">Default</span>
-    </td>
-    </tr>
-    </table>""")
-
     bigtable_python_zope = zope.pagetemplate.pagetemplate.PageTemplate()
     bigtable_python_zope.pt_edit("""\
     <table xmlns="http://www.w3.org/1999/xhtml"
@@ -108,23 +92,6 @@ class BenchmarkTestCase(unittest.TestCase):
     <span tal:define="d python: c + 1"
     tal:attributes="class string:column-${d}"
     tal:content="d" />
-    </td>
-    </tr>
-    </table>""", 'text/xhtml')
-
-    bigtable_i18n_zope = zope.pagetemplate.pagetemplate.PageTemplate()
-    bigtable_i18n_zope.pt_edit("""\
-    <table xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:i18n="http://xml.zope.org/namespaces/i18n"
-    xmlns:tal="http://xml.zope.org/namespaces/tal"
-    i18n:domain="domain">
-    <tr tal:repeat="row python: options['table']">
-    <span i18n:translate="label_default">Default</span>
-    <td tal:repeat="c python: row.values()">
-    <span tal:define="d python: c + 1"
-    tal:attributes="class python:'column-'+str(d)"
-    tal:content="d" i18n:attributes="class" />
-    <span i18n:translate="">Default</span>
     </td>
     </tr>
     </table>""", 'text/xhtml')
@@ -178,6 +145,79 @@ class BenchmarkTestCase(unittest.TestCase):
         print "zope.pagetemplate: %.2f" % t_zope
         print "                   %.2fX" % (t_zope/t_z3c)
 
+
+# Use a custom context to add real i18n lookup
+
+from zope.i18n import translate
+from zope.tales.tales import Context
+
+class ZopeI18NContext(Context):
+
+    def translate(self, msgid, domain=None, mapping=None, default=None):
+        return translate(msgid, domain, mapping,
+                         context=dict(), default=default)
+
+def _getContext(self, contexts=None, **kwcontexts):
+    if contexts is not None:
+        if kwcontexts:
+            kwcontexts.update(contexts)
+        else:
+            kwcontexts = contexts
+    return ZopeI18NContext(self, kwcontexts)
+
+def _pt_getEngineContext(namespace):
+    self = namespace['template']
+    engine = self.pt_getEngine()
+    return _getContext(engine, namespace)
+
+
+class I18NBenchmarkTestCase(unittest.TestCase):
+
+    table = [dict(a=1,b=2,c=3,d=4,e=5,f=6,g=7,h=8,i=9,j=10) \
+             for x in range(1000)]
+
+    bigtable_i18n_z3c = z3c.pt.PageTemplate("""\
+    <table xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+    xmlns:tal="http://xml.zope.org/namespaces/tal"
+    i18n:domain="domain">
+    <tr tal:repeat="row table">
+    <span i18n:translate="label_default">Default</span>
+    <td tal:repeat="c row.values()">
+    <span tal:define="d c + 1"
+    tal:attributes="class 'column-' + str(d)"
+    tal:content="d" i18n:attributes="class" />
+    <span i18n:translate="">Default</span>
+    </td>
+    </tr>
+    </table>""")
+
+    bigtable_i18n_zope = zope.pagetemplate.pagetemplate.PageTemplate()
+    # In order to have a fair comparision, we need real zope.i18n handling
+    bigtable_i18n_zope.pt_getEngineContext = _pt_getEngineContext
+    bigtable_i18n_zope.pt_edit("""\
+    <table xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+    xmlns:tal="http://xml.zope.org/namespaces/tal"
+    i18n:domain="domain">
+    <tr tal:repeat="row python: options['table']">
+    <span i18n:translate="label_default">Default</span>
+    <td tal:repeat="c python: row.values()">
+    <span tal:define="d python: c + 1"
+    tal:attributes="class python:'column-'+str(d)"
+    tal:content="d" i18n:attributes="class" />
+    <span i18n:translate="">Default</span>
+    </td>
+    </tr>
+    </table>""", 'text/xhtml')
+
+    def setUp(suite):
+        zope.component.testing.setUp(suite)
+        zope.configuration.xmlconfig.XMLConfig('configure.zcml', z3c.pt)()
+
+    def tearDown(suite):
+        zope.component.testing.tearDown(suite)
+
     @benchmark(u"Internationalization")
     def testI18N(self):
         table = self.table
@@ -190,7 +230,10 @@ class BenchmarkTestCase(unittest.TestCase):
         print "                   %.2fX" % (t_zope/t_z3c)
 
 def test_suite():
-    return unittest.makeSuite(BenchmarkTestCase)
+    return unittest.TestSuite((
+        unittest.makeSuite(BenchmarkTestCase),
+        unittest.makeSuite(I18NBenchmarkTestCase),
+        ))
 
 if __name__ == "__main__":
     unittest.main(defaultTest="test_suite")
