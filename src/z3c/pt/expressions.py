@@ -102,7 +102,13 @@ class ExpressionTranslation(object):
           >>> mapping("abc def")
           mapping(('abc', 'def'),)
 
+          >>> mapping("abc def;")
+          mapping(('abc', 'def'),)
+
           >>> mapping("abc")
+          mapping(('abc', None),)
+
+          >>> mapping("abc;")
           mapping(('abc', None),)
 
           >>> mapping("abc; def ghi")
@@ -114,6 +120,9 @@ class ExpressionTranslation(object):
         mappings = []
         for d in defs:
             d = d.strip()
+            if d == '':
+                continue
+
             while '  ' in d:
                 d = d.replace('  ', ' ')
 

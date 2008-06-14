@@ -4,6 +4,8 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Don't generate empty mappings for expressions with a trailing semicolon.
+
 - Fixed undefined name 'static' error in i18n attributes handling and added
   quoting to i18n attributes.
 
