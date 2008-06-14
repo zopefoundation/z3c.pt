@@ -4,6 +4,9 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Fixed undefined name 'static' error in i18n attributes handling and added
+  quoting to i18n attributes.
+
 - Added condition to the valid attributes on tags in the tal namespace.
 
 - Made sure the traceback from the *first* template exception

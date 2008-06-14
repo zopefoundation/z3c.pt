@@ -284,15 +284,17 @@ class Element(lxml.etree.ElementBase):
                         raise ValueError, "Message id not allowed in conjunction with " + \
                                           "a dynamic attribute."
 
-                    value = types.value(msgid)
+                    value = types.value('"%s"' % msgid)
 
-                    if variable in static:
-                        expression = _translate(value, default=attributes[variable])
+                    if variable in attributes:
+                        default = '"%s"' % attributes[variable]
+                        expression = _translate(value, default=default)
                     else:
                         expression = _translate(value)
                 else:
-                    if variable in dynamic or variable in static:
-                        expression = _translate(attributes[variable])
+                    if variable in dynamic or variable in attributes:
+                        text = '"%s"' % attributes[variable]
+                        expression = _translate(text)
                     else:
                         raise ValueError, "Must be either static or dynamic attribute " + \
                                           "when no message id is supplied."

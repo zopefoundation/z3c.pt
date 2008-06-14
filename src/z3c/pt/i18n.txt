@@ -111,3 +111,65 @@ We could also add a named block inside the tag.
   <div>
     <p>Mock translation of '${count} bananas.'.</p>
   </div>
+
+Translation of tag attributes
+-----------------------------
+
+A simple example to start with.
+  
+  >>> body = """\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:i18n="http://xml.zope.org/namespaces/i18n">
+  ...   <span i18n:domain="test" title="Simple Title" i18n:attributes="title">
+  ...     Default
+  ...   </span>
+  ... </div>"""
+
+Not passing a language:
+
+  >>> template = PageTemplate(body)
+  >>> print template.render()
+  <div>
+    <span title="Simple Title">
+      Default
+    </span>
+  </div>
+
+Passing German:
+
+  >>> print template.render(target_language='de')
+  <div>
+    <span title="Mock translation of 'Simple Title'.">
+      Default
+    </span>
+  </div>
+
+Use an explicit msgid:
+
+  >>> body = """\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:i18n="http://xml.zope.org/namespaces/i18n">
+  ...   <span i18n:domain="test" title="Simple Title"
+  ...         i18n:attributes="title title_simple">
+  ...     Default
+  ...   </span>
+  ... </div>"""
+
+Not passing a language:
+
+  >>> template = PageTemplate(body)
+  >>> print template.render()
+  <div>
+    <span title="Simple Title">
+      Default
+    </span>
+  </div>
+
+Passing German:
+
+  >>> print template.render(target_language='de')
+  <div>
+    <span title="Mock translation of 'title_simple'.">
+      Default
+    </span>
+  </div>
