@@ -73,7 +73,8 @@ class BenchmarkTestCase(unittest.TestCase):
     bigtable_i18n_z3c = z3c.pt.PageTemplate("""\
     <table xmlns="http://www.w3.org/1999/xhtml"
     xmlns:i18n="http://xml.zope.org/namespaces/i18n"
-    xmlns:tal="http://xml.zope.org/namespaces/tal">
+    xmlns:tal="http://xml.zope.org/namespaces/tal"
+    i18n:domain="domain">
     <tr tal:repeat="row table">
     <span i18n:translate="label_default">Default</span>
     <td tal:repeat="c row.values()">
@@ -115,7 +116,8 @@ class BenchmarkTestCase(unittest.TestCase):
     bigtable_i18n_zope.pt_edit("""\
     <table xmlns="http://www.w3.org/1999/xhtml"
     xmlns:i18n="http://xml.zope.org/namespaces/i18n"
-    xmlns:tal="http://xml.zope.org/namespaces/tal">
+    xmlns:tal="http://xml.zope.org/namespaces/tal"
+    i18n:domain="domain">
     <tr tal:repeat="row python: options['table']">
     <span i18n:translate="label_default">Default</span>
     <td tal:repeat="c python: row.values()">

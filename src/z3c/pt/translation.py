@@ -196,7 +196,7 @@ class Element(lxml.etree.ElementBase):
                 # fallback to default rendition; 
                 result = types.value('_result')
                 condition = types.value('_result is not _marker')
-                _.append(clauses.Condition(condition, [clauses.Write(result)]))
+                _.append(clauses.Condition(condition, [clauses.UnicodeWrite(result)]))
 
                 subclauses = []
                 if self.text:

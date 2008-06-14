@@ -689,6 +689,56 @@ class Write(object):
             self.assign.end(stream)
         stream.restore()
 
+class UnicodeWrite(Write):
+    """
+    >>> from z3c.pt.generation import CodeIO
+    >>> from StringIO import StringIO
+
+    Basic write:
+
+    >>> stream = CodeIO()
+    >>> _out = StringIO()
+    >>> write = Write(types.value("'New York'"))
+    >>> write.begin(stream)
+    >>> write.end(stream)
+    >>> exec stream.getvalue()
+    >>> _out.getvalue()
+    'New York'
+
+    Unicode:
+
+    >>> stream = CodeIO()
+    >>> _out = StringIO()
+    >>> write = Write(types.value("unicode('La Pe\xc3\xb1a', 'utf-8')"))
+    >>> write.begin(stream)
+    >>> write.end(stream)
+    >>> exec stream.getvalue()
+    >>> _out.getvalue() == 'La Pe\xc3\xb1a'
+    True
+
+    Invalid:
+
+    >>> stream = CodeIO()
+    >>> _out = StringIO()
+    >>> write = Write(types.value("None"))
+    >>> write.begin(stream)
+    >>> write.end(stream)
+    >>> exec stream.getvalue()
+    >>> _out.getvalue()
+    ''
+    """
+
+    def begin(self, stream):
+        temp = stream.save()
+
+        if self.value:
+            expr = self.value
+        else:
+            self.assign.begin(stream, temp)
+            expr = temp
+
+        stream.write("_out.write(%s.encode('utf-8'))" % expr)
+
 class Out(object):
     """
       >>> from z3c.pt.generation import CodeIO; stream = CodeIO()
