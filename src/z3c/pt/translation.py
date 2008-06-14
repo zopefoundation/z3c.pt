@@ -337,6 +337,7 @@ class Element(lxml.etree.ElementBase):
     
 class TALElement(Element):
     define = attribute("define", lambda p: p.definitions)
+    condition = attribute("condition", lambda p: p.expression)
     replace = attribute("replace", lambda p: p.output)
     repeat = attribute("repeat", lambda p: p.definition)
     attributes = attribute("attributes", lambda p: p.expression)
@@ -350,6 +351,7 @@ class TALElement(Element):
         for key in self.keys():
             if key not in \
                    ('define',
+                    'condition',
                     'replace',
                     'repeat',
                     'attributes',

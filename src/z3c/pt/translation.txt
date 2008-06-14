@@ -69,6 +69,24 @@ Repeats:
       </ul>
     </div>
 
+Conditions:
+
+  >>> print render("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   <div tal:condition="True">
+  ...     Show me!
+  ...   </div>
+  ...   <div tal:condition="False">
+  ...     Do not show me!
+  ...   </div>
+  ... </div>""", translate_xml)
+    <div>
+      <div>
+        Show me!
+      </div>
+    </div>
+
 Comments:
 
   >>> print render("""\
@@ -94,6 +112,7 @@ Namespacing:
   ...   <tal:example replace="'Hello World!'" />
   ...   <tal:div content="'Hello World!'" />
   ...   <tal:multiple repeat="i range(3)" replace="i" />
+  ...   <tal:div condition="True">True</tal:div>
   ... </div>""", translate_xml)
     <div>
       Hello World!
@@ -101,6 +120,7 @@ Namespacing:
       0
       1
       2
+      True
     </div>
 
 Omitting tags:

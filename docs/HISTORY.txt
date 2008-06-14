@@ -4,6 +4,8 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Added condition to the valid attributes on tags in the tal namespace.
+
 - Made sure the traceback from the *first* template exception
   is carried over to __traceback_info__
 
