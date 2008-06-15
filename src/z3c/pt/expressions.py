@@ -78,6 +78,18 @@ class ExpressionTranslation(object):
 
           >>> declaration("variable1, variable2")
           declaration('variable1', 'variable2')
+
+        Repeat not allowed:
+
+          >>> declaration('repeat')
+          Traceback (most recent call last):
+          ...
+          ValueError: Invalid variable name 'repeat' (reserved).
+
+          >>> declaration('_disallowed')
+          Traceback (most recent call last):
+          ...
+          ValueError: Invalid variable name '_disallowed' (starts with an underscore).
         """
 
         variables = []
@@ -85,7 +97,7 @@ class ExpressionTranslation(object):
             var = var.strip()
 
             if var in ('repeat',):
-                raise ValueError, "Invalid variable name '%s' (reserved)." % variable
+                raise ValueError, "Invalid variable name '%s' (reserved)." % var
 
             if var.startswith('_') and not var.startswith('_tmp'):
                 raise ValueError(
