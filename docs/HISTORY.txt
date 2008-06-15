@@ -4,6 +4,10 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Added some code in a filecache module that can later be used to write out
+  and reload the compiled Python code to and from the file system. We should
+  be able to avoid reparsing on Python process restart.
+
 - Simplified the generated _escape code. cgi.escape's second argument is a
   simple boolean and not a list of characters to quote.
 
