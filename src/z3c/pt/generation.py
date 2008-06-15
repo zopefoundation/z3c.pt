@@ -2,7 +2,6 @@ import zope.i18n
 
 import cgi
 import StringIO
-import cStringIO
 
 import expressions
 import utils
@@ -21,7 +20,7 @@ def render(%starget_language=None):
 
 \t_target_language = target_language
 %s
-\treturn _out.getvalue().decode('utf-8')
+\treturn _out.getvalue()
 """
 
 def initialize_i18n():
@@ -34,7 +33,7 @@ def initialize_helpers():
     return (cgi.escape, object())
 
 def initialize_stream():
-    out = cStringIO.StringIO()
+    out = BufferIO()
     return (out, out.write)
 
 def initialize_traversal():
@@ -56,7 +55,13 @@ class Generator(object):
         code = self.stream.getvalue()
 
         return wrapper % (args, code), {'generation': z3c.pt.generation}
-        
+
+class BufferIO(list):
+    write = list.append
+
+    def getvalue(self):
+        return ''.join(self)
+
 class CodeIO(StringIO.StringIO):
     """A I/O stream class that provides facilities to generate Python code.
 

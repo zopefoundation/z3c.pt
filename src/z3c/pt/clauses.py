@@ -490,7 +490,7 @@ class Tag(object):
                 stream.write("if isinstance(%s, unicode):" % temp)
                 stream.indent()
                 stream.write("_write(' %s=\"'+_escape("
-                             "%s.encode('utf-8'), \"\\\"\")+'\"')" %
+                             "%s, \"\\\"\")+'\"')" %
                              (attribute, temp))
                 stream.outdent()
                 stream.write("elif %s is not None:" % temp)
@@ -630,7 +630,7 @@ class Write(object):
     >>> write.begin(stream)
     >>> write.end(stream)
     >>> exec stream.getvalue()
-    >>> _out.getvalue() == 'La Pe\xc3\xb1a'
+    >>> _out.getvalue() == unicode('La Pe\xc3\xb1a', 'utf-8')
     True
     """
 
@@ -658,7 +658,7 @@ class Write(object):
         if unicode_required_flag:
             stream.write("if isinstance(_urf, unicode):")
             stream.indent()
-            stream.write("_write(_urf.encode('utf-8'))")
+            stream.write("_write(_urf)")
             stream.outdent()
             stream.write("elif _urf is not None:")
             stream.indent()
@@ -703,7 +703,7 @@ class UnicodeWrite(Write):
     >>> write.begin(stream)
     >>> write.end(stream)
     >>> exec stream.getvalue()
-    >>> _out.getvalue() == 'La Pe\xc3\xb1a'
+    >>> _out.getvalue() == unicode('La Pe\xc3\xb1a', 'utf-8')
     True
 
     Invalid:
@@ -726,7 +726,7 @@ class UnicodeWrite(Write):
             self.assign.begin(stream, temp)
             expr = temp
 
-        stream.write("_write(%s.encode('utf-8'))" % expr)
+        stream.write("_write(%s)" % expr)
 
 class Out(object):
     """

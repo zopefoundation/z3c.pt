@@ -4,6 +4,10 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Use a simple list based BufferIO class instead of a cStringIO for the out
+  stream. Avoiding the need to encode Unicode data is a bigger win. We do
+  not support arbitrarily mixing of Unicode and non-ascii inside the engine.
+
 - Merged two adjacent writes into one inside the Tag clause.
 
 - Applied a bunch of micro-optimizations. ''.join({}) is slightly faster

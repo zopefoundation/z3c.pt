@@ -188,8 +188,8 @@ Interpolation:
   ...   <img alt="${'La Peña'}" />
   ...   <img alt="Hello ${'La Peña'}" />
   ...   <img alt="La Peña, oh ${'La Peña'}" />
-  ...   ${unicode('La Pe\xc3\xb1a', 'utf-8')}
-  ...   <img alt="${unicode('La Pe\xc3\xb1a', 'utf-8')}" />
+  ...   ${unicode('La Pe\xc3\xb1a', 'utf-8').encode('utf-8')}
+  ...   <img alt="${unicode('La Pe\xc3\xb1a', 'utf-8').encode('utf-8')}" />
   ...   <img alt="Hello ${unicode('La Pe\xc3\xb1a', 'utf-8').encode('utf-8')}!" />
   ... </div>""", translate_xml)
     <div>
