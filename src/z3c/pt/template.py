@@ -52,7 +52,7 @@ class BaseTemplate(object):
         if template is None:
             self.registry[signature] = template = self.cook(kwargs.keys())
 
-        if not DEBUG_MODE:
+        if PROD_MODE:
             return template(**kwargs)
 
         return self.safe_render(template, **kwargs)
