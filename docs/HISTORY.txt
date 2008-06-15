@@ -4,6 +4,9 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Made the debug mode independent from the Python debug mode. You can now
+  specify an environment variable called `Z3C_PT_DEBUG` to enable it.
+
 - Added some code in a filecache module that can later be used to write out
   and reload the compiled Python code to and from the file system. We should
   be able to avoid reparsing on Python process restart.
