@@ -1,1 +1,2 @@
 DEBUG_MODE = __debug__
+PROD_MODE = not DEBUG_MODE

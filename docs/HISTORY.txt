@@ -4,6 +4,13 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Applied a bunch of micro-optimizations. ''.join({}) is slightly faster
+  than ''.join({}.keys()) and does the same. Avoid a try/except for error
+  handling in non-debug mode. Test against 'is None' instead of a boolean
+  check for the result of the template registry lookup. Made PROD_MODE
+  available defined as 'not DEBUG_MODE' in config.py, so we avoid the 'not'
+  in every cook-check.
+
 - Added more benchmark tests for the file variants.
 
 - Optimized 'is None' handling in Tag clause similar to the Write clause.

@@ -3,7 +3,7 @@ import sys
 import codegen
 import traceback
 
-from z3c.pt import config
+from z3c.pt.config import DEBUG_MODE, PROD_MODE
 
 class BaseTemplate(object):
     registry = {}
@@ -45,12 +45,19 @@ class BaseTemplate(object):
         return _locals['render']
 
     def render(self, **kwargs):
-        signature = self.signature + hash(",".join(kwargs.keys()))
+        # A ''.join of a dict uses only the keys
+        signature = self.signature + hash(''.join(kwargs))
 
-        template = self.registry.get(signature)
-        if not template:
+        template = self.registry.get(signature, None)
+        if template is None:
             self.registry[signature] = template = self.cook(kwargs.keys())
 
+        if not DEBUG_MODE:
+            return template(**kwargs)
+
+        return self.safe_render(template, **kwargs)
+
+    def safe_render(self, template, **kwargs):
         try:
             return template(**kwargs)
         except Exception, e:
@@ -77,8 +84,8 @@ class BaseTemplate(object):
             
             e.__traceback_info__ += "".join(traceback.format_tb(tb))
             
-            raise e            
-        
+            raise e
+
     def __call__(self, **kwargs):
         return self.render(**kwargs)
 
@@ -87,8 +94,7 @@ class BaseTemplate(object):
 
 class BaseTemplateFile(BaseTemplate):
     def __init__(self, filename):
-        self.body = None
-        self.source = ''
+        BaseTemplate.__init__(self, None)
 
         if not os.path.isabs(filename):
             package_name = sys._getframe(2).f_globals['__name__']
@@ -119,27 +125,27 @@ class BaseTemplateFile(BaseTemplate):
         return "%s.source" % self.filename
 
     def source_write(self):
-        if self.source_filename and config.DEBUG_MODE:
-            try:
-                fs = open(self.source_filename, 'w')
-                fs.write(self.source)
-            finally:
-                fs.close()
+        if DEBUG_MODE and self.source_filename:
+            fs = open(self.source_filename, 'w')
+            fs.write(self.source)
+            fs.close()
 
     def render(self, **kwargs):
         if self._cook_check():
-            self.body = open(self.filename, 'r').read()
-            self.signature = hash(self.body)
+            fd = open(self.filename, 'r')
+            self.body = body = fd.read()
+            fd.close()
+            self.signature = hash(body)
             self._v_last_read = self.mtime()
 
         return BaseTemplate.render(self, **kwargs)
 
     def _cook_check(self):
-        if self._v_last_read and not config.DEBUG_MODE:
-            return
+        if self._v_last_read and PROD_MODE:
+            return False
 
         if self.mtime() == self._v_last_read:
-            return
+            return False
 
         return True
 
