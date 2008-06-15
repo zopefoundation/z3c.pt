@@ -4,6 +4,9 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Simplified the generated _escape code. cgi.escape's second argument is a
+  simple boolean and not a list of characters to quote.
+
 - Use a simple list based BufferIO class instead of a cStringIO for the out
   stream. Avoiding the need to encode Unicode data is a bigger win. We do
   not support arbitrarily mixing of Unicode and non-ascii inside the engine.
