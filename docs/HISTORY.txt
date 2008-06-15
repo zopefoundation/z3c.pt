@@ -4,6 +4,8 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Merged two adjacent writes into one inside the Tag clause.
+
 - Applied a bunch of micro-optimizations. ''.join({}) is slightly faster
   than ''.join({}.keys()) and does the same. Avoid a try/except for error
   handling in non-debug mode. Test against 'is None' instead of a boolean
