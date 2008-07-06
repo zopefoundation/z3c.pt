@@ -5,7 +5,7 @@ version = '0.8.6dev'
 setup(name='z3c.pt',
       version=version,
       description="An implementation of the TAL template language.",
-      long_description=open("README.txt").read() + open("docs/HISTORY.txt").read(),
+      long_description=open("README.txt").read() + open("CHANGES.txt").read(),
       classifiers=[
         "Programming Language :: Python",
         "Topic :: Text Processing :: Markup :: HTML",
