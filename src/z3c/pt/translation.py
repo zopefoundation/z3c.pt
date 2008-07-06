@@ -71,8 +71,11 @@ class Element(lxml.etree.ElementBase):
                     '{http://xml.zope.org/namespaces/tal}interpolation')
                 t.attrib['replace'] = m.group('expression')
                 t.tail = self.text[m.end():]
-                self.insert(0, t)                
-                self.text = self.text[:m.start()+1]
+                self.insert(0, t)
+                if m.start() == 0:
+                    self.text = self.text[1:m.start()+1]
+                else:
+                    self.text = self.text[:m.start()+1]
 
         # interpolate tail
         if self.tail is not None:
@@ -86,8 +89,11 @@ class Element(lxml.etree.ElementBase):
                 t.attrib['replace'] = m.group('expression')
                 t.tail = self.tail[m.end():]
                 parent = self.getparent()
-                parent.insert(parent.index(self)+1, t)                
-                self.tail = self.tail[:m.start()+1]
+                parent.insert(parent.index(self)+1, t)
+                if m.start() > 0:
+                    self.tail = self.tail[:m.start()+1]
+                else:
+                    self.tail = self.tail[:m.start()]
 
         # interpolate attributes
         for name in self._static_attributes():
