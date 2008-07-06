@@ -146,7 +146,10 @@ class Assign(object):
         
     def end(self, stream):
         pass
-        
+
+    def uses_variable(self, var):
+        return var in repr(self.parts)
+
 class Define(object):
     """
       >>> from z3c.pt.generation import CodeIO; stream = CodeIO()
@@ -294,6 +297,9 @@ class Define(object):
                 else:
                     stream.write("del %s" % var)
 
+    def uses_variable(self, var):
+        return self.assign.uses_variable(var)
+
 class Condition(object):
     """
       >>> from z3c.pt.generation import CodeIO
@@ -378,6 +384,9 @@ class Condition(object):
             stream.outdent()
         self.assign.end(stream)
 
+    def uses_variable(self, var):
+        return self.assign.uses_variable(var)
+
 class Else(object):
     def __init__(self, clauses=None):
         self.clauses = clauses
@@ -396,6 +405,9 @@ class Else(object):
         if not self.clauses:
             stream.outdent()
 
+    def uses_variable(self, var):
+        return False
+
 class Group(object):
     def __init__(self, clauses):
         self.clauses = clauses
@@ -405,10 +417,13 @@ class Group(object):
             clause.begin(stream)
         for clause in reversed(self.clauses):
             clause.end(stream)
-        
+
     def end(self, stream):
         pass
-    
+
+    def uses_variable(self, var):
+        return False
+
 class Tag(object):
     """
       >>> from z3c.pt.generation import CodeIO
@@ -517,6 +532,14 @@ class Tag(object):
         if not self.selfclosing:
             stream.out('</%s>' % self.tag)
 
+    def uses_variable(self, var):
+        values = self.attributes.values()
+        for value in values:
+            if isinstance(value, types.expression):
+                if var in repr(value):
+                    return True
+        return False
+
 class Repeat(object):
     """
       >>> from z3c.pt.generation import CodeIO
@@ -544,54 +567,81 @@ class Repeat(object):
       >>> _repeat.end(stream)
 
     A repeat over an empty set.
-    
+
       >>> stream = CodeIO()
       >>> _repeat = Repeat("j", pyexp("range(0)"))
       >>> _repeat.begin(stream)
       >>> _repeat.end(stream)
       >>> exec stream.getvalue()
 
+    Simple for loop:
+
+      >>> stream = CodeIO()
+      >>> _for = Repeat("i", pyexp("range(3)"), repeatdict=False)
+      >>> _for.begin(stream)
+      >>> stream.write("print i")
+      >>> _for.end(stream)
+      >>> exec stream.getvalue()
+      0
+      1
+      2
+      >>> _for.end(stream)
+
     """
-        
-    def __init__(self, v, e, scope=()):
+
+    def __init__(self, v, e, scope=(), repeatdict=True):
         self.variable = v
+        self.expression = e
         self.define = Define(v, types.value("None"))
         self.assign = Assign(e)
+        self.repeatdict = repeatdict
 
     def begin(self, stream):
         variable = self.variable
-        iterator = stream.save()
 
-        # assign iterator
-        self.assign.begin(stream, iterator)
+        if self.repeatdict:
+            iterator = stream.save()
 
-        # initialize variable scope
-        self.define.begin(stream)
+            # assign iterator
+            self.assign.begin(stream, iterator)
 
-        # initialize iterator
-        stream.write("%s = repeat.insert('%s', %s)" % (iterator, variable, iterator))
-        
-        # loop
-        stream.write("try:")
-        stream.indent()
-        stream.write("while True:")
-        stream.indent()
-        stream.write("%s = %s.next()" % (variable, iterator))
-        
+            # initialize variable scope
+            self.define.begin(stream)
+
+            # initialize iterator
+            stream.write("%s = repeat.insert('%s', %s)" % (
+                iterator, variable, iterator))
+
+            # loop
+            stream.write("try:")
+            stream.indent()
+            stream.write("while True:")
+            stream.indent()
+            stream.write("%s = %s.next()" % (variable, iterator))
+        else:
+            stream.write("for %s in %s:" % (variable, self.expression))
+            stream.indent()
+
     def end(self, stream):
         # cook before leaving loop
         stream.cook()
-        
         stream.outdent()
-        stream.outdent()
-        stream.write("except StopIteration:")
-        stream.indent()
-        stream.write("pass")
-        stream.outdent()
-        
-        self.define.end(stream)
-        self.assign.end(stream)
-        stream.restore()
+
+        if self.repeatdict:
+            stream.outdent()
+            stream.write("except StopIteration:")
+            stream.indent()
+            stream.write("pass")
+            stream.outdent()
+
+            self.define.end(stream)
+            self.assign.end(stream)
+            stream.restore()
+
+    def uses_variable(self, var):
+        if var in (self.variable, 'repeat'):
+            return True
+        return False
 
 class Write(object):
     """
@@ -678,6 +728,11 @@ class Write(object):
             self.assign.end(stream)
         stream.restore()
 
+    def uses_variable(self, var):
+        if self.assign:
+            return self.assign.uses_variable(var)
+        return False
+
 class UnicodeWrite(Write):
     """
     >>> from z3c.pt.generation import CodeIO
@@ -752,6 +807,9 @@ class Out(object):
         if self.defer:
             stream.out(self.string)
 
+    def uses_variable(self, var):
+        return False
+
 class Translate(object):
     """
     The translate clause works retrospectively.
@@ -762,3 +820,6 @@ class Translate(object):
 
     def end(self, stream):
         raise
+
+    def uses_variable(self, var):
+        return False

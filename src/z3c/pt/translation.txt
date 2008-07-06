@@ -56,6 +56,23 @@ Repeats:
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
   ...   <ul>
+  ...     <li tal:repeat="i range(5)"><span tal:replace="str(i) + ' ' + str(repeat['i'].even())" /></li>
+  ...   </ul>
+  ... </div>""", translate_xml)
+    <div>
+      <ul>
+        <li>0 True</li>
+        <li>1 False</li>
+        <li>2 True</li>
+        <li>3 False</li>
+        <li>4 True</li>
+      </ul>
+    </div>
+
+  >>> print render("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   <ul>
   ...     <li tal:repeat="i range(5)"><span tal:replace="'Item ' + str(i) + ')'" /></li>
   ...   </ul>
   ... </div>""", translate_xml)

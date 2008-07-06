@@ -4,6 +4,14 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Added a second variation of the repeat clause, using a simple for loop. It
+  doesn't support the repeatdict, though and is therefor not used yet. Also
+  began work to add introspection facilities to clauses about the variables
+  being used in them. The simpler loop causes the benchmarks to go up to a
+  10.5 (old 9.5) for path expressions and 14.5 (12.5) for python expressions.
+  So the next step is to introduce an optimization phase, that can decide
+  which variant of the loops to use.
+
 - Made the debug mode independent from the Python debug mode. You can now
   specify an environment variable called `Z3C_PT_DEBUG` to enable it.
 
