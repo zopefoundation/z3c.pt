@@ -43,7 +43,7 @@ class Element(lxml.etree.ElementBase):
                 self._wrap_comment(element)
 
             seen = set()
-            while seen != set(self):
+            while len(seen) < len(self):
                 element = set(self).difference(seen).pop()
                 element.interpolate(stream)
                 seen.add(element)
