@@ -21,6 +21,7 @@ class ViewTextTemplate(property):
             return self.template.render(view=view,
                                         context=view.context,
                                         request=view.request,
+                                        _context=view.request,
                                         options=kwargs)
         return template        
     

@@ -49,11 +49,17 @@ class Generator(object):
 
     def __call__(self):
         # prepare template arguments
-        args = ', '.join(self.params)
-        if args: args += ', '
+        args = self.params
+        # We need to ensure we have _context for the i18n handling in the
+        # arguments. The default template implementations pass this in
+        # explicitly.
+        if '_context' not in args:
+            args = args + ('_context=None', )
+        args = ', '.join(args)
+        if args:
+            args += ', '
 
         code = self.stream.getvalue()
-
         return wrapper % (args, code), {'generation': z3c.pt.generation}
 
 class BufferIO(list):

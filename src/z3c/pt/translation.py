@@ -441,9 +441,8 @@ def translate_text(body, *args, **kwargs):
     return translate_etree(xml, *args, **kwargs)
     
 def _translate(value, mapping=None, default=None):
-    format = ("_translate(%s, domain=_domain, mapping=%s, "
+    format = ("_translate(%s, domain=_domain, mapping=%s, context=_context, "
               "target_language=_target_language, default=%s)")
-    
     return types.value(format % (value, mapping, default))
 
 def _not(value):

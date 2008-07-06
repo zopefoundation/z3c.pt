@@ -217,13 +217,20 @@ class FileBenchmarkTestCase(BaseTestCase):
 # Use a custom context to add real i18n lookup
 
 from zope.i18n import translate
+from zope.i18n.interfaces import INegotiator
+from zope.i18n.interfaces import ITranslationDomain
+from zope.i18n.negotiator import Negotiator
+from zope.i18n.simpletranslationdomain import SimpleTranslationDomain
+from zope.i18n.tests.test_negotiator import Env
 from zope.tales.tales import Context
 
 class ZopeI18NContext(Context):
 
-    def translate(self, msgid, domain=None, mapping=None, default=None):
+    def translate(self, msgid, domain=None, context=None,
+                  mapping=None, default=None):
+        context = self.vars['options']['env']
         return translate(msgid, domain, mapping,
-                         context=dict(), default=default)
+                         context=context, default=default)
 
 def _getContext(self, contexts=None, **kwcontexts):
     if contexts is not None:
@@ -241,47 +248,32 @@ def _pt_getEngineContext(namespace):
 
 class I18NBenchmarkTestCase(BaseTestCase):
 
-    bigtable_i18n_z3c = z3c.pt.PageTemplate("""\
-    <table xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:i18n="http://xml.zope.org/namespaces/i18n"
-    xmlns:tal="http://xml.zope.org/namespaces/tal"
-    i18n:domain="domain">
-    <tr tal:repeat="row table">
-    <span i18n:translate="label_default">Default</span>
-    <td tal:repeat="c row.values()">
-    <span tal:define="d c + 1"
-    tal:attributes="class 'column-' + str(d)"
-    tal:content="d" i18n:attributes="class" />
-    <span i18n:translate="">Default</span>
-    </td>
-    </tr>
-    </table>""")
-
-    bigtable_i18n_zope = zope.pagetemplate.pagetemplate.PageTemplate()
-    # In order to have a fair comparision, we need real zope.i18n handling
-    bigtable_i18n_zope.pt_getEngineContext = _pt_getEngineContext
-    bigtable_i18n_zope.pt_edit("""\
-    <table xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:i18n="http://xml.zope.org/namespaces/i18n"
-    xmlns:tal="http://xml.zope.org/namespaces/tal"
-    i18n:domain="domain">
-    <tr tal:repeat="row python: options['table']">
-    <span i18n:translate="label_default">Default</span>
-    <td tal:repeat="c python: row.values()">
-    <span tal:define="d python: c + 1"
-    tal:attributes="class python:'column-'+str(d)"
-    tal:content="d" i18n:attributes="class" />
-    <span i18n:translate="">Default</span>
-    </td>
-    </tr>
-    </table>""", 'text/xhtml')
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        self.env = Env(('da', 'en', 'fr', 'no'))
+        zope.component.provideUtility(Negotiator(), INegotiator)
+        catalog = SimpleTranslationDomain('domain')
+        zope.component.provideUtility(catalog, ITranslationDomain, 'domain')
 
     @benchmark(u"Internationalization")
     def testI18N(self):
         table = self.table
 
-        t_z3c = timing(self.bigtable_i18n_z3c, table=table)
-        t_zope = timing(self.bigtable_i18n_zope, table=table)
+        files = os.path.abspath(os.path.join(__file__, '..', 'input'))
+        def testfile(name):
+            return os.path.join(files, name)
+
+        z3cfile = z3c.pt.PageTemplateFile(
+            testfile('bigtable_i18n_z3c.pt'))
+
+        zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
+            testfile('bigtable_i18n_zope.pt'))
+
+        # In order to have a fair comparision, we need real zope.i18n handling
+        zopefile.pt_getEngineContext = _pt_getEngineContext
+
+        t_z3c = timing(z3cfile, table=table, _context=self.env)
+        t_zope = timing(zopefile, table=table, env=self.env)
 
         print "z3c.pt:            %.2f" % t_z3c
         print "zope.pagetemplate: %.2f" % t_zope

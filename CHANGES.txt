@@ -4,6 +4,12 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Extended the i18n handling to respect the passed in translation context to
+  the template. Usually this is the request, which is passed on under the
+  internal name of `_context` into the render functions. After extending the
+  i18n tests to include a negotiator and message catalog the improvement is
+  only at 4.5 anymore, as most of the time is spent inside the i18n machinery.
+
 - Added persistent file cache functionality. If the environment variable is
   set, each file system based template will add a directory to the cache
   (currently a SHA-1 of the file's absolute path is used as the folder name)

@@ -1,0 +1,14 @@
+<table xmlns="http://www.w3.org/1999/xhtml"
+xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+xmlns:tal="http://xml.zope.org/namespaces/tal"
+i18n:domain="domain">
+<tr tal:repeat="row python: options['table']">
+<span i18n:translate="label_default">Default</span>
+<td tal:repeat="c python: row.values()">
+<span tal:define="d python: c + 1"
+tal:attributes="class python:'column-'+str(d)"
+tal:content="d" i18n:attributes="class" />
+<span i18n:translate="">Default</span>
+</td>
+</tr>
+</table>
