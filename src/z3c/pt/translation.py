@@ -41,8 +41,13 @@ class Element(lxml.etree.ElementBase):
         if not skip:
             for element in [e for e in self if isinstance(e, lxml.etree._Comment)]:
                 self._wrap_comment(element)
-            for element in self:
+
+            seen = set()
+            while seen != set(self):
+                element = set(self).difference(seen).pop()
                 element.interpolate(stream)
+                seen.add(element)
+                
             for element in self:
                 element.visit(stream)
                     
