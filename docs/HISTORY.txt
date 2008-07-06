@@ -4,6 +4,9 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Fixed interpolation edge case bugs.
+  [malthe]
+
 - Added new `Z3C_PT_FILECACHE` environment variable pointing to a directory.
   If set, this will be used to cache the compiled files.
 
