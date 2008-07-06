@@ -39,7 +39,8 @@ class Element(lxml.etree.ElementBase):
     def body(self, stream):
         skip = self.replace or self.content or self.i18n_translate is not None
         if not skip:
-            for element in [e for e in self if isinstance(e, lxml.etree._Comment)]:
+            for element in [e for e in self
+                              if isinstance(e, lxml.etree._Comment)]:
                 self._wrap_comment(element)
 
             seen = set()
@@ -103,10 +104,11 @@ class Element(lxml.etree.ElementBase):
                 del self.attrib[name]
 
                 attributes = '{http://xml.zope.org/namespaces/tal}attributes'
+                expr = '%s string: %s' % (name, value)
                 if attributes in self.attrib:
-                    self.attrib[attributes] += '; %s string: %s' % (name, value)
+                    self.attrib[attributes] += '; %s' % expr
                 else:
-                    self.attrib[attributes] = '%s string: %s' % (name, value)
+                    self.attrib[attributes] = expr
                 
     def _clauses(self):
         _ = []
@@ -129,7 +131,9 @@ class Element(lxml.etree.ElementBase):
         if self.repeat is not None:
             variables, expression = self.repeat
             if len(variables) != 1:
-                raise ValueError, "Cannot unpack more than one variable in a repeat statement."
+                raise ValueError(
+                    "Cannot unpack more than one variable in a "
+                    "repeat statement.")
             _.append(clauses.Repeat(variables[0], expression))
 
         # tag tail (deferred)
@@ -137,15 +141,19 @@ class Element(lxml.etree.ElementBase):
             _.append(clauses.Out(self.tail, defer=True))
 
         # compute dynamic flag
-        dynamic = self.replace or self.content or self.i18n_translate is not None
+        dynamic = (self.replace or
+                   self.content or
+                   self.i18n_translate is not None)
         
         # tag
         if self.replace is None:
             selfclosing = self.text is None and not dynamic and len(self) == 0
-            tag = clauses.Tag(self.tag, self._attributes(), selfclosing=selfclosing)
+            tag = clauses.Tag(self.tag, self._attributes(),
+                              selfclosing=selfclosing)
 
             if self.omit:
-                _.append(clauses.Condition(_not(self.omit), [tag], finalize=False))
+                _.append(clauses.Condition(_not(self.omit), [tag],
+                                           finalize=False))
             elif self.omit is not None:
                 pass
             else:
@@ -160,13 +168,15 @@ class Element(lxml.etree.ElementBase):
         content = self.content
 
         if replace and content:
-            raise ValueError, "Can't use replace clause together with content clause."
+            raise ValueError("Can't use replace clause together with "
+                             "content clause.")
 
         expression = replace or content
         if expression:
             if self.i18n_translate is not None:
                 if self.i18n_translate != "":
-                    raise ValueError, "Can't use message id with dynamic content translation."
+                    raise ValueError("Can't use message id with "
+                                     "dynamic content translation.")
                 _.append(clauses.Translate())
 
             _.append(clauses.Write(expression))
@@ -192,22 +202,25 @@ class Element(lxml.etree.ElementBase):
                     
                     subclauses = []
                     subclauses.append(clauses.Define(
-                        ('_out', '_write'), types.value('generation.initialize_stream()')))
+                        ('_out', '_write'),
+                        types.value('generation.initialize_stream()')))
                     subclauses.append(clauses.Group(element._clauses()))
                     subclauses.append(clauses.Assign(
-                        types.value('_out.getvalue()'), "%s['%s']" % (mapping, name)))
+                        types.value('_out.getvalue()'),
+                        "%s['%s']" % (mapping, name)))
 
                     _.append(clauses.Group(subclauses))
 
                 _.append(clauses.Assign(
-                    _translate(types.value(repr(msgid)), mapping=mapping, default='_marker'),
-                    '_result'))
+                    _translate(types.value(repr(msgid)), mapping=mapping,
+                               default='_marker'), '_result'))
 
                 # write translation to output if successful, otherwise
                 # fallback to default rendition; 
                 result = types.value('_result')
                 condition = types.value('_result is not _marker')
-                _.append(clauses.Condition(condition, [clauses.UnicodeWrite(result)]))
+                _.append(clauses.Condition(condition,
+                            [clauses.UnicodeWrite(result)]))
 
                 subclauses = []
                 if self.text:
@@ -218,7 +231,8 @@ class Element(lxml.etree.ElementBase):
                         value = types.value("%s['%s']" % (mapping, name))
                         subclauses.append(clauses.Write(value))
                     else:
-                        subclauses.append(clauses.Out(lxml.etree.tostring(element)))
+                        subclauses.append(clauses.Out(
+                            lxml.etree.tostring(element)))
 
                 if subclauses:
                     _.append(clauses.Else(subclauses))
@@ -278,7 +292,8 @@ class Element(lxml.etree.ElementBase):
         if attrs is not None:
             for variables, expression in attrs:
                 if len(variables) != 1:
-                    raise ValueError, "Tuple definitions in assignment clause is not supported."
+                    raise ValueError("Tuple definitions in assignment clause "
+                                     "is not supported.")
 
                 variable = variables[0]
                 attributes[variable] = expression
@@ -292,8 +307,9 @@ class Element(lxml.etree.ElementBase):
             for variable, msgid in self.i18n_attributes:
                 if msgid:
                     if variable in dynamic:
-                        raise ValueError, "Message id not allowed in conjunction with " + \
-                                          "a dynamic attribute."
+                        raise ValueError(
+                            "Message id not allowed in conjunction with "
+                            "a dynamic attribute.")
 
                     value = types.value('"%s"' % msgid)
 
@@ -307,8 +323,9 @@ class Element(lxml.etree.ElementBase):
                         text = '"%s"' % attributes[variable]
                         expression = _translate(text)
                     else:
-                        raise ValueError, "Must be either static or dynamic attribute " + \
-                                          "when no message id is supplied."
+                        raise ValueError("Must be either static or dynamic "
+                                         "attribute when no message id "
+                                         "is supplied.")
 
                 attributes[variable] = expression
 
@@ -326,11 +343,13 @@ class Element(lxml.etree.ElementBase):
     define = attribute(
         "{http://xml.zope.org/namespaces/tal}define", lambda p: p.definitions)
     condition = attribute(
-        "{http://xml.zope.org/namespaces/tal}condition", lambda p: p.expression)
+        "{http://xml.zope.org/namespaces/tal}condition",
+        lambda p: p.expression)
     repeat = attribute(
         "{http://xml.zope.org/namespaces/tal}repeat", lambda p: p.definition)
     attributes = attribute(
-        "{http://xml.zope.org/namespaces/tal}attributes", lambda p: p.definitions)
+        "{http://xml.zope.org/namespaces/tal}attributes",
+        lambda p: p.definitions)
     content = attribute(
         "{http://xml.zope.org/namespaces/tal}content", lambda p: p.output)
     replace = attribute(
@@ -362,14 +381,13 @@ class TALElement(Element):
         attributes = {}
 
         for key in self.keys():
-            if key not in \
-                   ('define',
-                    'condition',
-                    'replace',
-                    'repeat',
-                    'attributes',
-                    'content',
-                    'omit-tag'):
+            if key not in ('define',
+                           'condition',
+                           'replace',
+                           'repeat',
+                           'attributes',
+                           'content',
+                           'omit-tag'):
                 raise ValueError(
                     u"Attribute '%s' not allowed in the namespace '%s'" %
                     (key, self.nsmap[self.prefix]))
@@ -383,10 +401,12 @@ parser.setElementClassLookup(lookup)
 
 try:
     lookup.get_namespace('http://www.w3.org/1999/xhtml')[None] = Element
-    lookup.get_namespace('http://xml.zope.org/namespaces/tal')[None] = TALElement
+    lookup.get_namespace('http://xml.zope.org/namespaces/tal'
+                        )[None] = TALElement
 except AttributeError:
     lxml.etree.Namespace('http://www.w3.org/1999/xhtml')[None] = Element
-    lxml.etree.Namespace('http://xml.zope.org/namespaces/tal')[None] = TALElement
+    lxml.etree.Namespace('http://xml.zope.org/namespaces/tal'
+                        )[None] = TALElement
 
 def translate_xml(body, *args, **kwargs):
     tree = lxml.etree.parse(StringIO(body), parser)
@@ -421,8 +441,8 @@ def translate_text(body, *args, **kwargs):
     return translate_etree(xml, *args, **kwargs)
     
 def _translate(value, mapping=None, default=None):
-    format = "_translate(%s, domain=_domain, mapping=%s, "\
-             "target_language=_target_language, default=%s)"
+    format = ("_translate(%s, domain=_domain, mapping=%s, "
+              "target_language=_target_language, default=%s)")
     
     return types.value(format % (value, mapping, default))
 
