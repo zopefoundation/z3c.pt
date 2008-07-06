@@ -4,6 +4,12 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Added optional support for using zope.i18n 3.5's new negotiate function.
+  If you use the `zope_i18n_allowed_languages` environment variable the target
+  language for a template is only negotiated once per template, instead of
+  once for each translate function call. This more than doubles the speed
+  and the benchmark is back at 9.2 times faster.
+
 - Extended the i18n handling to respect the passed in translation context to
   the template. Usually this is the request, which is passed on under the
   internal name of `_context` into the render functions. After extending the

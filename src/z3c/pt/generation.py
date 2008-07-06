@@ -14,17 +14,27 @@ def render(%starget_language=None):
 
 \t(_out, _write) = generation.initialize_stream()
 \t(_attributes, repeat) = generation.initialize_tal()
-\t(_domain, _translate) = generation.initialize_i18n()
+\t(_domain, _negotiate, _translate) = generation.initialize_i18n()
 \t(_escape, _marker) = generation.initialize_helpers()
 \t_path = generation.initialize_traversal()
 
-\t_target_language = target_language
+\t_target_language = _negotiate(_context, target_language)
 %s
 \treturn _out.getvalue()
 """
 
+negotiate = getattr(zope.i18n, 'negotiate', None)
+if negotiate is None:
+    def _negotiate(context, target_language):
+        return target_language
+else:
+    def _negotiate(context, target_language):
+        if target_language is not None:
+            return target_language
+        return negotiate(context)
+
 def initialize_i18n():
-    return (None, zope.i18n.translate)
+    return (None, _negotiate, zope.i18n.translate)
 
 def initialize_tal():
     return ({}, utils.repeatdict())
