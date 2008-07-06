@@ -4,6 +4,9 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Added new `Z3C_PT_FILECACHE` environment variable pointing to a directory.
+  If set, this will be used to cache the compiled files.
+
 - Added a second variation of the repeat clause, using a simple for loop. It
   doesn't support the repeatdict, though and is therefor not used yet. Also
   began work to add introspection facilities to clauses about the variables
