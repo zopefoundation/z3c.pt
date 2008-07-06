@@ -3,12 +3,15 @@ import sys
 import codegen
 import traceback
 
-from z3c.pt.config import DEBUG_MODE, PROD_MODE
+from z3c.pt.config import DEBUG_MODE, PROD_MODE, FILECACHE
+from z3c.pt import filecache
+import z3c.pt.generation
 
 class BaseTemplate(object):
+
     registry = {}
     default_expression = 'python'
-    
+
     def __init__(self, body, default_expression=None):
         self.body = body
         self.signature = hash(body)
@@ -93,6 +96,7 @@ class BaseTemplate(object):
         return u"<%s %d>" % (self.__class__.__name__, id(self))
 
 class BaseTemplateFile(BaseTemplate):
+
     def __init__(self, filename):
         BaseTemplate.__init__(self, None)
 
@@ -110,6 +114,7 @@ class BaseTemplateFile(BaseTemplate):
         # make sure file exists
         os.lstat(filename)
         self.filename = filename
+        self.registry = filecache.CachingDict(filename, self.mtime(), self)
 
     def _get_filename(self):
         return getattr(self, '_filename', None)
@@ -130,6 +135,34 @@ class BaseTemplateFile(BaseTemplate):
             fs.write(self.source)
             fs.close()
 
+    def cook(self, params):
+        generator = self.translate(
+            self.body, params=params, default_expression=self.default_expression)
+        
+        source, _globals = generator()
+        
+        suite = codegen.Suite(source)
+
+        self.source = source
+        self.source_write()
+        self.annotations = generator.stream.annotations
+        
+        _globals.update(suite._globals)
+        if FILECACHE:
+            self.registry.store(params, suite.code)
+
+        return self.execute(suite.code, _globals)
+
+    def execute(self, code, _globals=None):
+        # TODO: This is evil. We need a better way to get all the globals
+        # independent from the generation step
+        if _globals is None:
+            _globals = codegen.Lookup.globals()
+            _globals['generation'] = z3c.pt.generation
+        _locals = {}
+        exec code in _globals, _locals
+        return _locals['render']
+
     def render(self, **kwargs):
         if self._cook_check():
             fd = open(self.filename, 'r')
@@ -138,7 +171,15 @@ class BaseTemplateFile(BaseTemplate):
             self.signature = hash(body)
             self._v_last_read = self.mtime()
 
-        return BaseTemplate.render(self, **kwargs)
+        signature = hash(''.join(kwargs))
+        template = self.registry.get(signature, None)
+        if template is None:
+            self.registry[signature] = template = self.cook(kwargs.keys())
+
+        if PROD_MODE:
+            return template(**kwargs)
+
+        return self.safe_render(template, **kwargs)
 
     def _cook_check(self):
         if self._v_last_read and PROD_MODE:

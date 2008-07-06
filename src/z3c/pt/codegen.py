@@ -78,4 +78,4 @@ class Suite(object):
         return hash(self.code)
 
     def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__, self.source)
+        return '%s(%r)' % (self.__class__.__name__, self.code)

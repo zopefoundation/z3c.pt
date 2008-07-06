@@ -4,6 +4,14 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Added persistent file cache functionality. If the environment variable is
+  set, each file system based template will add a directory to the cache
+  (currently a SHA-1 of the file's absolute path is used as the folder name)
+  and in the folder one file per params for the template (cache filename is
+  the hash of the params). Once a template file is initialized, an instance
+  local registry is added, which then looks up all cached files and
+  pre-populates the registry with the render functions.
+
 - Fixed interpolation edge case bugs.
   [malthe]
 
