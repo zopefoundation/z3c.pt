@@ -10,7 +10,7 @@ Overview
 
 Two types of TAL page template classes are provided:
 
-``PageTemplate``, ``PageTemlateFile``
+``PageTemplate``, ``PageTemplateFile``
        These classes allow passing of arguments directly to the
        template namespace.
 
