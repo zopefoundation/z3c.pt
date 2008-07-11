@@ -187,7 +187,7 @@ Interpolation:
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
   ...   <span>inter${'pol' + 'ati'}on</span>is ${int('test') | 'convenient'}!
-  ...   <span>${'a'}${'b'}${'c'}</span>
+  ...   <span>${'a'}${'b'}${'c'} ${'d'}</span>
   ...   <span tal:define="hello 'Hello'" class="${hello} World!" />
   ...   <span class="my-${'class'} item${'Last'}" />
   ...   <span style="position: ${'abs'}olute"
@@ -195,7 +195,7 @@ Interpolation:
   ... </div>""", translate_xml)
     <div>
       <span>interpolation</span>is convenient!
-      <span>abc</span>
+      <span>abc d</span>
       <span class="Hello World!" />
       <span class="my-class itemLast" />
       <span style="position: absolute" class="my-class itemLast" />
