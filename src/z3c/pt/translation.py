@@ -73,6 +73,7 @@ class Element(lxml.etree.ElementBase):
                 t.attrib['replace'] = m.group('expression')
                 t.tail = self.text[m.end():]
                 self.insert(0, t)
+
                 if m.start() == 0:
                     self.text = self.text[1:m.start()+1]
                 else:
@@ -91,11 +92,9 @@ class Element(lxml.etree.ElementBase):
                 t.tail = self.tail[m.end():]
                 parent = self.getparent()
                 parent.insert(parent.index(self)+1, t)
-                if m.start() > 0:
-                    self.tail = self.tail[:m.start()+1]
-                else:
-                    self.tail = self.tail[:m.start()]
 
+                self.tail = self.tail[:m.start()+len(m.group('prefix'))-1]
+                
         # interpolate attributes
         for name in self._static_attributes():
             value = self.attrib[name]
