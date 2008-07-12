@@ -4,6 +4,10 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Removed the `second rendering` tests from the benchmark suite. Since we
+  enable the file cache for the benchmarks, there's no difference between the
+  first and second rendering anymore after the cache file has been written.
+
 - Require zope.i18n 3.5 and add support for using its new negotiate function.
   If you use the `zope_i18n_allowed_languages` environment variable the target
   language for a template is only negotiated once per template, instead of

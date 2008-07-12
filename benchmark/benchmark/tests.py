@@ -171,17 +171,6 @@ class FileBenchmarkTestCase(BaseTestCase):
         print "zope.pagetemplate: %.2f" % t_zope
         print "                   %.2fX" % (t_zope/t_z3c)
 
-        print "--------------------------"
-        print " Second rendering"
-        print "--------------------------"
-
-        t_z3c = timing(z3cfile.render, table=table)
-        t_zope = timing(zopefile, table=table)
-
-        print "z3c.pt:            %.2f" % t_z3c
-        print "zope.pagetemplate: %.2f" % t_zope
-        print "                   %.2fX" % (t_zope/t_z3c)
-
     @benchmark(u"Big table (path) File")
     def testBigTablePathFile(self):
         table = self.table
@@ -195,17 +184,6 @@ class FileBenchmarkTestCase(BaseTestCase):
 
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
             testfile('bigtable_path_zope.pt'))
-
-        t_z3c = timing(z3cfile.render, table=table, request=object())
-        t_zope = timing(zopefile, table=table, request=object())
-
-        print "z3c.pt:            %.2f" % t_z3c
-        print "zope.pagetemplate: %.2f" % t_zope
-        print "                   %.2fX" % (t_zope/t_z3c)
-
-        print "--------------------------"
-        print " Second rendering"
-        print "--------------------------"
 
         t_z3c = timing(z3cfile.render, table=table, request=object())
         t_zope = timing(zopefile, table=table, request=object())
