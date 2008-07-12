@@ -1,4 +1,5 @@
 import zope.i18n
+from zope.i18n import negotiate
 
 import cgi
 import StringIO
@@ -23,15 +24,10 @@ def render(%starget_language=None):
 \treturn _out.getvalue()
 """
 
-negotiate = getattr(zope.i18n, 'negotiate', None)
-if negotiate is None:
-    def _negotiate(context, target_language):
+def _negotiate(context, target_language):
+    if target_language is not None:
         return target_language
-else:
-    def _negotiate(context, target_language):
-        if target_language is not None:
-            return target_language
-        return negotiate(context)
+    return negotiate(context)
 
 def initialize_i18n():
     return (None, _negotiate, zope.i18n.translate)
