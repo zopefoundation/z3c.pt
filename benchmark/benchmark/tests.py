@@ -11,6 +11,7 @@ import zope.configuration.xmlconfig
 
 import zope.pagetemplate.pagetemplatefile
 import z3c.pt
+from z3c.pt import generation
 
 def benchmark(title):
     def decorator(f):
@@ -232,23 +233,50 @@ class I18NBenchmarkTestCase(BaseTestCase):
         zope.component.provideUtility(Negotiator(), INegotiator)
         catalog = SimpleTranslationDomain('domain')
         zope.component.provideUtility(catalog, ITranslationDomain, 'domain')
+        self.files = os.path.abspath(os.path.join(__file__, '..', 'input'))
+        self.disable = generation.DISABLE_I18N
+
+    def tearDown(self):
+        BaseTestCase.tearDown(self)
+        generation.DISABLE_I18N = self.disable
+
+    def _testfile(self, name):
+        return os.path.join(self.files, name)
 
     @benchmark(u"Internationalization")
     def testI18N(self):
         table = self.table
 
-        files = os.path.abspath(os.path.join(__file__, '..', 'input'))
-        def testfile(name):
-            return os.path.join(files, name)
-
         z3cfile = z3c.pt.PageTemplateFile(
-            testfile('bigtable_i18n_z3c.pt'))
+            self._testfile('bigtable_i18n_z3c.pt'))
 
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
-            testfile('bigtable_i18n_zope.pt'))
+            self._testfile('bigtable_i18n_zope.pt'))
 
         # In order to have a fair comparision, we need real zope.i18n handling
         zopefile.pt_getEngineContext = _pt_getEngineContext
+
+        t_z3c = timing(z3cfile, table=table, _context=self.env)
+        t_zope = timing(zopefile, table=table, env=self.env)
+
+        print "z3c.pt:            %.2f" % t_z3c
+        print "zope.pagetemplate: %.2f" % t_zope
+        print "                   %.2fX" % (t_zope/t_z3c)
+
+    @benchmark(u"I18N (disabled)")
+    def testDisabledI18N(self):
+        table = self.table
+
+        z3cfile = z3c.pt.PageTemplateFile(
+            self._testfile('bigtable_i18n_z3c.pt'))
+
+        zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
+            self._testfile('bigtable_i18n_zope.pt'))
+
+        zopefile.pt_getEngineContext = _pt_getEngineContext
+
+        # Let's disable i18n for this test
+        generation.DISABLE_I18N = True
 
         t_z3c = timing(z3cfile, table=table, _context=self.env)
         t_zope = timing(zopefile, table=table, env=self.env)

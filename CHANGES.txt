@@ -4,6 +4,13 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Introduce a new config option called `Z3C_PT_DISABLE_I18N`. If this
+  environment variable is set to `true`, the template engine will not call
+  into the zope.i18n machinery anymore, but fall back to simple interpolation
+  in all cases. In a normal Zope environment that has the whole i18n
+  infrastructure set up, this will render the templates about 15x faster than
+  normal TAL, instead of only 10x faster at this point.
+
 - Removed the `second rendering` tests from the benchmark suite. Since we
   enable the file cache for the benchmarks, there's no difference between the
   first and second rendering anymore after the cache file has been written.

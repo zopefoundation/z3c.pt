@@ -1,5 +1,7 @@
-import zope.i18n
+from zope.i18n import interpolate
 from zope.i18n import negotiate
+from zope.i18n import translate
+from zope.i18nmessageid import Message
 
 import cgi
 import StringIO
@@ -8,6 +10,7 @@ import expressions
 import utils
 
 import z3c.pt.generation
+from z3c.pt.config import DISABLE_I18N
 
 wrapper = """\
 def render(%starget_language=None):
@@ -24,13 +27,29 @@ def render(%starget_language=None):
 \treturn _out.getvalue()
 """
 
+def _fake_negotiate(context, target_language):
+    return target_language
+
+def _fake_translate(msgid, domain=None, mapping=None, context=None,
+                    target_language=None, default=None):
+    if isinstance(msgid, Message):
+        default = msgid.default
+        mapping = msgid.mapping
+
+    if default is None:
+        default = unicode(msgid)
+
+    return interpolate(default, mapping)
+
 def _negotiate(context, target_language):
     if target_language is not None:
         return target_language
     return negotiate(context)
 
 def initialize_i18n():
-    return (None, _negotiate, zope.i18n.translate)
+    if DISABLE_I18N:
+        return (None, _fake_negotiate, _fake_translate)
+    return (None, _negotiate, translate)
 
 def initialize_tal():
     return ({}, utils.repeatdict())
