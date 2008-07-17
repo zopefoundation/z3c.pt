@@ -504,18 +504,18 @@ class Tag(object):
             if unicode_required_flag:
                 stream.write("if isinstance(%s, unicode):" % temp)
                 stream.indent()
-                stream.write("_write(' %s=\"'+_escape(%s,True)+'\"')" %
+                stream.write("_write(' %s=\"'+_escape(%s,1)+'\"')" %
                              (attribute, temp))
                 stream.outdent()
                 stream.write("elif %s is not None:" % temp)
                 stream.indent()
-                stream.write("_write(' %s=\"'+_escape(str(%s),True)+'\"')" %
+                stream.write("_write(' %s=\"'+_escape(str(%s),1)+'\"')" %
                              (attribute, temp))
                 stream.outdent()
             else:
                 stream.write("if %s is not None:" % temp)
                 stream.indent()
-                stream.write("_write(' %s=\"'+_escape(str(%s),True)+'\"')" %
+                stream.write("_write(' %s=\"'+_escape(str(%s),1)+'\"')" %
                              (attribute, temp))
                 stream.outdent()
 

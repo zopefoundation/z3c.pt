@@ -4,6 +4,11 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Replaced the cgi.escape function by an optimized local version, we go up
+  to 11x for path and 16x for Python expressions :) In the bigtable benchmark
+  the enhancement is more noticable - we are the same speed as spitfire -O1
+  templates now and just half the speed of -O3 :))
+
 - Added a new benchmark test called bigtable that produces results which are
   directly comparable to those produced by the bigtable.py benchmark in the
   spitfire project.

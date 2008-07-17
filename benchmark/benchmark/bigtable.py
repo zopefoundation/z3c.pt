@@ -51,7 +51,10 @@ def run(which=None, number=10):
         tests = ['test_z3c']
 
     for test in tests:
-        setup = 'from __main__ import setup, %s; setup(); %s()' % (test, test)
+        if which:
+            setup = 'from __main__ import setup, %s; setup()' % test
+        else:
+            setup = 'from __main__ import setup, %s; setup(); %s()' % (test, test)
 
         t = timeit.Timer(setup=setup,
                          stmt='%s()' % test)
