@@ -4,6 +4,10 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Added a new benchmark test called bigtable that produces results which are
+  directly comparable to those produced by the bigtable.py benchmark in the
+  spitfire project.
+
 - Introduce a new config option called `Z3C_PT_DISABLE_I18N`. If this
   environment variable is set to `true`, the template engine will not call
   into the zope.i18n machinery anymore, but fall back to simple interpolation
