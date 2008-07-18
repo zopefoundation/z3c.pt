@@ -4,9 +4,6 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Avoid a try/except in Lookup.lookup_attr and use a getattr with an
-  `is marker` comparison instead.
-
 - Simplified the _escape function handling by pulling in the str call into the
   function. Corrected the bigtable hotshot test to only benchmark rendering.
 
