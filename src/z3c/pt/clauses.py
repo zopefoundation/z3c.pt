@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from utils import unicode_required_flag
 from cgi import escape
 
-import types
+from z3c.pt import types
+from z3c.pt.generation import _escape
+from z3c.pt.utils import unicode_required_flag
 
 class Assign(object):
     """
@@ -305,7 +306,6 @@ class Condition(object):
       >>> from z3c.pt.generation import CodeIO
       >>> from z3c.pt.testing import pyexp
       >>> from StringIO import StringIO
-      >>> from cgi import escape as _escape
       
     Unlimited scope:
     
@@ -427,9 +427,9 @@ class Group(object):
 class Tag(object):
     """
       >>> from z3c.pt.generation import CodeIO
+      >>> from z3c.pt.generation import _escape
       >>> from z3c.pt.testing import pyexp
       >>> from StringIO import StringIO
-      >>> from cgi import escape as _escape
 
       Dynamic attribute:
       
@@ -504,18 +504,18 @@ class Tag(object):
             if unicode_required_flag:
                 stream.write("if isinstance(%s, unicode):" % temp)
                 stream.indent()
-                stream.write("_write(' %s=\"'+_escape(%s,1)+'\"')" %
+                stream.write("_write(' %s=\"'+_escape(%s,1,0)+'\"')" %
                              (attribute, temp))
                 stream.outdent()
                 stream.write("elif %s is not None:" % temp)
                 stream.indent()
-                stream.write("_write(' %s=\"'+_escape(str(%s),1)+'\"')" %
+                stream.write("_write(' %s=\"'+_escape(%s,1)+'\"')" %
                              (attribute, temp))
                 stream.outdent()
             else:
                 stream.write("if %s is not None:" % temp)
                 stream.indent()
-                stream.write("_write(' %s=\"'+_escape(str(%s),1)+'\"')" %
+                stream.write("_write(' %s=\"'+_escape(%s,1)+'\"')" %
                              (attribute, temp))
                 stream.outdent()
 
@@ -646,9 +646,9 @@ class Repeat(object):
 class Write(object):
     """
     >>> from z3c.pt.generation import CodeIO
+    >>> from z3c.pt.generation import _escape
     >>> from z3c.pt.testing import pyexp
     >>> from StringIO import StringIO
-    >>> from cgi import escape as _escape
 
     Basic write:
     
@@ -712,7 +712,7 @@ class Write(object):
             if self.structure:
                 stream.write("_write(str(_urf))")
             else:
-                stream.write("_write(_escape(str(_urf)))")
+                stream.write("_write(_escape(_urf))")
             stream.outdent()
         else:
             stream.write("if _urf is not None:")
@@ -720,7 +720,7 @@ class Write(object):
             if self.structure:
                 stream.write("_write(str(_urf))")
             else:
-                stream.write("_write(_escape(str(_urf)))")
+                stream.write("_write(_escape(_urf))")
             stream.outdent()
 
     def end(self, stream):

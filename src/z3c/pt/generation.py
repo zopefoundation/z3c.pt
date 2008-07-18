@@ -3,7 +3,6 @@ from zope.i18n import negotiate
 from zope.i18n import translate
 from zope.i18nmessageid import Message
 
-import cgi
 import StringIO
 
 import expressions
@@ -46,8 +45,10 @@ def _negotiate(context, target_language):
         return target_language
     return negotiate(context)
 
-def _escape(s, quote=0):
+def _escape(s, quote=0, string=1):
     """Replace special characters '&', '<' and '>' by SGML entities."""
+    if string:
+        s = str(s)
     if '&' in s:
         s = s.replace("&", "&amp;") # Must be done first!
     if '<' in s:

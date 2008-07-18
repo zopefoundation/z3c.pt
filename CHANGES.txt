@@ -4,6 +4,9 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Simplified the _escape function handling by pulling in the str call into the
+  function. Corrected the bigtable hotshot test to only benchmark rendering.
+
 - Replaced the cgi.escape function by an optimized local version, we go up
   to 11x for path and 16x for Python expressions :) In the bigtable benchmark
   the enhancement is more noticable - we are the same speed as spitfire -O1

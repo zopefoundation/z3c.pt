@@ -51,10 +51,7 @@ def run(which=None, number=10):
         tests = ['test_z3c']
 
     for test in tests:
-        if which:
-            setup = 'from __main__ import setup, %s; setup()' % test
-        else:
-            setup = 'from __main__ import setup, %s; setup(); %s()' % (test, test)
+        setup = 'from __main__ import setup, %s; setup(); %s()' % (test, test)
 
         t = timeit.Timer(setup=setup,
                          stmt='%s()' % test)
@@ -73,7 +70,9 @@ if __name__ == '__main__':
         which = True
         import hotshot, hotshot.stats
         prof = hotshot.Profile("template.prof")
-        benchtime = prof.runcall(run, which, number=1)
+        setup()
+        test_z3c()
+        benchtime = prof.runcall(test_z3c)
         stats = hotshot.stats.load("template.prof")
         stats.strip_dirs()
         stats.sort_stats('time', 'calls')
