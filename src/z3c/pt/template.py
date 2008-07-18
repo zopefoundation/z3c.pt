@@ -101,7 +101,13 @@ class BaseTemplateFile(BaseTemplate):
         BaseTemplate.__init__(self, None)
 
         if not os.path.isabs(filename):
-            package_name = sys._getframe(2).f_globals['__name__']
+            for depth in (1, 2):
+                frame = sys._getframe(depth)
+                package_name = frame.f_globals['__name__']
+
+                if package_name != self.__module__:
+                    break
+                
             module = sys.modules[package_name]
             try:
                 path = module.__path__[0]
