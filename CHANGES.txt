@@ -4,6 +4,10 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- When templates are instantiated outside of a class-definition, a
+  relative file path will be made absolute using the module path.
+  [malthe]
+
 - Simplified the _escape function handling by pulling in the str call into the
   function. Corrected the bigtable hotshot test to only benchmark rendering.
 
