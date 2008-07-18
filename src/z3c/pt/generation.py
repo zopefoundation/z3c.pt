@@ -46,7 +46,10 @@ def _negotiate(context, target_language):
     return negotiate(context)
 
 def _escape(s, quote=0, string=1):
-    """Replace special characters '&', '<' and '>' by SGML entities."""
+    """Replace special characters '&', '<' and '>' by SGML entities.
+
+    If string is set to False, we are dealing with Unicode input.
+    """
     if string:
         s = str(s)
     if '&' in s:
