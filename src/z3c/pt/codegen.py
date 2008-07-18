@@ -24,13 +24,13 @@ class Lookup(object):
 
     @classmethod
     def lookup_attr(cls, obj, key):
-        try:
-            return getattr(obj, key)
-        except AttributeError, e:
+        value = getattr(obj, key, marker)
+        if value is marker:
             try:
                 return obj[key]
             except (KeyError, TypeError):
                 raise e
+        return value
 
 class TemplateASTTransformer(ASTTransformer):
     def __init__(self):
