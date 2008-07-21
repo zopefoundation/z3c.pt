@@ -4,6 +4,10 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- A bug was fixed whereby including numeric entity elements
+  in the source of a PageTemplate would cause a UnicodeDecodeError.
+  [chrism]
+
 - When templates are instantiated outside of a class-definition, a
   relative file path will be made absolute using the module path.
   [malthe]

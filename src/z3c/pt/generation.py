@@ -100,7 +100,7 @@ class Generator(object):
         if args:
             args += ', '
 
-        code = self.stream.getvalue()
+        code = self.stream.getvalue().encode('utf-8')
         return wrapper % (args, code), {'generation': z3c.pt.generation}
 
 class BufferIO(list):
