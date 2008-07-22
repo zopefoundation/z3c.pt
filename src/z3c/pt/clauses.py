@@ -702,19 +702,18 @@ class Write(object):
 
         stream.write("_urf = %s" % expr)
 
-        if unicode_required_flag:
-            stream.write("if isinstance(_urf, unicode):")
-            stream.indent()
-            stream.write("_write(_urf)")
-            stream.outdent()
-            stream.write("elif _urf is not None:")
-        else:
-            stream.write("if _urf is not None:")
+        stream.write("if _urf is not None:")
         stream.indent()
-        if self.structure:
-            stream.write("_write(str(_urf))")
+        if unicode_required_flag:
+            stream.write("if not isinstance(_urf, unicode):")
+            stream.indent()
+            stream.write("_urf = str(_urf)")
+            stream.outdent()
         else:
             stream.write("_urf = str(_urf)")
+        if self.structure:
+            stream.write("_write(_urf)")
+        else:
             stream.write("if '&' in _urf:")
             stream.indent()
             stream.write("_urf = _urf.replace('&', '&amp;')")
