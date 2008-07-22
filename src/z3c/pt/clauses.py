@@ -708,20 +708,27 @@ class Write(object):
             stream.write("_write(_urf)")
             stream.outdent()
             stream.write("elif _urf is not None:")
-            stream.indent()
-            if self.structure:
-                stream.write("_write(str(_urf))")
-            else:
-                stream.write("_write(_escape(_urf))")
-            stream.outdent()
         else:
             stream.write("if _urf is not None:")
+        stream.indent()
+        if self.structure:
+            stream.write("_write(str(_urf))")
+        else:
+            stream.write("_urf = str(_urf)")
+            stream.write("if '&' in _urf:")
             stream.indent()
-            if self.structure:
-                stream.write("_write(str(_urf))")
-            else:
-                stream.write("_write(_escape(_urf))")
+            stream.write("_urf = _urf.replace('&', '&amp;')")
             stream.outdent()
+            stream.write("if '<' in _urf:")
+            stream.indent()
+            stream.write("_urf = _urf.replace('<', '&lt;')")
+            stream.outdent()
+            stream.write("if '>' in _urf:")
+            stream.indent()
+            stream.write("_urf = _urf.replace('>', '&gt;')")
+            stream.outdent()
+            stream.write("_write(_urf)")
+        stream.outdent()
 
     def end(self, stream):
         if self.assign:
