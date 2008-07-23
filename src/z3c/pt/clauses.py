@@ -744,6 +744,7 @@ class Write(object):
         if self.structure:
             stream.write("_write(_urf)")
         else:
+            # Inlined escape function
             stream.write("if '&' in _urf:")
             stream.indent()
             stream.write("_urf = _urf.replace('&', '&amp;')")
