@@ -4,6 +4,10 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Avoid string concatenation and use multiple write statements instead. These
+  are faster now, since we use a list append internally.
+  [hannosch]
+
 - Inline the _escape function, because function calls are expensive in Python.
   Added missing escaping for Unicode values.
   [fschulze, hannosch]
