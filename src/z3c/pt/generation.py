@@ -18,7 +18,7 @@ def render(%starget_language=None):
 \t(_out, _write) = generation.initialize_stream()
 \t(_attributes, repeat) = generation.initialize_tal()
 \t(_domain, _negotiate, _translate) = generation.initialize_i18n()
-\t(_escape, _marker) = generation.initialize_helpers()
+\t_marker = generation.initialize_helpers()
 \t_path = generation.initialize_traversal()
 
 \t_target_language = _negotiate(_context, target_language)
@@ -45,23 +45,6 @@ def _negotiate(context, target_language):
         return target_language
     return negotiate(context)
 
-def _escape(s, quote=0, string=1):
-    """Replace special characters '&', '<' and '>' by SGML entities.
-
-    If string is set to False, we are dealing with Unicode input.
-    """
-    if string:
-        s = str(s)
-    if '&' in s:
-        s = s.replace("&", "&amp;") # Must be done first!
-    if '<' in s:
-        s = s.replace("<", "&lt;")
-    if '>' in s:
-        s = s.replace(">", "&gt;")
-    if quote:
-        s = s.replace('"', "&quot;")
-    return s
-
 def initialize_i18n():
     if DISABLE_I18N:
         return (None, _fake_negotiate, _fake_translate)
@@ -71,7 +54,7 @@ def initialize_tal():
     return ({}, utils.repeatdict())
 
 def initialize_helpers():
-    return (_escape, object())
+    return (object(), )
 
 def initialize_stream():
     out = BufferIO()

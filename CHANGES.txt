@@ -4,6 +4,10 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Got rid entirely of the _escape function and inlined the actual code
+  instead. We go up again to 12x for path and 19x for Python expressions :)
+  [hannosch]
+
 - Avoid string concatenation and use multiple write statements instead. These
   are faster now, since we use a list append internally.
   [hannosch]

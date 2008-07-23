@@ -3,7 +3,6 @@
 from cgi import escape
 
 from z3c.pt import types
-from z3c.pt.generation import _escape
 from z3c.pt.utils import unicode_required_flag
 
 class Assign(object):
@@ -427,7 +426,6 @@ class Group(object):
 class Tag(object):
     """
       >>> from z3c.pt.generation import CodeIO
-      >>> from z3c.pt.generation import _escape
       >>> from z3c.pt.testing import pyexp
       >>> from StringIO import StringIO
 
@@ -505,23 +503,53 @@ class Tag(object):
                 stream.write("if isinstance(%s, unicode):" % temp)
                 stream.indent()
                 stream.write("_write(' %s=\"')" % attribute)
-                stream.write("_write(_escape(%s,1,0))" % temp)
+                # Inlined escape function
+                stream.write("_esc = %s" % temp)
+                stream.write("if '&' in _esc:")
+                stream.indent()
+                stream.write("_esc = _esc.replace('&', '&amp;')")
+                stream.outdent()
+                stream.write("if '<' in _esc:")
+                stream.indent()
+                stream.write("_esc = _esc.replace('<', '&lt;')")
+                stream.outdent()
+                stream.write("if '>' in _esc:")
+                stream.indent()
+                stream.write("_esc = _esc.replace('>', '&gt;')")
+                stream.outdent()
+                stream.write("if '\"' in _esc:")
+                stream.indent()
+                stream.write("_esc = _esc.replace('\"', '&quot;')")
+                stream.outdent()
+                stream.write("_write(_esc)")
                 stream.write("_write('\"')")
                 stream.outdent()
                 stream.write("elif %s is not None:" % temp)
-                stream.indent()
-                stream.write("_write(' %s=\"')" % attribute)
-                stream.write("_write(_escape(%s,1))" % temp)
-                stream.write("_write('\"')")
-                stream.outdent()
             else:
                 stream.write("if %s is not None:" % temp)
-                stream.indent()
-                stream.write("_write(' %s=\"')" % attribute)
-                stream.write("_write(_escape(%s,1))" % temp)
-                stream.write("_write('\"')")
-                stream.outdent()
-
+            stream.indent()
+            stream.write("_write(' %s=\"')" % attribute)
+            # Inlined escape function
+            stream.write("_esc = str(%s)" % temp)
+            stream.write("if '&' in _esc:")
+            stream.indent()
+            stream.write("_esc = _esc.replace('&', '&amp;')")
+            stream.outdent()
+            stream.write("if '<' in _esc:")
+            stream.indent()
+            stream.write("_esc = _esc.replace('<', '&lt;')")
+            stream.outdent()
+            stream.write("if '>' in _esc:")
+            stream.indent()
+            stream.write("_esc = _esc.replace('>', '&gt;')")
+            stream.outdent()
+            stream.write("if '\"' in _esc:")
+            stream.indent()
+            stream.write("_esc = _esc.replace('\"', '&quot;')")
+            stream.outdent()
+            stream.write("_write(_esc)")
+            stream.write("_write('\"')")
+            stream.outdent()
             assign.end(stream)
 
         stream.restore()
@@ -649,7 +677,6 @@ class Repeat(object):
 class Write(object):
     """
     >>> from z3c.pt.generation import CodeIO
-    >>> from z3c.pt.generation import _escape
     >>> from z3c.pt.testing import pyexp
     >>> from StringIO import StringIO
 
