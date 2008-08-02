@@ -3,15 +3,15 @@ from compiler.pycodegen import ModuleCodeGenerator
 
 from transformer import ASTTransformer
 
-marker = object()
 
 CONSTANTS = frozenset(['False', 'True', 'None', 'NotImplemented', 'Ellipsis'])
-
 UNDEFINED = object()
+
 
 class Lookup(object):
     """Abstract base class for variable lookup implementations."""
 
+    @classmethod
     def globals(cls):
         """Construct the globals dictionary to use as the execution context for
         the expression or suite.
@@ -19,8 +19,6 @@ class Lookup(object):
         return {
             '_lookup_attr': cls.lookup_attr,
         }
-
-    globals = classmethod(globals)
 
     @classmethod
     def lookup_attr(cls, obj, key):
@@ -50,7 +48,7 @@ class TemplateASTTransformer(ASTTransformer):
         return ast.CallFunc(ast.Name('_lookup_attr'), [
             self.visit(node.expr), ast.Const(node.attrname)
             ])
-    
+
 class Suite(object):
     __slots__ = ['code', '_globals']
 
@@ -73,7 +71,7 @@ class Suite(object):
 
         self._globals = Lookup.globals()
         self.code = gen.getCode()
-        
+
     def __hash__(self):
         return hash(self.code)
 
