@@ -1,1 +1,4 @@
-Hanno Schlichting <hannosch@gmail.com>
+Chris McDonough
+Florian Schulze 
+Hanno Schlichting
+Philipp von Weitershausen
