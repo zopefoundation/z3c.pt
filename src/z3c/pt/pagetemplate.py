@@ -23,9 +23,9 @@ class ViewPageTemplate(property):
                                         request=view.request,
                                         _context=view.request,
                                         options=kwargs)
-        return template        
-    
+        return template
+
 class ViewPageTemplateFile(ViewPageTemplate):
     def __init__(self, filename, **kwargs):
-        self.template = PageTemplateFile(filename, **kwargs)
+        self.template = PageTemplateFile(filename)
         property.__init__(self, self.render)
