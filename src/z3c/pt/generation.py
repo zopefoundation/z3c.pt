@@ -3,8 +3,6 @@ from zope.i18n import negotiate
 from zope.i18n import translate
 from zope.i18nmessageid import Message
 
-import StringIO
-
 import expressions
 import utils
 
@@ -92,7 +90,7 @@ class BufferIO(list):
     def getvalue(self):
         return ''.join(self)
 
-class CodeIO(StringIO.StringIO):
+class CodeIO(BufferIO):
     """A I/O stream class that provides facilities to generate Python code.
 
     * Indentation is managed using ``indent`` and ``outdent``.
@@ -109,7 +107,7 @@ class CodeIO(StringIO.StringIO):
     v_prefix = '_var'
 
     def __init__(self, indentation=0, indentation_string="\t"):
-        StringIO.StringIO.__init__(self)
+        BufferIO.__init__(self)
         self.indentation = indentation
         self.indentation_string = indentation_string
         self.queue = u''
@@ -119,16 +117,16 @@ class CodeIO(StringIO.StringIO):
         self._variables = {}
         self.t_counter = 0
         self.l_counter = 0
-        
+
     def save(self):
         self.t_counter += 1
         return "%s%d" % (self.t_prefix, self.t_counter)
-        
+
     def restore(self):
         var = "%s%d" % (self.t_prefix, self.t_counter)
         self.t_counter -= 1
         return var
-        
+
     def indent(self, amount=1):
         if amount > 0:
             self.cook()
@@ -144,39 +142,38 @@ class CodeIO(StringIO.StringIO):
 
     def out(self, string):
         self.queue += string
-        
+
     def cook(self):
         if self.queue:
             queue = self.queue
             self.queue = ''
             self.write("_write('%s')" %
                        queue.replace('\n', '\\n').replace("'", "\\'"))
-            
+
     def write(self, string):
         if isinstance(string, str):
             string = string.decode('utf-8')
 
         self.l_counter += len(string.split('\n'))-1
-        
+
         self.cook()
-        StringIO.StringIO.write(
-            self, self.indentation_string * self.indentation + string + '\n')
+        BufferIO.write(self,
+            self.indentation_string * self.indentation + string + '\n')
 
     def getvalue(self):
         self.cook()
-        return StringIO.StringIO.getvalue(self)
-            
+        return BufferIO.getvalue(self)
+
     def begin(self, clauses):
         if isinstance(clauses, (list, tuple)):
             for clause in clauses:
                 self.begin(clause)
         else:
             clauses.begin(self)
-            
+
     def end(self, clauses):
         if isinstance(clauses, (list, tuple)):
             for clause in reversed(clauses):
                 self.end(clause)
         else:
             clauses.end(self)
-        
