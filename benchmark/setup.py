@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-import sys, os
 
 version = '0.1'
 
@@ -21,7 +20,4 @@ setup(name='benchmark',
          'zope.tales',
          'z3c.pt',
       ],
-      entry_points="""
-      # -*- Entry points: -*-
-      """,
       )

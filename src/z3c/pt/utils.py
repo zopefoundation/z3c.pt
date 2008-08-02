@@ -1,5 +1,4 @@
 import sys
-import re
 import logging
 
 # check if we're able to coerce unicode to str

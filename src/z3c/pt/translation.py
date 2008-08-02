@@ -4,10 +4,8 @@ from StringIO import StringIO
 import lxml.etree
 
 import generation
-import expressions
 import clauses
 import interfaces
-import utils
 import types
 
 def attribute(ns, factory=None, default=None):
