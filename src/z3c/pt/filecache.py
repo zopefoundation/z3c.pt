@@ -41,30 +41,26 @@ def code_write(code, filename, timestamp):
 
 class CachingDict(UserDict):
 
-    def __init__(self, filename, mtime, pagetemplate):
+    def __init__(self, filename, mtime):
         UserDict.__init__(self)
+        signature = sha(filename).hexdigest()
+        self.cachedir = os.path.join(FILECACHE, signature)
+        self.mtime = mtime
 
-        if FILECACHE:
-            # Update ourselves with the values from the cache file
-            filename = sha(filename).hexdigest()
-            self.cachedir = os.path.join(FILECACHE, filename)
-            self.mtime = mtime
+    def load(self, pagetemplate):
+        if os.path.isdir(self.cachedir):
+            for cachefile in os.listdir(self.cachedir):
+                value = None
+                cachepath = os.path.join(self.cachedir, cachefile)
+                code = code_read(cachepath, self.mtime)
+                if code is not None:
+                    self[int(cachefile)] = pagetemplate.execute(code)
+                    pagetemplate._v_last_read = self.mtime
 
-            if os.path.isdir(self.cachedir):
-                for cachefile in os.listdir(self.cachedir):
-                    value = None
-                    cachepath = os.path.join(self.cachedir, cachefile)
-                    code = code_read(cachepath, self.mtime)
-                    if code is not None:
-                        self[int(cachefile)] = pagetemplate.execute(code)
-                        pagetemplate._v_last_read = mtime
+    def store(self, params, code):
+        key = hash(''.join(params))
+        if not os.path.isdir(self.cachedir):
+            os.mkdir(self.cachedir)
 
-    # If we don't have a file cache, behave like a normal instance level dict
-    if FILECACHE:
-        def store(self, params, code):
-            key = hash(''.join(params))
-            if not os.path.isdir(self.cachedir):
-                os.mkdir(self.cachedir)
-
-            cachefile = os.path.join(self.cachedir, str(key))
-            code_write(code, cachefile, self.mtime)
+        cachefile = os.path.join(self.cachedir, str(key))
+        code_write(code, cachefile, self.mtime)

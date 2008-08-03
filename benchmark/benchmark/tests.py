@@ -111,8 +111,8 @@ class BenchmarkTestCase(BaseTestCase):
         t_z3c = timing(self.helloworld_z3c)
         t_zope = timing(self.helloworld_zope)
 
-        print "z3c.pt:            %.2f" % t_z3c
-        print "zope.pagetemplate: %.2f" % t_zope
+        print "z3c.pt:            %.3f" % t_z3c
+        print "zope.pagetemplate: %.3f" % t_zope
         print "                   %.2fX" % (t_zope/t_z3c)
 
     @benchmark(u"Big table (python)")
@@ -151,19 +151,43 @@ class BenchmarkTestCase(BaseTestCase):
 
 class FileBenchmarkTestCase(BaseTestCase):
 
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        self.files = os.path.abspath(os.path.join(__file__, '..', 'input'))
+
+    def _testfile(self, name):
+        return os.path.join(self.files, name)
+
+    @benchmark(u"Compilation (Cached)")
+    def testCache(self):
+        table = self.table
+
+        z3cfile = z3c.pt.PageTemplateFile(
+            self._testfile('bigtable_python_z3c.pt'))
+
+        zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
+            self._testfile('bigtable_python_zope.pt'))
+
+        t_cached_z3c = timing(z3cfile.registry.load, z3cfile)
+        t_cook_z3c = timing(z3cfile.cook, ['table'])
+
+        t_zope = timing(zopefile._cook)
+
+        print "z3c.pt cooking:    %.3f" % t_cook_z3c
+        print ""
+        print "z3c.pt cached:     %.3f" % t_cached_z3c
+        print "zope.pagetemplate: %.3f" % t_zope
+        print "                   %.2fX" % (t_zope/t_cached_z3c)
+
     @benchmark(u"Big table (python) File")
     def testBigTablePythonFile(self):
         table = self.table
 
-        files = os.path.abspath(os.path.join(__file__, '..', 'input'))
-        def testfile(name):
-            return os.path.join(files, name)
-
         z3cfile = z3c.pt.PageTemplateFile(
-            testfile('bigtable_python_z3c.pt'))
+            self._testfile('bigtable_python_z3c.pt'))
 
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
-            testfile('bigtable_python_zope.pt'))
+            self._testfile('bigtable_python_zope.pt'))
 
         t_z3c = timing(z3cfile.render, table=table)
         t_zope = timing(zopefile, table=table)
@@ -176,15 +200,11 @@ class FileBenchmarkTestCase(BaseTestCase):
     def testBigTablePathFile(self):
         table = self.table
 
-        files = os.path.abspath(os.path.join(__file__, '..', 'input'))
-        def testfile(name):
-            return os.path.join(files, name)
-
         z3cfile = z3c.pt.PageTemplateFile(
-            testfile('bigtable_path_z3c.pt'))
+            self._testfile('bigtable_path_z3c.pt'))
 
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
-            testfile('bigtable_path_zope.pt'))
+            self._testfile('bigtable_path_zope.pt'))
 
         t_z3c = timing(z3cfile.render, table=table, request=object())
         t_zope = timing(zopefile, table=table, request=object())

@@ -120,7 +120,11 @@ class BaseTemplateFile(BaseTemplate):
         # make sure file exists
         os.lstat(filename)
         self.filename = filename
-        self.registry = filecache.CachingDict(filename, self.mtime(), self)
+        if FILECACHE:
+            self.registry = filecache.CachingDict(filename, self.mtime())
+            self.registry.load(self)
+        else:
+            self.registry = {}
 
     def _get_filename(self):
         return getattr(self, '_filename', None)
@@ -141,7 +145,17 @@ class BaseTemplateFile(BaseTemplate):
             fs.write(self.source)
             fs.close()
 
+    def read(self):
+        fd = open(self.filename, 'r')
+        self.body = body = fd.read()
+        fd.close()
+        self.signature = hash(body)
+        self._v_last_read = self.mtime()
+
     def cook(self, params):
+        if self.body is None:
+            self.read()
+
         generator = self.translate(
             self.body, params=params, default_expression=self.default_expression)
         
@@ -171,11 +185,7 @@ class BaseTemplateFile(BaseTemplate):
 
     def render(self, **kwargs):
         if self._cook_check():
-            fd = open(self.filename, 'r')
-            self.body = body = fd.read()
-            fd.close()
-            self.signature = hash(body)
-            self._v_last_read = self.mtime()
+            self.read()
 
         signature = hash(''.join(kwargs))
         template = self.registry.get(signature, None)

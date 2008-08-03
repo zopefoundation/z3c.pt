@@ -4,6 +4,11 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Refactored file system based cache a bit and added a simple benchmark for
+  the cache. The initial load speed for a template goes down significantly
+  with the cache. Compared to zope.pagetemplate we are only 3x slower,
+  compared to 50x slower when cooking each template on process startup.
+
 - Got rid entirely of the _escape function and inlined the actual code
   instead. We go up again to 12x for path and 19x for Python expressions :)
   [hannosch]
