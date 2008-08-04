@@ -110,7 +110,7 @@ class CodeIO(BufferIO):
         BufferIO.__init__(self)
         self.indentation = indentation
         self.indentation_string = indentation_string
-        self.queue = u''
+        self.queue = ''
         self.scope = [set()]
         self.annotations = {}
         
@@ -151,8 +151,8 @@ class CodeIO(BufferIO):
                        queue.replace('\n', '\\n').replace("'", "\\'"))
 
     def write(self, string):
-        if isinstance(string, str):
-            string = string.decode('utf-8')
+        if isinstance(string, unicode):
+            string = string.encode('utf-8')
 
         self.l_counter += len(string.split('\n'))-1
 

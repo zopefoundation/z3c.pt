@@ -25,7 +25,9 @@ def attribute(ns, factory=None, default=None):
 
     return property(get, set)
 
+
 class Element(lxml.etree.ElementBase):
+
     def begin(self, stream):
         stream.scope.append(set())
         stream.begin(self._clauses())
@@ -135,7 +137,7 @@ class Element(lxml.etree.ElementBase):
 
         # tag tail (deferred)
         if self.tail:
-            _.append(clauses.Out(self.tail, defer=True))
+            _.append(clauses.Out(self.tail.encode('utf-8'), defer=True))
 
         # compute dynamic flag
         dynamic = (self.replace or
@@ -158,7 +160,7 @@ class Element(lxml.etree.ElementBase):
 
         # tag text (if we're not replacing tag body)
         if self.text and not dynamic:
-            _.append(clauses.Out(self.text))
+            _.append(clauses.Out(self.text.encode('utf-8')))
 
         # dynamic content and content translation
         replace = self.replace
@@ -221,7 +223,7 @@ class Element(lxml.etree.ElementBase):
 
                 subclauses = []
                 if self.text:
-                    subclauses.append(clauses.Out(self.text))
+                    subclauses.append(clauses.Out(self.text.encode('utf-8')))
                 for element in self:
                     name = element.i18n_name
                     if name:
