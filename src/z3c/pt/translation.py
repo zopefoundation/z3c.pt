@@ -427,6 +427,17 @@ def translate_etree(root, params=[], default_expression='python'):
 
     # visit root
     root.interpolate(stream)
+
+    # output doctype if any
+    tree = root.getroottree()
+    if tree.docinfo.doctype:
+        dt = (tree.docinfo.doctype +'\n').encode('utf-8')
+        doctype = clauses.Out(dt)
+        stream.scope.append(set())
+        stream.begin([doctype])
+        stream.end([doctype])
+        stream.scope.pop()
+
     root.visit(stream)
 
     return generator
