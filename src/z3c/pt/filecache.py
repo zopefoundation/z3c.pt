@@ -28,7 +28,7 @@ def code_write(code, filename, timestamp):
         try:
             # Create a byte code file. See the py_compile module
             fd.write('\0\0\0\0')
-            fd.write(struct.pack("<I", timestamp))
+            fd.write(struct.pack("<I", int(timestamp)))
             marshal.dump(code, fd)
             fd.flush()
             fd.seek(0, 0)
