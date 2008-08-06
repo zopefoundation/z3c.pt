@@ -4,9 +4,12 @@ Changelog
 Version 0.8.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- If the template source contains a DOCTYPE declaration, output it
+  during rendering. [chrism]
+
 - Fixed an error where numeric entities specified in text or tail
   portions of elements would cause a UnicodeDecodeError to be raised
-  on systems configured with an 'ascii' default encoding.
+  on systems configured with an 'ascii' default encoding. [chrism]
 
 - Refactored file system based cache a bit and added a simple benchmark for
   the cache. The initial load speed for a template goes down significantly
