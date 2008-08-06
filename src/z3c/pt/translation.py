@@ -7,27 +7,9 @@ import generation
 import clauses
 import interfaces
 import types
-
-def attribute(ns, factory=None, default=None):
-    def get(self):
-        value = self.attrib.get(ns)
-        if value is not None:
-            if factory is None:
-                return value
-
-            f = factory(self._translator())
-            return f(value)
-        elif default is not None:
-            return default
-        
-    def set(self, value):
-        self.attrib[ns] = value
-
-    return property(get, set)
-
+import utils
 
 class Element(lxml.etree.ElementBase):
-
     def begin(self, stream):
         stream.scope.append(set())
         stream.begin(self._clauses())
@@ -61,7 +43,8 @@ class Element(lxml.etree.ElementBase):
         """The current interpolation strategy is to translate the
         interpolation statements into TAL."""
         
-        translator = self._translator()
+        translator = self.translator
+        
         if self.text is not None:
             while self.text:
                 m = translator.interpolate(self.text)
@@ -108,6 +91,16 @@ class Element(lxml.etree.ElementBase):
                     self.attrib[attributes] += '; %s' % expr
                 else:
                     self.attrib[attributes] = expr
+                    
+    @property
+    def translator(self):
+        while self.default_expression is None:
+            self = self.getparent()
+            if self is None:
+                raise ValueError("Default expression not set.")
+            
+        return component.getUtility(
+            interfaces.IExpressionTranslation, name=self.default_expression)
                 
     def _clauses(self):
         _ = []
@@ -330,51 +323,42 @@ class Element(lxml.etree.ElementBase):
 
         return attributes
 
-    def _translator(self):
-        while self.default_expression is None:
-            self = self.getparent()
-            if self is None:
-                raise ValueError("Default expression not set.")
-            
-        return component.getUtility(
-            interfaces.IExpressionTranslation, name=self.default_expression)
-
-    define = attribute(
+    define = utils.attribute(
         "{http://xml.zope.org/namespaces/tal}define", lambda p: p.definitions)
-    condition = attribute(
+    condition = utils.attribute(
         "{http://xml.zope.org/namespaces/tal}condition",
         lambda p: p.expression)
-    repeat = attribute(
+    repeat = utils.attribute(
         "{http://xml.zope.org/namespaces/tal}repeat", lambda p: p.definition)
-    attributes = attribute(
+    attributes = utils.attribute(
         "{http://xml.zope.org/namespaces/tal}attributes",
         lambda p: p.definitions)
-    content = attribute(
+    content = utils.attribute(
         "{http://xml.zope.org/namespaces/tal}content", lambda p: p.output)
-    replace = attribute(
+    replace = utils.attribute(
         "{http://xml.zope.org/namespaces/tal}replace", lambda p: p.output)
-    omit = attribute(
+    omit = utils.attribute(
         "{http://xml.zope.org/namespaces/tal}omit-tag", lambda p: p.expression)
-    i18n_translate = attribute(
+    i18n_translate = utils.attribute(
         "{http://xml.zope.org/namespaces/i18n}translate")
-    i18n_attributes = attribute(
+    i18n_attributes = utils.attribute(
         "{http://xml.zope.org/namespaces/i18n}attributes", lambda p: p.mapping)
-    i18n_domain = attribute(
+    i18n_domain = utils.attribute(
         "{http://xml.zope.org/namespaces/i18n}domain")
-    i18n_name = attribute(
+    i18n_name = utils.attribute(
         "{http://xml.zope.org/namespaces/i18n}name")
-    default_expression = attribute(
+    default_expression = utils.attribute(
         "{http://xml.zope.org/namespaces/tal}default-expression")
     
 class TALElement(Element):
-    define = attribute("define", lambda p: p.definitions)
-    condition = attribute("condition", lambda p: p.expression)
-    replace = attribute("replace", lambda p: p.output)
-    repeat = attribute("repeat", lambda p: p.definition)
-    attributes = attribute("attributes", lambda p: p.expression)
-    content = attribute("content", lambda p: p.output)
-    omit = attribute("omit-tag", lambda p: p.expression, u"")
-    default_expression = attribute("default-expression", lambda p: p.name)
+    define = utils.attribute("define", lambda p: p.definitions)
+    condition = utils.attribute("condition", lambda p: p.expression)
+    replace = utils.attribute("replace", lambda p: p.output)
+    repeat = utils.attribute("repeat", lambda p: p.definition)
+    attributes = utils.attribute("attributes", lambda p: p.expression)
+    content = utils.attribute("content", lambda p: p.output)
+    omit = utils.attribute("omit-tag", lambda p: p.expression, u"")
+    default_expression = utils.attribute("default-expression", lambda p: p.name)
     
     def _static_attributes(self):
         attributes = {}

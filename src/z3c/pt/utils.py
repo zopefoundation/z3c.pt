@@ -13,6 +13,8 @@ except UnicodeEncodeError:
              "an encoding that coerces gracefully to "
              "unicode is used ('utf-8' recommended)." % sys.getdefaultencoding())
 
+s_counter = 0
+
 def handler(key=None):
     def decorate(f):
         def g(node):
@@ -23,7 +25,22 @@ def handler(key=None):
         return g
     return decorate
 
-s_counter = 0
+def attribute(ns, factory=None, default=None):
+    def get(self):
+        value = self.attrib.get(ns)
+        if value is not None:
+            if factory is None:
+                return value
+
+            f = factory(self.translator)
+            return f(value)
+        elif default is not None:
+            return default
+        
+    def set(self, value):
+        self.attrib[ns] = value
+
+    return property(get, set)
 
 class scope(list):
     def __init__(self, *args):
