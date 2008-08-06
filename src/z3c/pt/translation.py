@@ -19,7 +19,7 @@ class Element(lxml.etree.ElementBase):
         stream.scope.pop()
 
     def body(self, stream):
-        skip = self.replace or self.content or self.i18n_translate is not None
+        skip = self.tal_replace or self.tal_content or self.i18n_translate is not None
         if not skip:
             for element in [e for e in self
                               if isinstance(e, lxml.etree._Comment)]:
@@ -94,13 +94,13 @@ class Element(lxml.etree.ElementBase):
                     
     @property
     def translator(self):
-        while self.default_expression is None:
+        while self.tal_default_expression is None:
             self = self.getparent()
             if self is None:
                 raise ValueError("Default expression not set.")
             
         return component.getUtility(
-            interfaces.IExpressionTranslation, name=self.default_expression)
+            interfaces.IExpressionTranslation, name=self.tal_default_expression)
                 
     def _clauses(self):
         _ = []
@@ -111,17 +111,17 @@ class Element(lxml.etree.ElementBase):
                 "_domain", types.value(repr(self.i18n_domain))))
 
         # defines
-        if self.define is not None:
-            for variables, expression in self.define:
+        if self.tal_define is not None:
+            for variables, expression in self.tal_define:
                 _.append(clauses.Define(variables, expression))
 
         # condition
-        if self.condition is not None:
-            _.append(clauses.Condition(self.condition))
+        if self.tal_condition is not None:
+            _.append(clauses.Condition(self.tal_condition))
 
         # repeat
-        if self.repeat is not None:
-            variables, expression = self.repeat
+        if self.tal_repeat is not None:
+            variables, expression = self.tal_repeat
             if len(variables) != 1:
                 raise ValueError(
                     "Cannot unpack more than one variable in a "
@@ -133,20 +133,20 @@ class Element(lxml.etree.ElementBase):
             _.append(clauses.Out(self.tail.encode('utf-8'), defer=True))
 
         # compute dynamic flag
-        dynamic = (self.replace or
-                   self.content or
+        dynamic = (self.tal_replace or
+                   self.tal_content or
                    self.i18n_translate is not None)
         
         # tag
-        if self.replace is None:
+        if self.tal_replace is None:
             selfclosing = self.text is None and not dynamic and len(self) == 0
             tag = clauses.Tag(self.tag, self._attributes(),
                               selfclosing=selfclosing)
 
-            if self.omit:
-                _.append(clauses.Condition(_not(self.omit), [tag],
+            if self.tal_omit:
+                _.append(clauses.Condition(_not(self.tal_omit), [tag],
                                            finalize=False))
-            elif self.omit is not None:
+            elif self.tal_omit is not None:
                 pass
             else:
                 _.append(tag)
@@ -156,8 +156,8 @@ class Element(lxml.etree.ElementBase):
             _.append(clauses.Out(self.text.encode('utf-8')))
 
         # dynamic content and content translation
-        replace = self.replace
-        content = self.content
+        replace = self.tal_replace
+        content = self.tal_content
 
         if replace and content:
             raise ValueError("Can't use replace clause together with "
@@ -280,7 +280,7 @@ class Element(lxml.etree.ElementBase):
         attributes = self._static_attributes()
         
         # dynamic attributes
-        attrs = self.attributes
+        attrs = self.tal_attributes
         if attrs is not None:
             for variables, expression in attrs:
                 if len(variables) != 1:
@@ -323,22 +323,24 @@ class Element(lxml.etree.ElementBase):
 
         return attributes
 
-    define = utils.attribute(
+    tal_define = utils.attribute(
         "{http://xml.zope.org/namespaces/tal}define", lambda p: p.definitions)
-    condition = utils.attribute(
+    tal_condition = utils.attribute(
         "{http://xml.zope.org/namespaces/tal}condition",
         lambda p: p.expression)
-    repeat = utils.attribute(
+    tal_repeat = utils.attribute(
         "{http://xml.zope.org/namespaces/tal}repeat", lambda p: p.definition)
-    attributes = utils.attribute(
+    tal_attributes = utils.attribute(
         "{http://xml.zope.org/namespaces/tal}attributes",
         lambda p: p.definitions)
-    content = utils.attribute(
+    tal_content = utils.attribute(
         "{http://xml.zope.org/namespaces/tal}content", lambda p: p.output)
-    replace = utils.attribute(
+    tal_replace = utils.attribute(
         "{http://xml.zope.org/namespaces/tal}replace", lambda p: p.output)
-    omit = utils.attribute(
+    tal_omit = utils.attribute(
         "{http://xml.zope.org/namespaces/tal}omit-tag", lambda p: p.expression)
+    tal_default_expression = utils.attribute(
+        "{http://xml.zope.org/namespaces/tal}default-expression")
     i18n_translate = utils.attribute(
         "{http://xml.zope.org/namespaces/i18n}translate")
     i18n_attributes = utils.attribute(
@@ -347,18 +349,16 @@ class Element(lxml.etree.ElementBase):
         "{http://xml.zope.org/namespaces/i18n}domain")
     i18n_name = utils.attribute(
         "{http://xml.zope.org/namespaces/i18n}name")
-    default_expression = utils.attribute(
-        "{http://xml.zope.org/namespaces/tal}default-expression")
     
 class TALElement(Element):
-    define = utils.attribute("define", lambda p: p.definitions)
-    condition = utils.attribute("condition", lambda p: p.expression)
-    replace = utils.attribute("replace", lambda p: p.output)
-    repeat = utils.attribute("repeat", lambda p: p.definition)
-    attributes = utils.attribute("attributes", lambda p: p.expression)
-    content = utils.attribute("content", lambda p: p.output)
-    omit = utils.attribute("omit-tag", lambda p: p.expression, u"")
-    default_expression = utils.attribute("default-expression", lambda p: p.name)
+    tal_define = utils.attribute("define", lambda p: p.definitions)
+    tal_condition = utils.attribute("condition", lambda p: p.expression)
+    tal_replace = utils.attribute("replace", lambda p: p.output)
+    tal_repeat = utils.attribute("repeat", lambda p: p.definition)
+    tal_attributes = utils.attribute("attributes", lambda p: p.expression)
+    tal_content = utils.attribute("content", lambda p: p.output)
+    tal_omit = utils.attribute("omit-tag", lambda p: p.expression, u"")
+    tal_default_expression = utils.attribute("default-expression", lambda p: p.name)
     
     def _static_attributes(self):
         attributes = {}
