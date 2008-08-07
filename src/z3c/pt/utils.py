@@ -1,5 +1,6 @@
 import sys
 import logging
+import config
 
 # check if we're able to coerce unicode to str
 try:
@@ -31,7 +32,6 @@ def attribute(ns, factory=None, default=None):
         if value is not None:
             if factory is None:
                 return value
-
             f = factory(self.translator)
             return f(value)
         elif default is not None:
@@ -99,3 +99,15 @@ class repeatdict(dict):
             self[key] = (value, length)
             
         return value
+
+def xml_attr(name):
+    return "{%s}%s" % (config.XML_NS, name)
+
+def tal_attr(name):
+    return "{%s}%s" % (config.TAL_NS, name)
+
+def i18n_attr(name):
+    return "{%s}%s" % (config.I18N_NS, name)
+
+def py_attr(name):
+    return "{%s}%s" % (config.PY_NS, name)

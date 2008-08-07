@@ -38,6 +38,7 @@ class BaseTemplate(object):
 
         self.source = source
         self.source_write()
+        self.selectors = generator.stream.selectors
         self.annotations = generator.stream.annotations
         
         _globals.update(suite._globals)
@@ -48,12 +49,15 @@ class BaseTemplate(object):
         return _locals['render']
 
     def render(self, **kwargs):
-        # A ''.join of a dict uses only the keys
+        # a ''.join of a dict uses only the keys
         signature = self.signature + hash(''.join(kwargs))
 
         template = self.registry.get(signature, None)
         if template is None:
             self.registry[signature] = template = self.cook(kwargs.keys())
+
+        # pass in selectors
+        kwargs.update(self.selectors)
 
         if PROD_MODE:
             return template(**kwargs)

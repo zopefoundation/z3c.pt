@@ -1,9 +1,18 @@
 Changelog
 ---------
 
-Version 0.8.x
+Version 0.9.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Version 0.9 - August 7, 2008
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Added support for Genshi-templates.
+  [malthe]
+
+- Cleanup and refactoring of translation module.
+  [malthe]
+  
 - If the template source contains a DOCTYPE declaration, output it
   during rendering. [chrism]
 

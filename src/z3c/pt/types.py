@@ -28,3 +28,12 @@ class definitions(tuple):
 class escape(parts):
     def __repr__(self):
         return 'escape'+tuple.__repr__(self)
+
+class method(object):
+    def __init__(self, name, args):
+        self.name = name
+        self.args = args
+
+    def __repr__(self):
+        return "%s(%s)" % (self.name, ", ".join(arg for arg in self.args))
+        

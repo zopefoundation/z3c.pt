@@ -1,21 +1,25 @@
 Overview
 --------
 
-The z3c.pt package provides an alternative implementation of the TAL
-template language including i18n. It also provides a simple text
-template class that allows expression interpolation.
+The z3c.pt package provides a fast template engine that supports the
+following dialects of the attribute template language:
 
-Casual benchmarks pegs it 12x more performant than ``zope.pagetemplate``.
+* Zope TAL
+* Zope i18n
+* Genshi
+
+Non-structural documents are supported through Genshi's variable
+interpolation syntax which is also available for XML templates.
+
+Casual benchmarks pegs it 16x more performant than the reference
+implementations for Zope TAL and Genshi.
 
 In a nutshell:
 
-* Templates are parsed and compiled into Python bytecode
-* While rendering only Python code is executed and no parsing happens
+* Templates are serialized and compiled into Python bytecode
 * Pluggable expression implementation
-* Support for expression interpolation using the ${<expression>}-format
-* Non-XML friendly
 
-Note: The METAL macro language is not supported.
+Note: Zope's METAL macro language is not supported.
 
 
 Usage
@@ -26,13 +30,16 @@ default expression types, load the package component configuration
 file (configure.zcml).
 
 
-Template and expression language
---------------------------------
+Compiler notes
+--------------
 
-The template and expression language is based loosely on the TAL 1.4
-specification*. Some notable changes:
+The compiler is largely compatible with the targeted dialects. The TAL
+implementation is based on the 1.4 language specification* while the
+Genshi implementation is based on the documents for the 0.5 release**.
 
-1. Tuples are allowed in the tal:define statement:
+Some notable changes:
+
+1. Tuple unpacking is allowed when defining variables:
 
       tal:define="(a, b, c) [1, 2, 3]"
 
@@ -48,15 +55,15 @@ specification*. Some notable changes:
 
    can be used instead of ``dictionary['key']``.
 
-4. Expression interpolation is allowed in attributes and HTML content.
-
-       <a href="mailto:${context.email}">${context.email}</a>
-
-5. Default expression type can be set using ``tal:default-expression``.
+4. Default expression type can be set using ``tal:default-expression``.
    This is an alternative to providing the expression type before each
    expression.
-   
+
+5. The XPath select function provided to py:match-elements uses lxml
+   and requires the use of the default namespace prefix "xmlns".
+
 .. _TAL: http://wiki.zope.org/ZPT/TALSpecification14
+.. _Genshi: http://genshi.edgewall.org/wiki/Documentation/xml-templates.html
 
 
 Development
@@ -67,4 +74,6 @@ development and testing usage), provide ``z3c.pt==dev`` as your
 dependency.
 
 http://svn.zope.org/z3c.pt/trunk#egg=z3c.pt-dev
+
+Want to contribute? Join #zope3-dev on Freenode IRC.
 

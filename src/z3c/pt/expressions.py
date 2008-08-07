@@ -19,6 +19,8 @@ class ExpressionTranslation(object):
 
     re_pragma = re.compile(r'^\s*(?P<pragma>[a-z]+):\s*')
     re_interpolation = re.compile(r'(?P<prefix>[^\\]\$|^\$){((?P<expression>.*)})?')
+    re_method = re.compile(r'^(?P<name>[A-Za-z0-9_]+)'
+                           '\((?P<args>[A-Za-z0-9_]+\s*(,\s*[A-Za-z0-9_]+)*)\)')
 
     def name(self, string):
         return string
@@ -173,6 +175,20 @@ class ExpressionTranslation(object):
         >>> definitions("(variable1, variable2) (expression1, expression2)")
         definitions((declaration('variable1', 'variable2'),
                     value('(expression1, expression2)')),)
+
+        Space, the 'in' operator and '=' may be used to separate
+        variable from expression.
+
+        >>> definitions("variable in expression")
+        definitions((declaration('variable',), value('expression')),)        
+        
+        >>> definitions("variable1 = expression1; variable2 = expression2")
+        definitions((declaration('variable1',), value('expression1')),
+                    (declaration('variable2',), value('expression2')))
+
+        >>> definitions("variable1=expression1; variable2=expression2")
+        definitions((declaration('variable1',), value('expression1')),
+                    (declaration('variable2',), value('expression2')))
         
         A define clause that ends in a semicolon:
         
@@ -209,16 +225,28 @@ class ExpressionTranslation(object):
                 var = self.declaration(string[i+1:j])
                 j += 1
             else:
-                j = string.find(' ', i + 1)
-                if j == -1:
+                j = string.find('=', i + 1)
+                k = string.find(' ', i + 1)
+                if k < j and k > -1 or j < 0:
+                    j = k
+                
+                if j < 0:
                     var = self.declaration(string[i:])
                     j = len(string)
                 else:
                     var = self.declaration(string[i:j])
 
             # get expression
-            i = j
+            i = j + len(string) - j - len(string[j:].lstrip())
             while j < len(string):
+                token = string[i:]
+                if token.startswith('=='):
+                    raise ValueError("Invalid variable definition (%s)." % string)
+                elif token.startswith('='):
+                    i += 1
+                elif token.startswith('in'):
+                    i += 2
+                
                 j = string.find(';', j+1)
                 if j == -1:
                     j = len(string)
@@ -402,6 +430,25 @@ class ExpressionTranslation(object):
 
         return m
 
+    def method(self, string):
+        """Parse a method definition.
+
+        >>> method = ExpressionTranslation().method
+
+        >>> method('name(a, b, c)')
+        name(a, b, c)
+        
+        """
+
+        m = self.re_method.match(string)
+        if m is None:
+            return None
+
+        name = m.group('name')
+        args = [arg.strip() for arg in m.group('args').split(',')]
+
+        return types.method(name, args)
+        
 class PythonTranslation(ExpressionTranslation):
     def validate(self, string):
         """We use the ``parser`` module to determine if
@@ -414,7 +461,9 @@ class PythonTranslation(ExpressionTranslation):
             string = string.encode('utf-8')
 
         return types.value(string)
-            
+
+PythonTranslation = PythonTranslation()
+
 class StringTranslation(ExpressionTranslation):
     zope.component.adapts(interfaces.IExpressionTranslation)
 
@@ -576,3 +625,5 @@ class PathTranslation(ExpressionTranslation):
             value = types.value('not(%s)' % value)
 
         return value
+
+PathTranslation = PathTranslation()

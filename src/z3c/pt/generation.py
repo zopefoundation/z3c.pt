@@ -72,14 +72,19 @@ class Generator(object):
     def __call__(self):
         # prepare template arguments
         args = self.params
-        # We need to ensure we have _context for the i18n handling in the
-        # arguments. The default template implementations pass this in
-        # explicitly.
+        
+        # we need to ensure we have _context for the i18n handling in
+        # the arguments. the default template implementations pass
+        # this in explicitly.
         if '_context' not in args:
             args = args + ('_context=None', )
         args = ', '.join(args)
         if args:
             args += ', '
+
+        # pass selectors
+        for selector in self.stream.selectors:
+            args += '%s=None, ' % selector
 
         code = self.stream.getvalue()
         return wrapper % (args, code), {'generation': z3c.pt.generation}
@@ -112,6 +117,7 @@ class CodeIO(BufferIO):
         self.indentation_string = indentation_string
         self.queue = ''
         self.scope = [set()]
+        self.selectors = {}
         self.annotations = {}
         
         self._variables = {}
@@ -164,6 +170,24 @@ class CodeIO(BufferIO):
         self.cook()
         return BufferIO.getvalue(self)
 
+    def escape(self, variable):
+        self.write("if '&' in %s:" % variable)
+        self.indent()
+        self.write("%s = %s.replace('&', '&amp;')" % (variable, variable))
+        self.outdent()
+        self.write("if '<' in %s:" % variable)
+        self.indent()
+        self.write("%s = %s.replace('<', '&lt;')" % (variable, variable))
+        self.outdent()
+        self.write("if '>' in %s:" % variable)
+        self.indent()
+        self.write("%s = %s.replace('>', '&gt;')" % (variable, variable))
+        self.outdent()
+        self.write("if '\"' in %s:" % variable)
+        self.indent()
+        self.write("%s = %s.replace('\"', '&quot;')" % (variable, variable))
+        self.outdent()
+        
     def begin(self, clauses):
         if isinstance(clauses, (list, tuple)):
             for clause in clauses:

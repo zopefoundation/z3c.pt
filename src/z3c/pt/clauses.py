@@ -423,6 +423,19 @@ class Group(object):
     def uses_variable(self, var):
         return False
 
+class Visit(object):
+    def __init__(self, element):
+        self.element = element
+        
+    def begin(self, stream):
+        self.element.visit(skip_macro=False)
+
+    def end(self, stream):
+        pass
+
+    def uses_variable(self, var):
+        return False    
+
 class Tag(object):
     """
       >>> from z3c.pt.generation import CodeIO
@@ -463,7 +476,7 @@ class Tag(object):
             
     """
 
-    def __init__(self, tag, attributes={}, selfclosing=False):
+    def __init__(self, tag, attributes={}, selfclosing=False, expression=None):
         i = tag.find('}')
 
         if i != -1:
@@ -473,11 +486,11 @@ class Tag(object):
 
         self.selfclosing = selfclosing
         self.attributes = attributes
+        self.expression = expression
         
     def begin(self, stream):
         stream.out('<%s' % self.tag)
 
-        # static attributes
         static = filter(
             lambda (attribute, value): \
             not isinstance(value, types.expression),
@@ -494,7 +507,26 @@ class Tag(object):
                 escape(expression, '"')))
 
         temp = stream.save()
+        temp2 = stream.save()
 
+        if self.expression:
+            stream.write("for %s, %s in (%s).items():" % (temp, temp2, self.expression))
+            stream.indent()
+            if unicode_required_flag:
+                stream.write("if isinstance(%s, unicode):" % temp2)
+                stream.indent()
+                stream.escape(temp2)
+                stream.write("_write(' %%s=\"%%s\"' %% (%s, %s))" % (temp, temp2))
+                stream.outdent()
+                stream.write("elif %s is not None:" % temp2)
+            else:
+                stream.write("if %s is not None:" % temp2)
+            stream.indent()
+            stream.write("%s = str(%s)" % (temp2, temp2))
+            stream.escape(temp2)
+            stream.write("_write(' %%s=\"%%s\"' %% (%s, %s))" % (temp, temp2))
+            stream.outdent()
+        
         for attribute, value in dynamic:
             assign = Assign(value)
             assign.begin(stream, temp)
@@ -503,24 +535,8 @@ class Tag(object):
                 stream.write("if isinstance(%s, unicode):" % temp)
                 stream.indent()
                 stream.write("_write(' %s=\"')" % attribute)
-                # Inlined escape function
                 stream.write("_esc = %s" % temp)
-                stream.write("if '&' in _esc:")
-                stream.indent()
-                stream.write("_esc = _esc.replace('&', '&amp;')")
-                stream.outdent()
-                stream.write("if '<' in _esc:")
-                stream.indent()
-                stream.write("_esc = _esc.replace('<', '&lt;')")
-                stream.outdent()
-                stream.write("if '>' in _esc:")
-                stream.indent()
-                stream.write("_esc = _esc.replace('>', '&gt;')")
-                stream.outdent()
-                stream.write("if '\"' in _esc:")
-                stream.indent()
-                stream.write("_esc = _esc.replace('\"', '&quot;')")
-                stream.outdent()
+                stream.escape("_esc")
                 stream.write("_write(_esc)")
                 stream.write("_write('\"')")
                 stream.outdent()
@@ -529,31 +545,16 @@ class Tag(object):
                 stream.write("if %s is not None:" % temp)
             stream.indent()
             stream.write("_write(' %s=\"')" % attribute)
-            # Inlined escape function
             stream.write("_esc = str(%s)" % temp)
-            stream.write("if '&' in _esc:")
-            stream.indent()
-            stream.write("_esc = _esc.replace('&', '&amp;')")
-            stream.outdent()
-            stream.write("if '<' in _esc:")
-            stream.indent()
-            stream.write("_esc = _esc.replace('<', '&lt;')")
-            stream.outdent()
-            stream.write("if '>' in _esc:")
-            stream.indent()
-            stream.write("_esc = _esc.replace('>', '&gt;')")
-            stream.outdent()
-            stream.write("if '\"' in _esc:")
-            stream.indent()
-            stream.write("_esc = _esc.replace('\"', '&quot;')")
-            stream.outdent()
+            stream.escape("_esc")
             stream.write("_write(_esc)")
             stream.write("_write('\"')")
             stream.outdent()
             assign.end(stream)
 
         stream.restore()
-
+        stream.restore()
+        
         if self.selfclosing:
             stream.out(" />")
         else:
@@ -860,3 +861,33 @@ class Translate(object):
 
     def uses_variable(self, var):
         return False
+
+class Method(object):
+    """
+      >>> from z3c.pt.generation import CodeIO
+      >>> from z3c.pt.testing import pyexp
+      >>> from StringIO import StringIO
+      
+      >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
+      >>> method = Method('test', ('a', 'b', 'c'))
+      >>> method.begin(stream)
+      >>> stream.write('print a, b, c')
+      >>> method.end(stream)
+      >>> exec stream.getvalue()
+      >>> test(1, 2, 3)
+      1 2 3
+      
+    """
+
+    def __init__(self, name, args):
+        self.name = name
+        self.args = args
+        
+    def begin(self, stream):
+        stream.write('def %s(%s):' % (self.name, ", ".join(self.args)))
+        stream.indent()
+
+    def end(self, stream):
+        stream.outdent()
+        
+    

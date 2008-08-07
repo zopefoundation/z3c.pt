@@ -1,5 +1,4 @@
 import expressions
 
 def pyexp(string):
-    translator = expressions.PythonTranslation()
-    return translator.expression(string)
+    return expressions.PythonTranslation.expression(string)

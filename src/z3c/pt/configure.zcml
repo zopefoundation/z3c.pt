@@ -4,11 +4,11 @@
   
   <utility
      name="python"
-     factory=".expressions.PythonTranslation" />
+     component=".expressions.PythonTranslation" />
 
   <utility
      name="path"
-     factory=".expressions.PathTranslation" />
+     component=".expressions.PathTranslation" />
 
   <adapter
      name="string"

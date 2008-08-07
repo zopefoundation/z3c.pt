@@ -39,14 +39,17 @@ Initialized with a string:
   >>> from z3c.pt import PageTemplate
   >>> template = PageTemplate("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   Hello World!
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal"
+  ...      xmlns:py="http://genshi.edgewall.org">
+  ...   <py:match path="xmlns:greeting">Hello ${select('@name')[0]}!</py:match>
+  ...   <greeting name="World" />
   ... </div>
   ... """)
 
   >>> print template()
   <div>
-     Hello World!
+    Hello World!
+  <BLANKLINE>
   </div>
 
 Providing the path to a template file:
@@ -57,7 +60,8 @@ Providing the path to a template file:
   >>> template = PageTemplateFile(path+'/helloworld.pt')
   >>> print template()
   <div>
-     Hello World!
+    Hello World!
+  <BLANKLINE>
   </div>
 
 Keyword-parameters are passed on to the template namespace as-is.
