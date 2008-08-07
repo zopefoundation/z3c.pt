@@ -4,6 +4,10 @@ Changelog
 Version 0.9.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Treat comments, processing instructions, and named entities in the
+  source template as "literals", which will be rendered into the
+  output unchanged. [chrism]
+
 Version 0.9 - August 7, 2008
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

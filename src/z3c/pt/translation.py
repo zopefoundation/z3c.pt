@@ -54,8 +54,8 @@ class Element(lxml.etree.ElementBase):
             return
 
         for element in self:
-            if isinstance(element, lxml.etree._Comment):
-                self._wrap_comment(element)
+            if not isinstance(element, Element):
+                self._wrap_literal(element)
 
         self.update()
         self.begin()
@@ -128,7 +128,7 @@ class Element(lxml.etree.ElementBase):
 
         # Step 2: Process "py:match" macros
         for element in self:
-            if element.py_match is None:
+            if getattr(element, 'py_match', None) is None:
                 continue
             
             nsmap = element.nsmap.copy()
@@ -267,7 +267,7 @@ class Element(lxml.etree.ElementBase):
             else:
                 _.append(tag)
 
-        # tag text (if we're not replacing tag body)
+        # tag text (if we're not re.placing tag body)
         if self.text and not dynamic:
             _.append(clauses.Out(self.text.encode('utf-8')))
 
@@ -346,21 +346,19 @@ class Element(lxml.etree.ElementBase):
 
         return _
 
-    def _wrap_comment(self, element):
+    def _wrap_literal(self, element):
         index = self.index(element)
 
-        t = parser.makeelement(utils.tal_attr('comment'))
+        t = parser.makeelement(utils.tal_attr('literal'))
         t.attrib['omit-tag'] = ''
         t.tail = element.tail
-        t.text = '<!--' + element.text + '-->'
-
+        t.text = unicode(element)
         for child in element.getchildren():
             t.append(child)
-
         self.remove(element)
         self.insert(index, t)
         t.update()
-    
+
     def _msgid(self):
         """Create an i18n msgid from the tag contents."""
 
@@ -574,7 +572,7 @@ class PyMatchElement(PyElement):
 
 # set up namespaces for XML parsing
 lookup = lxml.etree.ElementNamespaceClassLookup()
-parser = lxml.etree.XMLParser()
+parser = lxml.etree.XMLParser(resolve_entities=False)
 parser.setElementClassLookup(lookup)
 
 try:

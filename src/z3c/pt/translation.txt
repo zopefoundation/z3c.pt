@@ -51,6 +51,45 @@ XHTML
       <img alt="La Peña" />
     </div>
 
+Literals
+--------
+
+:: Named entities output literally (note doctype is required to prevent
+   lxml from raising a XMLSyntaxError :-( )
+
+  >>> print render("""\
+  ... <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+  ...    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+  ... <html xmlns="http://www.w3.org/1999/xhtml">
+  ...   Hello &nbsp; World!
+  ... </html>""", translate_xml)
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    <html>
+      Hello &nbsp; World!
+    </html>
+
+:: Processing instructions output literally
+
+  >>> print render("""\
+  ... <html xmlns="http://www.w3.org/1999/xhtml">
+  ...   <?xml-stylesheet href="classic.xsl" type="text/xml"?>
+  ...   Hello World!
+  ... </html>""", translate_xml)
+    <html>
+      <?xml-stylesheet href="classic.xsl" type="text/xml"?>
+      Hello World!
+    </html>
+
+:: Literal comments (without embedded expressions) output literally
+
+  >>> print render("""\
+  ... <html xmlns="http://www.w3.org/1999/xhtml">
+  ...   <!-- hello world -->
+  ... </html>""", translate_xml)
+    <html>
+      <!-- hello world -->
+    </html>
+
 Zope TAL
 --------
 
