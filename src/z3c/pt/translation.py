@@ -3,7 +3,6 @@ from zope import component
 from StringIO import StringIO
 import lxml.etree
 
-import itertools
 import generation
 import clauses
 import interfaces
