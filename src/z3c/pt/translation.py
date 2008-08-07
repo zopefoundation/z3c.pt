@@ -267,7 +267,7 @@ class Element(lxml.etree.ElementBase):
             else:
                 _.append(tag)
 
-        # tag text (if we're not re.placing tag body)
+        # tag text (if we're not replacing tag body)
         if self.text and not dynamic:
             _.append(clauses.Out(self.text.encode('utf-8')))
 
