@@ -147,9 +147,6 @@ class Assign(object):
     def end(self, stream):
         pass
 
-    def uses_variable(self, var):
-        return var in repr(self.parts)
-
 class Define(object):
     """
       >>> from z3c.pt.generation import CodeIO; stream = CodeIO()
@@ -297,9 +294,6 @@ class Define(object):
                 else:
                     stream.write("del %s" % var)
 
-    def uses_variable(self, var):
-        return self.assign.uses_variable(var)
-
 class Condition(object):
     """
       >>> from z3c.pt.generation import CodeIO
@@ -383,9 +377,6 @@ class Condition(object):
             stream.outdent()
         self.assign.end(stream)
 
-    def uses_variable(self, var):
-        return self.assign.uses_variable(var)
-
 class Else(object):
     def __init__(self, clauses=None):
         self.clauses = clauses
@@ -404,9 +395,6 @@ class Else(object):
         if not self.clauses:
             stream.outdent()
 
-    def uses_variable(self, var):
-        return False
-
 class Group(object):
     def __init__(self, clauses):
         self.clauses = clauses
@@ -420,9 +408,6 @@ class Group(object):
     def end(self, stream):
         pass
 
-    def uses_variable(self, var):
-        return False
-
 class Visit(object):
     def __init__(self, element):
         self.element = element
@@ -432,9 +417,6 @@ class Visit(object):
 
     def end(self, stream):
         pass
-
-    def uses_variable(self, var):
-        return False    
 
 class Tag(object):
     """
@@ -564,14 +546,6 @@ class Tag(object):
         if not self.selfclosing:
             stream.out('</%s>' % self.tag)
 
-    def uses_variable(self, var):
-        values = self.attributes.values()
-        for value in values:
-            if isinstance(value, types.expression):
-                if var in repr(value):
-                    return True
-        return False
-
 class Repeat(object):
     """
       >>> from z3c.pt.generation import CodeIO
@@ -670,11 +644,6 @@ class Repeat(object):
             self.assign.end(stream)
             stream.restore()
 
-    def uses_variable(self, var):
-        if var in (self.variable, 'repeat'):
-            return True
-        return False
-
 class Write(object):
     """
     >>> from z3c.pt.generation import CodeIO
@@ -766,11 +735,6 @@ class Write(object):
             self.assign.end(stream)
         stream.restore()
 
-    def uses_variable(self, var):
-        if self.assign:
-            return self.assign.uses_variable(var)
-        return False
-
 class UnicodeWrite(Write):
     """
     >>> from z3c.pt.generation import CodeIO
@@ -845,9 +809,6 @@ class Out(object):
         if self.defer:
             stream.out(self.string)
 
-    def uses_variable(self, var):
-        return False
-
 class Translate(object):
     """
     The translate clause works retrospectively.
@@ -858,9 +819,6 @@ class Translate(object):
 
     def end(self, stream):
         raise
-
-    def uses_variable(self, var):
-        return False
 
 class Method(object):
     """
