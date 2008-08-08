@@ -4,6 +4,11 @@ Changelog
 Version 0.9.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Add a TemplateLoader class to have a convenient method to instantiate
+  templates. This is similar to the template loaders from other template
+  toolkits and makes integration with Pylons a lot simpler.
+  [wichert]
+
 - Switch from hardcoding all options in config.py to using parameters
   for the template. This also allows us to use the more logical
   auto_reload flag instead of reusing PROD_MODE, which is also used
