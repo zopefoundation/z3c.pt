@@ -13,7 +13,7 @@ class TemplateLoader(object):
         self.cachedir = cachedir
         if cachedir is not None:
             if not os.path.isdir(cachedir):
-                raise ValueError, "Invalid cachedir")
+                raise ValueError("Invalid cachedir")
 
 
     def _load(self, filename, klass):

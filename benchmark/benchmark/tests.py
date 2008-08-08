@@ -154,6 +154,7 @@ class FileBenchmarkTestCase(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
         self.files = os.path.abspath(os.path.join(__file__, '..', 'input'))
+        self.cache = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'cache'))
 
     def _testfile(self, name):
         return os.path.join(self.files, name)
@@ -163,7 +164,8 @@ class FileBenchmarkTestCase(BaseTestCase):
         table = self.table
 
         z3cfile = z3c.pt.PageTemplateFile(
-            self._testfile('bigtable_python_z3c.pt'))
+            self._testfile('bigtable_python_z3c.pt'),
+            cachedir=self.cache)
 
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
             self._testfile('bigtable_python_zope.pt'))
