@@ -1,5 +1,4 @@
 import os
-from os.path import abspath
 
 DEBUG_MODE_KEY = 'Z3C_PT_DEBUG'
 DEBUG_MODE = os.environ.get(DEBUG_MODE_KEY, 'false')
