@@ -8,7 +8,11 @@ class TemplateLoader(object):
     """
 
     def __init__(self, search_path=None, auto_reload=False, cachedir=None):
-        self.search_path = search_path is not None and search_path or []
+        if search_path is None:
+            search_path = []
+        if isinstance(search_path, basestring):
+            search_path = [search_path]
+        self.search_path = search_path
         self.auto_reload = auto_reload
         self.cachedir = cachedir
         if cachedir is not None:
@@ -26,7 +30,7 @@ class TemplateLoader(object):
                 return klass(path, auto_reload=self.auto_reload,
                                 cachedir=self.cachedir)
             except OSError, e:
-                if e.errno!=erro.ENOENT:
+                if e.errno != errno.ENOENT:
                     raise
 
         raise ValueError("Can not find template %s" % filename)
