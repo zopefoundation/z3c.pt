@@ -3,7 +3,7 @@ import sys
 import codegen
 import traceback
 
-from z3c.pt.config import DEBUG_MODE, PROD_MODE, FILECACHE
+from z3c.pt.config import DEBUG_MODE, PROD_MODE
 from z3c.pt import filecache
 import z3c.pt.generation
 
@@ -101,8 +101,10 @@ class BaseTemplate(object):
 
 class BaseTemplateFile(BaseTemplate):
 
-    def __init__(self, filename):
+    def __init__(self, filename, auto_reload=False, cachedir=None):
         BaseTemplate.__init__(self, None)
+        self.auto_reload = auto_reload
+        self.cachedir = cachedir
 
         if not os.path.isabs(filename):
             for depth in (1, 2):
@@ -124,8 +126,9 @@ class BaseTemplateFile(BaseTemplate):
         # make sure file exists
         os.lstat(filename)
         self.filename = filename
-        if FILECACHE:
-            self.registry = filecache.CachingDict(filename, self.mtime())
+        if self.cachedir:
+            self.registry = filecache.CachingDict(cachedir, filename,
+                                                  self.mtime())
             self.registry.load(self)
         else:
             self.registry = {}
@@ -172,7 +175,7 @@ class BaseTemplateFile(BaseTemplate):
         self.annotations = generator.stream.annotations
         
         _globals.update(suite._globals)
-        if FILECACHE:
+        if self.cachedir:
             self.registry.store(params, suite.code)
 
         return self.execute(suite.code, _globals)
@@ -202,7 +205,7 @@ class BaseTemplateFile(BaseTemplate):
         return self.safe_render(template, **kwargs)
 
     def _cook_check(self):
-        if self._v_last_read and PROD_MODE:
+        if self._v_last_read and not self.auto_reload:
             return False
 
         if self.mtime() == self._v_last_read:

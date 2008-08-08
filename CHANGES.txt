@@ -4,6 +4,12 @@ Changelog
 Version 0.9.x
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Switch from hardcoding all options in config.py to using parameters
+  for the template. This also allows us to use the more logical
+  auto_reload flag instead of reusing PROD_MODE, which is also used
+  for other purposes.
+  [wichert]
+
 - Treat comments, processing instructions, and named entities in the
   source template as "literals", which will be rendered into the
   output unchanged. [chrism]

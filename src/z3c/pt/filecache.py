@@ -7,8 +7,6 @@ from imp import get_magic
 from sha import sha
 from UserDict import UserDict
 
-from z3c.pt.config import FILECACHE
-
 MAGIC = get_magic()
 
 def code_read(filename, timestamp):
@@ -41,10 +39,10 @@ def code_write(code, filename, timestamp):
 
 class CachingDict(UserDict):
 
-    def __init__(self, filename, mtime):
+    def __init__(self, cachedir, filename, mtime):
         UserDict.__init__(self)
         signature = sha(filename).hexdigest()
-        self.cachedir = os.path.join(FILECACHE, signature)
+        self.cachedir = os.path.join(cachedir, signature)
         self.mtime = mtime
 
     def load(self, pagetemplate):
