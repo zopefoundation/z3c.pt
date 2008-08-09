@@ -20,7 +20,7 @@ class ExpressionTranslation(object):
     re_pragma = re.compile(r'^\s*(?P<pragma>[a-z]+):\s*')
     re_interpolation = re.compile(r'(?P<prefix>[^\\]\$|^\$){((?P<expression>.*)})?')
     re_method = re.compile(r'^(?P<name>[A-Za-z0-9_]+)'
-                           '\((?P<args>[A-Za-z0-9_]+\s*(,\s*[A-Za-z0-9_]+)*)\)')
+                           '(\((?P<args>[A-Za-z0-9_]+\s*(,\s*[A-Za-z0-9_]+)*)\))?')
 
     def name(self, string):
         return string
@@ -435,6 +435,9 @@ class ExpressionTranslation(object):
 
         >>> method = ExpressionTranslation().method
 
+        >>> method('name')
+        name()
+
         >>> method('name(a, b, c)')
         name(a, b, c)
         
@@ -442,10 +445,10 @@ class ExpressionTranslation(object):
 
         m = self.re_method.match(string)
         if m is None:
-            return None
+            raise ValueError("Not a valid method definition (%s)." % string)
 
         name = m.group('name')
-        args = [arg.strip() for arg in m.group('args').split(',')]
+        args = [arg.strip() for arg in (m.group('args') or "").split(',') if arg]
 
         return types.method(name, args)
         
