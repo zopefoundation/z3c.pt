@@ -12,8 +12,9 @@ DISABLE_I18N = DISABLE_I18N.lower() in ('yes', 'true', 'on')
 
 XML_NS = "http://www.w3.org/1999/xhtml"
 TAL_NS = "http://xml.zope.org/namespaces/tal"
+METAL_NS = "http://xml.zope.org/namespaces/metal" 
 I18N_NS = "http://xml.zope.org/namespaces/i18n"
 PY_NS = "http://genshi.edgewall.org"
-NS_MAP = dict(py=PY_NS, tal=PY_NS)
+NS_MAP = dict(py=PY_NS, tal=TAL_NS, metal=METAL_NS)
             
         

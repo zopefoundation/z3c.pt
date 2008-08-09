@@ -121,6 +121,36 @@ py:match integration
   <BLANKLINE>
   </div>
 
+metal:define-macro, metal:use-macro
+
+  >>> template1 = PageTemplate("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal"
+  ...      xmlns:metal="http://xml.zope.org/namespaces/metal">
+  ...   <div metal:define-macro="greeting">
+  ...     Hello, ${name}!
+  ...   </div>
+  ... </div>""")
+
+  >>> template2 = PageTemplate("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal"
+  ...      xmlns:metal="http://xml.zope.org/namespaces/metal">
+  ...   <div tal:define="name 'world'">
+  ...     <div metal:use-macro="template1.macros['greeting']" />
+  ...   </div>  
+  ... </div>""")
+
+  >>> print template2(template1=template1)
+  <div>
+    <div>
+      <div>
+      Hello, world!
+    </div>
+  <BLANKLINE>
+    </div>  
+  </div>
+  
 Error handling
 --------------
 

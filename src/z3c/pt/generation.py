@@ -9,19 +9,25 @@ import utils
 import z3c.pt.generation
 from z3c.pt.config import DISABLE_I18N
 
-wrapper = """\
-def render(%starget_language=None):
+template_wrapper = """\
+def render(%(args)s%(extra)starget_language=None):
 \tglobal generation
 
-\t(_out, _write) = generation.initialize_stream()
-\t(_attributes, repeat) = generation.initialize_tal()
-\t(_domain, _negotiate, _translate) = generation.initialize_i18n()
+\t_out, _write = generation.initialize_stream()
+\t_attributes, repeat = generation.initialize_tal()
+\t_domain, _negotiate, _translate = generation.initialize_i18n()
 \t_marker = generation.initialize_helpers()
 \t_path = generation.initialize_traversal()
 
 \t_target_language = _negotiate(_context, target_language)
-%s
+%(code)s
 \treturn _out.getvalue()
+"""
+
+macro_wrapper = """\
+def render(%(kwargs)s%(extra)s):
+\tglobal generation
+%(code)s
 """
 
 def _fake_negotiate(context, target_language):
@@ -62,32 +68,42 @@ def initialize_traversal():
     return expressions.PathTranslation.traverse
 
 class Generator(object):
-    def __init__(self, params):
-        self.params = tuple(params)
+    def __init__(self, params, wrapper):
+        self.params = list(params)
+        self.wrapper = wrapper
         self.stream = CodeIO(indentation=1, indentation_string="\t")
 
         # initialize variable scope
-        self.stream.scope.append(set(params + ['_out', '_write']))
+        self.stream.scope.append(set(('_out', '_write') + tuple(params)))
 
     def __call__(self):
-        # prepare template arguments
-        args = self.params
-        
-        # we need to ensure we have _context for the i18n handling in
-        # the arguments. the default template implementations pass
-        # this in explicitly.
-        if '_context' not in args:
-            args = args + ('_context=None', )
-        args = ', '.join(args)
+        params = self.params
+        extra = ''
+
+        # prepare args
+        args = ', '.join(params)
         if args:
             args += ', '
 
-        # pass selectors
+        # prepare kwargs
+        kwargs = ', '.join("%s=None" % param for param in params)
+        if kwargs:
+            kwargs += ', '
+            
+        # prepare selectors
         for selector in self.stream.selectors:
-            args += '%s=None, ' % selector
+            extra += '%s=None, ' % selector
+
+        # we need to ensure we have _context for the i18n handling in
+        # the arguments. the default template implementations pass
+        # this in explicitly.
+        if '_context' not in params:
+            extra += '_context=None, '
 
         code = self.stream.getvalue()
-        return wrapper % (args, code), {'generation': z3c.pt.generation}
+        return self.wrapper % dict(
+            args=args, kwargs=kwargs, extra=extra, code=code), \
+            {'generation': z3c.pt.generation}
 
 class BufferIO(list):
     write = list.append

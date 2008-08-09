@@ -3,16 +3,7 @@ Translation
 
 This document contains functional template tests.
 
-A generic render-method is used for convenience.
-
-  >>> def render(body, translator, **kwargs):
-  ...    generator = translator(body)
-  ...    source, _globals = generator()
-  ...    _locals = {}
-  ...    _globals.update(kwargs)
-  ...    exec source in _globals, _locals
-  ...    return _locals['render'](**generator.stream.selectors)
-
+  >>> from z3c.pt.testing import render
   >>> from z3c.pt.translation import translate_xml
 
 XHTML
@@ -104,10 +95,12 @@ tal:define, tal:attributes, tal:contents
   ...         tal:attributes="class 'def' + a; style 'hij'"
   ...         tal:content="a + 'ghi'" />
   ...   <span tal:replace="'Hello World!'">Hello Universe!</span>
+  ...   <span tal:replace="'Hello World!'"><b>Hello Universe!</b></span>
   ...   <span tal:content="None" />
   ... </div>""", translate_xml)
     <div>
       <span id="test" style="hij" class="defabc">abcghi</span>
+      Hello World!
       Hello World!
       <span></span>
     </div>
@@ -282,6 +275,75 @@ tal:omit-tag
       <built-in function dir>
       <built-in function dir>
     </div>
+
+METAL
+-----
+
+metal:define-macro, metal:use-macro
+
+  >>> body = """\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal"
+  ...      xmlns:metal="http://xml.zope.org/namespaces/metal">
+  ...   <div class="greeting" metal:define-macro="greeting">
+  ...     Hello, ${name}!
+  ...   </div>
+  ...   <div tal:define="name 'world'">
+  ...     <div metal:use-macro="template.macros['greeting']" />
+  ...   </div>  
+  ... </div>"""
+
+  >>> from z3c.pt.testing import MockTemplate
+  >>> template = MockTemplate(body, translate_xml)
+  >>> print render(body, translate_xml, template=template)
+  <div>
+    <div>
+      <div class="greeting">
+        Hello, world!
+      </div>
+    </div>  
+  </div>
+
+metal:define-slot, metal:fill-slot
+
+  >>> body = """\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal"
+  ...      xmlns:metal="http://xml.zope.org/namespaces/metal">
+  ...   <div metal:define-macro="greeting">
+  ...     Hello, <b class="name" metal:define-slot="name">stranger!</b>
+  ...   </div>
+  ...   <div metal:use-macro="template.macros['greeting']">
+  ...     <span metal:fill-slot="name">earth!</span>
+  ...   </div>
+  ...   <div metal:use-macro="template.macros['greeting']">
+  ...     <!-- display fallback greeting -->
+  ...   </div>
+  ...   <div metal:use-macro="template.macros['greeting']">
+  ...     <span metal:fill-slot="dummy">dummy!</span>
+  ...   </div>
+  ... </div>"""
+
+  >>> from z3c.pt.testing import MockTemplate
+  >>> template = MockTemplate(body, translate_xml)
+  >>> print render(body, translate_xml, template=template)
+  <div>
+  <BLANKLINE>
+      <div>
+      Hello, <b class="name">earth!</b>
+    </div>
+  <BLANKLINE>
+  <BLANKLINE>
+      <div>
+      Hello, <b class="name">stranger!</b>
+    </div>
+  <BLANKLINE>
+  <BLANKLINE>
+      <div>
+      Hello, <b class="name">stranger!</b>
+    </div>
+  <BLANKLINE>
+  </div>
 
 Genshi
 ------

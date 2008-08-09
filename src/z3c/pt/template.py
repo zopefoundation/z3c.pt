@@ -1,5 +1,6 @@
 import os
 import sys
+import macro
 import codegen
 import traceback
 
@@ -10,6 +11,7 @@ import z3c.pt.generation
 class BaseTemplate(object):
 
     registry = {}
+    cachedir = None
     default_expression = 'python'
 
     def __init__(self, body, default_expression=None):
@@ -24,38 +26,46 @@ class BaseTemplate(object):
     def translate(self):
         return NotImplementedError("Must be implemented by subclass.")
 
-    def source_write(self):
-        # Hook for writing out the source code to the file system
-        return
+    @property
+    def macros(self):
+        return macro.Macros(self.render)
 
-    def cook(self, params):
+    def cook(self, params, macro=None):
         generator = self.translate(
-            self.body, params=params, default_expression=self.default_expression)
+            self.body, macro=macro, params=params,
+            default_expression=self.default_expression)
         
         source, _globals = generator()
         
         suite = codegen.Suite(source)
 
+        if self.cachedir:
+            self.registry.store(params, suite.code)
+
         self.source = source
-        self.source_write()
         self.selectors = generator.stream.selectors
         self.annotations = generator.stream.annotations
         
         _globals.update(suite._globals)
-        _locals = {}
+        return self.execute(suite.code, _globals)
 
-        exec suite.code in _globals, _locals
-
-        return _locals['render']
-
-    def render(self, **kwargs):
-        # a ''.join of a dict uses only the keys
-        signature = self.signature + hash(''.join(kwargs))
-
+    def cook_check(self, macro, params):
+        signature = self.signature, macro, params
         template = self.registry.get(signature, None)
         if template is None:
-            self.registry[signature] = template = self.cook(kwargs.keys())
+            template = self.cook(params, macro=macro)
+            self.registry[signature] = template
+            
+        return template
+    
+    def execute(self, code, _globals):
+        _locals = {}
+        exec code in _globals, _locals
+        return _locals['render']
 
+    def render(self, macro=None, **kwargs):
+        template = self.cook_check(macro, tuple(kwargs))
+        
         # pass in selectors
         kwargs.update(self.selectors)
 
@@ -101,8 +111,8 @@ class BaseTemplate(object):
 
 class BaseTemplateFile(BaseTemplate):
 
-    def __init__(self, filename, auto_reload=False, cachedir=None):
-        BaseTemplate.__init__(self, None)
+    def __init__(self, filename, auto_reload=False, cachedir=None, **kwargs):
+        BaseTemplate.__init__(self, None, **kwargs)
         self.auto_reload = auto_reload
         self.cachedir = cachedir
 
@@ -133,6 +143,8 @@ class BaseTemplateFile(BaseTemplate):
         else:
             self.registry = {}
 
+        self.read()
+        
     def _get_filename(self):
         return getattr(self, '_filename', None)
 
@@ -142,16 +154,21 @@ class BaseTemplateFile(BaseTemplate):
 
     filename = property(_get_filename, _set_filename)
 
-    @property
-    def source_filename(self):
-        return "%s.source" % self.filename
+    def _get_source(self):
+        return self._source
 
-    def source_write(self):
-        if DEBUG_MODE and self.source_filename:
-            fs = open(self.source_filename, 'w')
-            fs.write(self.source)
+    def _set_source(self, source):
+        self._source = source
+
+        # write source to disk
+        filename = "%s.source" % self.filename
+        if DEBUG_MODE:
+            fs = open(filename, 'w')
+            fs.write(source)
             fs.close()
 
+    source = property(_get_source, _set_source)
+    
     def read(self):
         fd = open(self.filename, 'r')
         self.body = body = fd.read()
@@ -159,59 +176,20 @@ class BaseTemplateFile(BaseTemplate):
         self.signature = hash(body)
         self._v_last_read = self.mtime()
 
-    def cook(self, params):
-        if self.body is None:
-            self.read()
-
-        generator = self.translate(
-            self.body, params=params, default_expression=self.default_expression)
-        
-        source, _globals = generator()
-        
-        suite = codegen.Suite(source)
-
-        self.source = source
-        self.source_write()
-        self.annotations = generator.stream.annotations
-        
-        _globals.update(suite._globals)
-        if self.cachedir:
-            self.registry.store(params, suite.code)
-
-        return self.execute(suite.code, _globals)
-
     def execute(self, code, _globals=None):
         # TODO: This is evil. We need a better way to get all the globals
         # independent from the generation step
         if _globals is None:
             _globals = codegen.Lookup.globals()
             _globals['generation'] = z3c.pt.generation
-        _locals = {}
-        exec code in _globals, _locals
-        return _locals['render']
 
-    def render(self, **kwargs):
-        if self._cook_check():
+        return BaseTemplate.execute(self, code, _globals)
+
+    def cook_check(self, *args):
+        if self.auto_reload and self._v_last_read != self.mtime():
             self.read()
 
-        signature = hash(''.join(kwargs))
-        template = self.registry.get(signature, None)
-        if template is None:
-            self.registry[signature] = template = self.cook(kwargs.keys())
-
-        if PROD_MODE:
-            return template(**kwargs)
-
-        return self.safe_render(template, **kwargs)
-
-    def _cook_check(self):
-        if self._v_last_read and not self.auto_reload:
-            return False
-
-        if self.mtime() == self._v_last_read:
-            return False
-
-        return True
+        return BaseTemplate.cook_check(self, *args)
 
     def mtime(self):
         try:

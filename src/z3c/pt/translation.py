@@ -7,6 +7,7 @@ import generation
 import clauses
 import interfaces
 import expressions
+import itertools
 import types
 import utils
 import config
@@ -18,8 +19,8 @@ class Element(lxml.etree.ElementBase):
     compilation at this node, use the ``start`` method, providing a
     code stream object.
     """
-
-    _stream = None
+    
+    metal_slot_prefix = '_fill'
 
     def start(self, stream):
         self._stream = stream
@@ -38,6 +39,7 @@ class Element(lxml.etree.ElementBase):
 
     def body(self):
         skip = self._replace or self._content or \
+               self.metal_define or self.metal_use or \
                self.i18n_translate is not None
         
         if not skip:
@@ -49,8 +51,9 @@ class Element(lxml.etree.ElementBase):
                     
     def visit(self, skip_macro=True):
         assert self.stream is not None, "Must use ``start`` method."
-        
-        if skip_macro and self.py_def is not None:
+
+        macro = self.py_def or self.metal_define
+        if skip_macro and macro is not None:
             return
 
         for element in self:
@@ -64,9 +67,14 @@ class Element(lxml.etree.ElementBase):
 
     @property
     def stream(self):
-        root = self.getroottree().getroot()
-        return root._stream
-    
+        while self is not None:
+            try:
+                return self._stream
+            except AttributeError:
+                self = self.getparent()
+
+        raise ValueError("Can't locate stream object.")
+        
     @property
     def translator(self):
         while self.tal_default_expression is None:
@@ -209,28 +217,29 @@ class Element(lxml.etree.ElementBase):
             _.append(clauses.Define(
                 "_domain", types.value(repr(self.i18n_domain))))
 
-        # defines
+        # variable definitions
         if self._define is not None:
             for variables, expression in self._define:
                 _.append(clauses.Define(variables, expression))
 
-        # macro
+        # genshi macro
         for element in tuple(self):
             if not isinstance(element, Element):
                 continue
-            
-            py_def = element.py_def
-            if py_def is not None:
+
+            macro = element.py_def
+            if macro is not None:
                 # define macro
                 subclauses = []
-                subclauses.append(clauses.Method("_macro", py_def.args))
+                subclauses.append(clauses.Method(
+                    "_macro", macro.args))
                 subclauses.append(clauses.Visit(element))
                 _.append(clauses.Group(subclauses))
                 
                 # assign to variable
                 _.append(clauses.Define(
-                    py_def.name, types.parts((types.value("_macro"),))))
-                    
+                    macro.name, types.parts((types.value("_macro"),))))
+
         # condition
         if self._condition is not None:
             _.append(clauses.Condition(self._condition))
@@ -245,16 +254,24 @@ class Element(lxml.etree.ElementBase):
             _.append(clauses.Repeat(variables[0], expression))
 
         # tag tail (deferred)
-        if self.tail:
+        if self.tail and not self.metal_fillslot:
             _.append(clauses.Out(self.tail.encode('utf-8'), defer=True))
 
+        # dynamic content and content translation
+        replace = self._replace
+        content = self._content
+
+        if self.metal_defineslot:
+            # check if slot has been filled
+            variable = self.metal_slot_prefix+self.metal_defineslot
+            if variable in itertools.chain(*self.stream.scope):
+                content = types.value(variable)
+            
         # compute dynamic flag
-        dynamic = (self._replace or
-                   self._content or
-                   self.i18n_translate is not None)
-        
+        dynamic = replace or content or self.i18n_translate is not None
+
         # tag
-        if self._replace is None:
+        if replace is None:
             selfclosing = self.text is None and not dynamic and len(self) == 0
             tag = clauses.Tag(self.tag, self._get_attributes(),
                               expression=self.py_attrs, selfclosing=selfclosing)
@@ -262,7 +279,8 @@ class Element(lxml.etree.ElementBase):
             if self._omit:
                 _.append(clauses.Condition(_not(self._omit), [tag],
                                            finalize=False))
-            elif self._omit is not None:
+            elif self._omit is not None or \
+                 self.metal_use or self.metal_fillslot:
                 pass
             else:
                 _.append(tag)
@@ -271,23 +289,47 @@ class Element(lxml.etree.ElementBase):
         if self.text and not dynamic:
             _.append(clauses.Out(self.text.encode('utf-8')))
 
-        # dynamic content and content translation
-        replace = self._replace
-        content = self._content
-
         if replace and content:
             raise ValueError("Can't use replace clause together with "
                              "content clause.")
 
-        expression = replace or content
-        if expression:
+        if replace or content:
             if self.i18n_translate is not None:
                 if self.i18n_translate != "":
                     raise ValueError("Can't use message id with "
                                      "dynamic content translation.")
                 _.append(clauses.Translate())
 
-            _.append(clauses.Write(expression))
+            _.append(clauses.Write(replace or content))
+        elif self.metal_use:
+            # for each fill-slot element, create a new output stream
+            # and save value in a temporary variable
+            kwargs = []
+
+            for element in self.xpath(
+                './/*[@metal:fill-slot]', namespaces={'metal': config.METAL_NS}):
+                variable = self.metal_slot_prefix+element.metal_fillslot
+                kwargs.append((variable, variable))
+                
+                subclauses = []
+                subclauses.append(clauses.Define(
+                    ('_out', '_write'),
+                    types.value('generation.initialize_stream()')))
+                subclauses.append(clauses.Visit(element))
+                subclauses.append(clauses.Assign(
+                    types.value('_out.getvalue()'), variable))
+                _.append(clauses.Group(subclauses))
+                
+            _.append(clauses.Assign(self.metal_use, '_metal'))
+
+            # compute macro function arguments and create argument string
+            arguments = ", ".join(
+                tuple("%s=%s" % (arg, arg) for arg in \
+                      itertools.chain(*self.stream.scope))+
+                tuple("%s=%s" % kwarg for kwarg in kwargs))
+                
+            _.append(clauses.Write(types.value("_metal(%s)" % arguments)))
+            
         else:
             if self.i18n_translate is not None:
                 msgid = self.i18n_translate
@@ -493,6 +535,14 @@ class Element(lxml.etree.ElementBase):
         utils.tal_attr('omit-tag'), lambda p: p.expression)
     tal_default_expression = utils.attribute(
         utils.tal_attr('default-expression'))
+    metal_define = utils.attribute(
+        utils.metal_attr('define-macro'), lambda p: p.method)
+    metal_use = utils.attribute(
+        utils.metal_attr('use-macro'), lambda p: p.expression)
+    metal_fillslot = utils.attribute(
+        utils.metal_attr('fill-slot'))
+    metal_defineslot = utils.attribute(
+        utils.metal_attr('define-slot'))
     i18n_translate = utils.attribute(
         utils.i18n_attr('translate'))
     i18n_attributes = utils.attribute(
@@ -591,19 +641,36 @@ ns_lookup(config.PY_NS)["match"] = PyMatchElement
 def translate_xml(body, *args, **kwargs):
     tree = lxml.etree.parse(StringIO(body), parser)
     root = tree.getroot()
+
     return translate_etree(root, *args, **kwargs)
 
-def translate_etree(root, params=[], default_expression='python'):
+def translate_etree(root, macro=None ,params=[], default_expression='python'):
     if None not in root.nsmap:
         raise ValueError, "Must set default namespace."
 
+    # skip to macro
+    if macro is not None:
+        elements = root.xpath(
+            './/*[@metal:define-macro="%s"]' % macro,
+            namespaces={'metal': config.METAL_NS})
+
+        if not elements:
+            raise ValueError("Macro not found: %s." % macro)
+
+        root = elements[0]
+        del root.attrib[utils.metal_attr('define-macro')]
+        
     # set default expression name
     key = utils.tal_attr('default-expression')
     if key not in root.attrib:
         root.attrib[key] = default_expression
 
     # set up code generation stream
-    generator = generation.Generator(params)
+    if macro is not None:
+        wrapper = generation.macro_wrapper
+    else:
+        wrapper = generation.template_wrapper
+    generator = generation.Generator(params, wrapper)
     stream = generator.stream
 
     # output doctype if any

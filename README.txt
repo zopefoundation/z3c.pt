@@ -5,6 +5,7 @@ The z3c.pt package provides a fast template engine that supports the
 following dialects of the attribute template language:
 
 * Zope TAL
+* Zope METAL
 * Zope i18n
 * Genshi
 
@@ -18,8 +19,6 @@ In a nutshell:
 
 * Templates are serialized and compiled into Python bytecode
 * Pluggable expression implementation
-
-Note: Zope's METAL macro language is not supported.
 
 
 Usage

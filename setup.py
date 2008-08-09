@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '0.9dev'
+version = '1.0dev'
 
 setup(name='z3c.pt',
       version=version,

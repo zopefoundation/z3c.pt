@@ -106,6 +106,9 @@ def xml_attr(name):
 def tal_attr(name):
     return "{%s}%s" % (config.TAL_NS, name)
 
+def metal_attr(name):
+    return "{%s}%s" % (config.METAL_NS, name)
+
 def i18n_attr(name):
     return "{%s}%s" % (config.I18N_NS, name)
 
