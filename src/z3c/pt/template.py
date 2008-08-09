@@ -116,22 +116,8 @@ class BaseTemplateFile(BaseTemplate):
         self.auto_reload = auto_reload
         self.cachedir = cachedir
 
-        if not os.path.isabs(filename):
-            for depth in (1, 2):
-                frame = sys._getframe(depth)
-                package_name = frame.f_globals['__name__']
-
-                if package_name != self.__module__:
-                    break
-                
-            module = sys.modules[package_name]
-            try:
-                path = module.__path__[0]
-            except AttributeError:
-                path = module.__file__
-                path = path[:path.rfind(os.sep)]
-                
-            filename = path + os.sep + filename
+        filename = os.path.abspath(
+            os.path.normpath(os.path.expanduser(filename)))
 
         # make sure file exists
         os.lstat(filename)

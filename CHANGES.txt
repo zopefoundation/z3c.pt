@@ -4,6 +4,12 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Get rid of package-relative magic in constructor of BaseTemplateFile
+  in favor of just requiring an absolute path or a path relative
+  to getcwd(). Rationale: it didn't work when called from __main__
+  when the template was relative to getcwd(), which is the 99% case
+  for people first trying it out. [chrism]
+
 - Added support for METAL.
   [malthe]
 

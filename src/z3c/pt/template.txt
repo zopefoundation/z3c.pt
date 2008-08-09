@@ -22,10 +22,15 @@ z3c.pt.pagetemplate.PageTemplateFile
   >>> from z3c.pt import PageTemplateFile
   >>> from z3c.pt import tests
   >>> path = tests.__path__[0]
-  >>> print PageTemplateFile(path+'/helloworld.pt')()
+  >>> t = PageTemplateFile(path+'/helloworld.pt')
+  >>> print t()
   <div>
     Hello World!
   </div>
+
+  >>> import os
+  >>> t.filename.startswith(os.sep)
+  True
 
 z3c.pt.pagetemplate.ViewPageTemplate
 ------------------------------------
