@@ -601,6 +601,12 @@ class TALElement(Element):
 
         return attributes
 
+class METALElement(Element):
+    metal_define = utils.attribute('define-macro', lambda p: p.method)
+    metal_use = utils.attribute('use-macro', lambda p: p.expression)
+    metal_fillslot = utils.attribute('fill-slot')
+    metal_defineslot = utils.attribute('define-slot')
+
 class PyElement(Element):
     tal_omit = utils.attribute("omit-tag", lambda p: p.expression, u"")
 
@@ -632,6 +638,7 @@ except AttributeError:
     
 ns_lookup(config.XML_NS)[None] = Element
 ns_lookup(config.TAL_NS)[None] = TALElement
+ns_lookup(config.METAL_NS)[None] = METALElement
 ns_lookup(config.PY_NS)["if"] = PyIfElement
 ns_lookup(config.PY_NS)["for"] = PyForElement
 ns_lookup(config.PY_NS)["def"] = PyDefElement
