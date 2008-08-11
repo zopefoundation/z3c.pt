@@ -13,6 +13,8 @@ import zope.pagetemplate.pagetemplatefile
 import z3c.pt
 from z3c.pt import generation
 
+from lxml import etree
+
 def benchmark(title):
     def decorator(f):
         def wrapper(*args):
@@ -29,6 +31,21 @@ def timing(func, *args, **kwargs):
         i += 1
         t2 = time.time()
     return 100*(t2-t1)/i
+
+def bigtable_python_lxml(table=None):
+    root = etree.Element("html")
+    for r in table:
+        row = etree.Element("tr")
+        for c in r.values():
+            d = c + 1
+            col = etree.Element("td")
+            span = etree.Element("span")
+            span.attrib['class'] = 'column-%d' % d
+            span.text = str(d)
+            col.append(span)
+            row.append(col)
+        root.append(row)
+    return etree.tostring(root)
 
 class BaseTestCase(unittest.TestCase):
 
@@ -121,10 +138,15 @@ class BenchmarkTestCase(BaseTestCase):
 
         t_z3c = timing(self.bigtable_python_z3c, table=table)
         t_zope = timing(self.bigtable_python_zope, table=table)
+        t_lxml = timing(bigtable_python_lxml, table=table)
 
-        print "z3c.pt:            %.2f" % t_z3c
         print "zope.pagetemplate: %.2f" % t_zope
-        print "                   %.2fX" % (t_zope/t_z3c)
+        print "lxml:              %.2f" % t_lxml
+        print "--------------------------"
+        print "z3c.pt:            %.2f" % t_z3c
+        print "--------------------------"
+        print "ratio to zpt:      %.2fX" % (t_zope/t_z3c)
+        print "ratio to lxml:     %.2fX" % (t_lxml/t_z3c)
 
     @benchmark(u"Big table (path)")
     def testBigTablePath(self):
