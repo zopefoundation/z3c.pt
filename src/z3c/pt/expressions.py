@@ -154,7 +154,12 @@ class ExpressionTranslation(object):
         """
         
         >>> class MockExpressionTranslation(ExpressionTranslation):
+        ...     def validate(self, string):
+        ...         if string == '' or ';' in string:
+        ...             raise SyntaxError()
+        ...
         ...     def expression(self, string):
+        ...         self.validate(string)
         ...         return types.value(string.strip())
         
         >>> definitions = MockExpressionTranslation().definitions
@@ -211,7 +216,6 @@ class ExpressionTranslation(object):
         string = string.replace('\n', '').strip()
 
         defines = []
-
         i = 0
         while i < len(string):
             while string[i] == ' ':
@@ -238,32 +242,41 @@ class ExpressionTranslation(object):
 
             # get expression
             i = j + len(string) - j - len(string[j:].lstrip())
-            while j < len(string):
-                token = string[i:]
-                if token.startswith('=='):
-                    raise ValueError("Invalid variable definition (%s)." % string)
-                elif token.startswith('='):
-                    i += 1
-                elif token.startswith('in'):
-                    i += 2
-                
-                j = string.find(';', j+1)
-                if j == -1:
-                    j = len(string)
+
+            token = string[i:]
+            if token.startswith('=='):
+                raise ValueError("Invalid variable definition (%s)." % string)
+            elif token.startswith('='):
+                i += 1
+            elif token.startswith('in'):
+                i += 2
+
+            try:
+                expr = self.expression(string[i:])
+                j = -1
+            except SyntaxError, e:
+                expr = None
+                j = len(string)
+            
+            while j > i:
+                j = string.rfind(';', i, j)
+                if j < 0:
+                    raise e
 
                 try:
                     expr = self.expression(string[i:j])
                 except SyntaxError, e:
-                    if j < len(string):
+                    if string.rfind(';', i, j) > 0:
                         continue
-                        
                     raise e
+                
                 break
-            else:
-                expr = None
-
+                
             defines.append((var, expr))
 
+            if j < 0:
+                break
+            
             i = j + 1
 
         return types.definitions(defines)
@@ -475,6 +488,7 @@ class StringTranslation(ExpressionTranslation):
 
     def validate(self, string):
         self.interpolate(string)
+        self.split(string)
 
     def translate(self, string):
         return types.join(self.split(string))
@@ -520,14 +534,14 @@ class StringTranslation(ExpressionTranslation):
 
         m = self.translator.interpolate(string)
         if m is None:
-            return (string,)
+            return (self._unescape(string),)
 
         parts = []
         
         start = m.start()
         if start > 0:
             text = string[:m.start()+1]
-            parts.append(text)
+            parts.append(self._unescape(text))
 
         expression = m.group('expression')
         parts.append(self.translator.expression(expression))
@@ -538,6 +552,31 @@ class StringTranslation(ExpressionTranslation):
 
         return tuple(parts)
 
+    def definitions(self, string):
+        """
+        
+        >>> definitions = StringTranslation(PythonTranslation).definitions
+        
+        Semi-colon literal.
+        
+        >>> definitions("variable part1;; part2")
+        definitions((declaration('variable',), join('part1; part2',)),)
+
+        >>> definitions("variable1 part1;; part2; variable2 part3")
+        definitions((declaration('variable1',), join('part1; part2',)),
+                    (declaration('variable2',), join('part3',)))
+    
+        """
+
+        return super(StringTranslation, self).definitions(string)
+
+    def _unescape(self, string):
+        i = string.rfind(';')
+        if i > 0 and i != string.rfind(';'+';') + 1:
+            raise SyntaxError(
+                "Semi-colons in string-expressions must be escaped.")
+        return string.replace(';;', ';')
+        
 class PathTranslation(ExpressionTranslation):
     path_regex = re.compile(r'^((nocall|not):\s*)*([A-Za-z_]+)(/[A-Za-z_@-]+)*$')
 

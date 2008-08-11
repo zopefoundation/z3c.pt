@@ -4,6 +4,9 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- String-expressions may now contain semi-colons using a double
+  semi-colon literal (;;). [malthe]
+
 - Get rid of package-relative magic in constructor of BaseTemplateFile
   in favor of just requiring an absolute path or a path relative
   to getcwd(). Rationale: it didn't work when called from __main__
