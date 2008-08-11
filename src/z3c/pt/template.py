@@ -9,6 +9,11 @@ from z3c.pt import filecache
 import z3c.pt.generation
 
 class BaseTemplate(object):
+    """ Constructs a template object.  Must be passed an input string
+    as ``body``. ``default_expression`` is the default expression
+    namespace for any ``TALES`` expressions included in the template
+    (typically either the string ``path`` or the string ``python``);
+    ``python`` is the default if nothing is passed."""
 
     registry = {}
     cachedir = None
@@ -110,9 +115,20 @@ class BaseTemplate(object):
         return u"<%s %d>" % (self.__class__.__name__, id(self))
 
 class BaseTemplateFile(BaseTemplate):
+    """ Constructs a template object.  Must be passed an absolute (or
+    current-working-directory-relative) filename as ``filename``. If
+    ``auto_reload`` is true, each time the template is rendered, it
+    will be recompiled if it has been changed since the last
+    rendering.  ``cachedir`` is a directory path in which generated
+    Python will be stored and cached if non-None.
+    ``default_expression`` is the default expression namespace for any
+    ``TALES`` expressions included in the template (typically either
+    the string ``path`` or the string ``python``); ``python`` is the
+    default if nothing is passed."""
 
-    def __init__(self, filename, auto_reload=False, cachedir=None, **kwargs):
-        BaseTemplate.__init__(self, None, **kwargs)
+    def __init__(self, filename, auto_reload=False, cachedir=None,
+                 default_expression=None):
+        BaseTemplate.__init__(self, None, default_expression=default_expression)
         self.auto_reload = auto_reload
         self.cachedir = cachedir
 

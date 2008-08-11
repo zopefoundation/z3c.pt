@@ -16,8 +16,25 @@ Narrative documentation
 Narrative documentation in chapter form explaining how to use
 :mod:`z3c.pt`.
 
+Zope Page Templates (:term:`ZPT`) is a system which can generate HTML
+and XML.  ZPT is formed by the *Template Attribute Language* (*TAL*)
+and the *TAL Expression Syntax* (*TALES*), and the *Macro Expansion
+Template Attribute Language* (*METAL*).
+
 .. toctree::
    :maxdepth: 2
+
+   narr/tal
+
+API documentation
+=================
+
+:mod:`z3c.pt` API documentation.
+
+.. toctree::
+   :maxdepth: 2
+
+   api
 
 Support and Development
 =======================

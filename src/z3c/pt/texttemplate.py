@@ -2,11 +2,13 @@ import template
 import translation
 
 class TextTemplate(template.BaseTemplate):
+    __doc__ = template.BaseTemplate.__doc__ # for Sphinx autodoc
     @property
     def translate(self):
         return translation.translate_text
 
 class TextTemplateFile(template.BaseTemplateFile):
+    __doc__ = template.BaseTemplateFile.__doc__ # for Sphinx autodoc
     @property
     def translate(self):
         return translation.translate_text
