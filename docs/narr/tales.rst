@@ -51,8 +51,7 @@ These are the TALES expression types supported by :mod:`z3c.pt`:
    :mod:`z3c.pt`` assumes that the expression is a *python*
    expression.
 
-.. warning:: The reference implementation of ZPT has an expression
-.. type ``exists``.  :mod:`z3c.pt` has no such expression type.
+.. warning:: The reference implementation of ZPT has an expression type ``exists``.  :mod:`z3c.pt` has no such expression type.
 
 .. _tales_built_in_names:
 

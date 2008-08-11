@@ -133,9 +133,7 @@ Syntax
     attribute_name       ::= [namespace-prefix ':'] Name
     namespace-prefix     ::= Name
 
-.. note:: If you want to include a literal semi-colon (;) in an
-   ``tal:attributes`` *expression*, you must escape it by doubling it
-   (``;;``).
+.. warning:: The reference implementation of ZPT requires you to escape the semi-colon (;) literal by doubling it (``;;``). With :mod:`z3c.pt` this is only required when using the ``string`` expression and will result in the literal being printed twice otherwise.
 
 Description
 ~~~~~~~~~~~
@@ -280,9 +278,7 @@ Syntax
     attribute_statement  ::= variable_name expression
     variable_name        ::= Name
 
-.. note:: If you want to include a literal semi-colon (;) in an
-   ``tal:define`` *expression*, you must escape it by doubling it
-   (``;;``).
+.. warning:: The reference implementation of ZPT requires you to escape the semi-colon (;) literal by doubling it (``;;``). With :mod:`z3c.pt` this is only required when using the ``string`` expression and will result in the literal being printed twice otherwise.
 
 Description
 ~~~~~~~~~~~
