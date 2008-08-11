@@ -49,10 +49,10 @@ API documentation
 Support and Development
 =======================
 
-To report bugs, use the `bug tracker <http://needs/a/url>`_.
+To report bugs, use the `bug tracker <http://code.google.com/p/z3c-pt>`_.
 
 If you've got questions that aren't answered by this documentation,
-contact the `maillist <http://needs/a/url>`_ ,
+contact the `maillist <http://groups.google.com/group/z3c_pt>`_ ,
 
 Browse and check out tagged and trunk versions of :mod:`z3c.pt`
 via the `Subversion repository <http://svn.zope.org/z3c.pt/>`_.  To
