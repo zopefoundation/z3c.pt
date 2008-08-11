@@ -1,5 +1,7 @@
-TAL Overview
-============
+.. _tal_chapter:
+
+Template Attribute Language (TAL)
+=================================
 
 The *Template Attribute Language* (TAL) is an attribute language used
 to create dynamic XML-like content.  It allows elements of a document
@@ -242,7 +244,7 @@ interpreted in the same fashion.  If the expression evaluates to
 expression evaluates to ``default``, then the element's contents are
 unchanged.
 
-The default replacement behavior is 'text', which replaces
+The default replacement behavior is ``text``, which replaces
 angle-brackets and ampersands with their HTML entity equivalents.  The
 ``structure`` keyword passes the replacement text through unchanged,
 allowing HTML/XML markup to be inserted.  This can break your page if
@@ -351,15 +353,16 @@ Conditionally omitting a tag::
 
         <b tal:omit-tag="not:bold">I may be bold.</b>
 
-      The above example will omit the 'b' tag if the variable 'bold' is
-      false.
+The above example will omit the ``b`` tag if the variable ``bold' is false.
 
-      Creating ten paragraph tags, with no enclosing tag::
+Creating ten paragraph tags, with no enclosing tag::
 
         <span tal:repeat="n range(10)"
               tal:omit-tag="">
           <p tal:content="n">1</p>
         </span>
+
+.. _tal_repeat:
 
 ``tal:repeat``: Repeat an element
 ---------------------------------
@@ -431,7 +434,7 @@ You can access the contents of the repeat variable using path
 expressions or Python expressions.  In path expressions, you write a
 three-part path consisting of the name ``repeat``, the statement
 variable's name, and the name of the information you want, for
-example, 'repeat/item/start'.  In Python expressions, you use normal
+example, ``repeat/item/start``.  In Python expressions, you use normal
 dictionary notation to get the repeat variable, then attribute access
 to get the information, for example, ``python:repeat['item'].start``.
 

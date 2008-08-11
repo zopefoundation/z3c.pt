@@ -25,6 +25,8 @@ Template Attribute Language* (*METAL*).
    :maxdepth: 2
 
    narr/tal
+   narr/tales
+   narr/metal
 
 API documentation
 =================
