@@ -2,13 +2,16 @@ TAL Overview
 ============
 
 The *Template Attribute Language* (TAL) is an attribute language used
-to create dynamic templates.  It allows elements of a document to be
-replaced, repeated, or omitted.
+to create dynamic XML-like content.  It allows elements of a document
+to be replaced, repeated, or omitted.
 
-An attribute language is a programming language designed to work well
-with documents written using XML markup.  The statements of the
-language are document tags with special attributes, and look like
-this::
+An attribute language is a programming language designed to render
+documents written in XML markup.  The input XML must be well-formed.
+The output from the template is usually XML-like but isn't required to
+be well-formed.
+
+The statements of the language are document tags with special
+attributes, and look like this::
 
     <p namespace:command="argument">Some Text</p>
 
@@ -48,16 +51,15 @@ top-level tag.
 TAL Statements
 --------------
 
-A **TAL statement** has a name (the attribute name) and a body (the
-attribute value).  For example, a ``content`` statement might look
-like ``tal:content="string:Hello"``.  The element on which a statement
-is defined is its **statement element**.  Most TAL statements require
-*expressions* (the stuff within the quotes after the "assignment"),
-but the syntax and semantics of these expressions are not part of
-TAL.
+A **TAL statement** has a name (the attribute name) and an argument
+(the attribute value).  For example, a ``tal:content`` statement might
+look like ``tal:content="string:Hello"``.  The element on which a
+statement is defined is its **statement element**.  Most TAL
+statements are *expressions*, but the syntax and semantics of these
+expressions are not part of TAL.
 
 .. note:: *TALES* is used as the expression language for the "stuff in
-   the quotes" typically.  
+   the quotes" typically.  TALES is documented separately.
 
 These are the available TAL statements:
 
@@ -129,8 +131,9 @@ Syntax
     attribute_name       ::= [namespace-prefix ':'] Name
     namespace-prefix     ::= Name
 
-.. note:: If you want to include a semi-colon (;) in an ``expression``,
-   it must be escaped by doubling it (;;).
+.. note:: If you want to include a literal semi-colon (;) in an
+   ``tal:attributes`` *expression*, you must escape it by doubling it
+   (``;;``).
 
 Description
 ~~~~~~~~~~~
@@ -271,28 +274,26 @@ Syntax
 
 ``tal:define`` syntax::
 
-        argument       ::= define_scope [';' define_scope]*
-        define_scope   ::= (['local'] | 'global') define_var
-        define_var     ::= variable_name expression
-        variable_name  ::= Name
+    argument             ::= attribute_statement [';' attribute_statement]*
+    attribute_statement  ::= variable_name expression
+    variable_name        ::= Name
 
-.. note:: If you want to include a semi-colon (;) in an 'expression',
-   it must be escaped by doubling it (;;).
+.. note:: If you want to include a literal semi-colon (;) in an
+   ``tal:define`` *expression*, you must escape it by doubling it
+   (``;;``).
 
 Description
 ~~~~~~~~~~~
 
-The ``tal:define`` statement defines variables.  You can define two
-different kinds of TAL variables: local and global.  When you define a
-local variable in a statement element, you can only use that variable
-in that element and the elements it contains.  If you redefine a local
-variable in a contained element, the new definition hides the outer
-element's definition within the inner element.  When you define a
-global variables, you can use it in any element processed after the
-defining element.  If you redefine a global variable, you replace its
-definition for the rest of the template.
+The ``tal:define`` statement defines variables.  When you define a
+local variable in a statement element, you can use that variable in
+that element and the elements it contains.  If you redefine a variable
+in a contained element, the new definition hides the outer element's
+definition within the inner element.  
 
-.. note:: local variables are the default
+.. note:: The reference implementation of ZPT allows "global"
+   (full-template-scope) variable definitions.  :mod:`z3c.pt` does not
+   have such a concept.
 
 If the expression associated with a variable evaluates to ``nothing``,
 then that variable has the value ``nothing``, and may be used as such
@@ -303,9 +304,9 @@ used as such in further expressions.
 Examples
 ~~~~~~~~
 
-Defining a global variable::
+Defining a variable::
 
-        tal:define="global company_name string:Zope Corp, Inc."
+        tal:define="company_name 'Zope Corp, Inc.'"
 
 Defining two variables, where the second depends on the first::
 
@@ -481,8 +482,8 @@ Nested repeats::
           </tr>
         </table>
 
-Insert objects. Separates groups of objects by meta-type by
-drawing a rule between them::
+Insert objects. Separates groups of objects by type by drawing a rule
+between them::
 
         <div tal:repeat="object objects">
           <h2 tal:condition="path:repeat/object/first/meta_type"
@@ -492,7 +493,7 @@ drawing a rule between them::
         </div>
 
 .. note:: the objects in the above example should already be sorted by
-   meta-type.
+   type.
 
 ``tal:replace``: Replace an element
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
