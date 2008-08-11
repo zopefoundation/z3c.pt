@@ -531,7 +531,7 @@ py:attrs
   >>> print render("""\
   ... <ul xmlns="http://www.w3.org/1999/xhtml"
   ...     xmlns:py="http://genshi.edgewall.org">
-  ...   <li py:attrs="{'class': 'collapse'}">Bar</li>
+  ...   <li class="expand" py:attrs="{'class': 'collapse'}">Bar</li>
   ... </ul>""", translate_xml)
   <ul>
     <li class="collapse">Bar</li>

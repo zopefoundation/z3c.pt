@@ -468,7 +468,7 @@ class Tag(object):
 
         self.selfclosing = selfclosing
         self.attributes = attributes
-        self.expression = expression
+        self.expression = expression and Assign(expression)
         
     def begin(self, stream):
         stream.out('<%s' % self.tag)
@@ -483,16 +483,28 @@ class Tag(object):
             isinstance(value, types.expression),
             self.attributes.items())
 
-        for attribute, expression in static:
-            stream.out(' %s="%s"' %
-               (attribute,
-                escape(expression, '"')))
+        if self.expression:
+            self.expression.begin(stream, '_exp')
+
+        names = ", ".join([repr(a) for a, e in static]+[repr(a) for a, v in dynamic])
+        
+        if self.expression:
+            for attribute, expression in static:
+                stream.write("if '%s' not in _exp:" % attribute)
+                stream.indent()
+                stream.write(
+                    "_write(' %s=\"%s\"')" % (attribute, escape(expression, '"')))
+                stream.outdent()
+        else:
+            for attribute, expression in static:
+                stream.out(
+                    ' %s="%s"' % (attribute, escape(expression, '"')))
 
         temp = stream.save()
         temp2 = stream.save()
 
         if self.expression:
-            stream.write("for %s, %s in (%s).items():" % (temp, temp2, self.expression))
+            stream.write("for %s, %s in _exp.items():" % (temp, temp2))
             stream.indent()
             if unicode_required_flag:
                 stream.write("if isinstance(%s, unicode):" % temp2)

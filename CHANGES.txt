@@ -4,6 +4,9 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Static attributes are now properly overriden by py:attr-attributes.
+  [malthe]
+  
 - String-expressions may now contain semi-colons using a double
   semi-colon literal (;;). [malthe]
 
