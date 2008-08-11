@@ -196,8 +196,11 @@ traverse the path, from left to right, until it succeeds or runs out
 of paths segments.  To traverse a path, it first fetches the object
 stored in the variable.  For each path segment, it traverses from the
 current object to the subobject named by the path segment. Subobjects
-are located according to standard :mod:`z3c.pt` traversal rules XXX
-need to describe.
+are located according to standard :mod:`z3c.pt` traversal rules
+
+.. warning:: need to describe traversal rules here.  I'd suggest we
+   make them pluggable and not require zope.traversal or
+   zope.security.
 
 Once a path has been successfully traversed, the resulting object is
 the value of the expression.  If it is a callable object, such as a

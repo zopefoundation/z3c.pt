@@ -81,7 +81,7 @@ These are the available TAL statements:
 - ``tal:replace`` - replace the content of an element and remove the
   element leaving the content.
 
-.. note:: The reference implementation of ZPT has an additonal command
+.. warning:: The reference implementation of ZPT has an additonal command
    ``tal:on-error`` which :mod:`z3c.pt` does not implement.
 
 Order of Operations
@@ -293,7 +293,7 @@ that element and the elements it contains.  If you redefine a variable
 in a contained element, the new definition hides the outer element's
 definition within the inner element.  
 
-.. note:: The reference implementation of ZPT allows "global"
+.. warning:: The reference implementation of ZPT allows "global"
    (full-template-scope) variable definitions.  :mod:`z3c.pt` does not
    have such a concept.
 
