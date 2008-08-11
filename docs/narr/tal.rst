@@ -6,9 +6,9 @@ to create dynamic templates.  It allows elements of a document to be
 replaced, repeated, or omitted.
 
 An attribute language is a programming language designed to work well
-with documents written using tag-structured markup like HTML and
-XML. The statements of the language are document tags with special
-attributes, and look like this::
+with documents written using XML markup.  The statements of the
+language are document tags with special attributes, and look like
+this::
 
     <p namespace:command="argument">Some Text</p>
 
@@ -72,12 +72,13 @@ These are the available TAL statements:
 - ``tal:omit-tag`` - remove an element, leaving the content of the
   element.
 
-- ``tal:on-error`` - handle errors.
-
 - ``tal:repeat`` - repeat an element.
 
 - ``tal:replace`` - replace the content of an element and remove the
   element leaving the content.
+
+.. note:: The reference implementation of ZPT has an additonal command
+   ``tal:on-error`` which :mod:`z3c.pt` does not implement.
 
 Order of Operations
 -------------------
@@ -106,10 +107,6 @@ element has multiple statements, they are executed in this order:
 #. ``tal:attributes``
 
 #. ``tal:omit-tag``
-
-.. note:: There is an additional statement named ``tal:on-error``.
-   Since the ``tal:on-error`` statement is only invoked when an error
-   occurs, it does not appear in the ordering specification.
 
 There is a reasoning behind this ordering.  Because users often want
 to set up variables for use in other statements contained within this
@@ -169,12 +166,12 @@ Examples
 Replacing a link::
 
     <a href="/sample/link.html"
-     tal:attributes="href here/sub/absolute_url">
+     tal:attributes="href context.url()">
 
 Replacing two attributes::
 
     <textarea rows="80" cols="20"
-     tal:attributes="rows request/rows;cols request/cols">
+     tal:attributes="rows request.rows();cols request.cols()">
 
 ``tal:condition``: Conditionally insert or remove an element
 ------------------------------------------------------------
@@ -208,17 +205,17 @@ Examples
 Test a variable before inserting it (the first example tests for
 existence and truth, while the second only tests for existence)::
 
-        <p tal:condition="request/message | nothing"
-         tal:content="request/message">message goes here</p>
+        <p tal:condition="request.message|nothing"
+         tal:content="request.message">message goes here</p>
 
         <p tal:condition="exists:request/message"
-         tal:content="request/message">message goes here</p>
+         tal:content="request.message">message goes here</p>
 
 Test for alternate conditions::
 
-        <div tal:repeat="item python:range(10)">
-        <p tal:condition="repeat/item/even">Even</p>
-        <p tal:condition="repeat/item/odd">Odd</p>
+        <div tal:repeat="item range(10)">
+        <p tal:condition="path:repeat/item/even">Even</p>
+        <p tal:condition="path:repeat/item/odd">Odd</p>
         </div>
 
 ``tal:content``: Replace the content of an element
@@ -254,11 +251,11 @@ Examples
 
 Inserting the user name::
 
-        <p tal:content="user/getUserName">Fred Farkas</p>
+        <p tal:content="user.getUserName()">Fred Farkas</p>
 
 Inserting HTML/XML::
 
-        <p tal:content="structure here/getStory">marked <b>up</b>
+        <p tal:content="structure context.getStory()">marked <b>up</b>
         content goes here.</p>
 
 See Also
@@ -312,7 +309,7 @@ Defining a global variable::
 
 Defining two variables, where the second depends on the first::
 
-        tal:define="mytitle template/title; tlen python:len(mytitle)"
+        tal:define="mytitle context.title; tlen len(mytitle)"
 
 ``tal:omit-tag``: Remove an element, leaving its contents
 ---------------------------------------------------------
@@ -358,75 +355,10 @@ Conditionally omitting a tag::
 
       Creating ten paragraph tags, with no enclosing tag::
 
-        <span tal:repeat="n python:range(10)"
+        <span tal:repeat="n range(10)"
               tal:omit-tag="">
           <p tal:content="n">1</p>
         </span>
-
-``tal:on-error``: Handle errors
--------------------------------
-
-Syntax
-~~~~~~
-
-``tal:on-error`` syntax::
-
-        argument ::= (['text'] | 'structure') expression
-
-Description
-~~~~~~~~~~~
-
-The ``tal:on-error`` statement provides error handling for your
-template.  When a TAL statement produces an error, the TAL interpreter
-searches for a 'tal:on-error' statement on the same element, then on
-the enclosing element, and so forth. The first ``tal:on-error`` found
-is invoked. It is treated as a ``tal:content`` statement.
-
-A local variable ``error`` is set. This variable has these attributes:
-
-``type`` -- the exception type
-
-``value`` -- the exception instance
-
-``traceback`` -- the traceback object
-
-The simplest ``tal:on-error`` statement has a literal error string or
-*nothing* for an expression.  A more complex handler may call a script
-that examines the error and either emits error text or raises an
-exception to propagate the error outwards.
-
-Examples
-~~~~~~~~
-
-Simple error message::
-
-        <b tal:on-error="string: Username is not defined!" 
-         tal:content="here/getUsername">Ishmael</b>
-
-Removing elements with errors::
-
-        <b tal:on-error="nothing"
-           tal:content="here/getUsername">Ishmael</b>
-
-Calling an error-handling script::
-
-        <div tal:on-error="structure here/errorScript">
-          ...
-        </div>
-
-Here's what the error-handling script might look like::
-
-        ## Script (Python) "errHandler"
-        ##bind namespace=_
-        ##
-        error=_['error']
-        if error.type==ZeroDivisionError:
-            return "<p>Can't divide by zero.</p>"
-        else
-            return """<p>An error ocurred.</p>
-                      <p>Error type: %s</p>
-                      <p>Error value: %s</p>""" % (error.type,
-                                                   error.value)
 
 ``tal:repeat``: Repeat an element
 ---------------------------------
@@ -521,7 +453,7 @@ Examples
 
 Iterating over a sequence of strings::    
 
-        <p tal:repeat="txt python:'one', 'two', 'three'">
+        <p tal:repeat="txt ('one', 'two', 'three')">
            <span tal:replace="txt" />
         </p>
 
@@ -529,34 +461,34 @@ Inserting a sequence of table rows, and using the repeat variable
 to number the rows::
 
         <table>
-          <tr tal:repeat="item here/cart">
-              <td tal:content="repeat/item/number">1</td>
-              <td tal:content="item/description">Widget</td>
-              <td tal:content="item/price">$1.50</td>
+          <tr tal:repeat="item here.cart">
+              <td tal:content="path:repeat/item/number">1</td>
+              <td tal:content="item.description">Widget</td>
+              <td tal:content="item.price">$1.50</td>
           </tr>
         </table>
 
 Nested repeats::
 
         <table border="1">
-          <tr tal:repeat="row python:range(10)">
-            <td tal:repeat="column python:range(10)">
-              <span tal:define="x repeat/row/number; 
-                                y repeat/column/number; 
-                                z python:x*y"
+          <tr tal:repeat="row range(10)">
+            <td tal:repeat="column range(10)">
+              <span tal:define="x path:repeat/row/number; 
+                                y path:repeat/column/number; 
+                                z x*y"
                     tal:replace="string:$x * $y = $z">1 * 1 = 1</span>
             </td>
           </tr>
         </table>
 
-Insert objects. Seperates groups of objects by meta-type by
+Insert objects. Separates groups of objects by meta-type by
 drawing a rule between them::
 
         <div tal:repeat="object objects">
-          <h2 tal:condition="repeat/object/first/meta_type"
-            tal:content="object/meta_type">Meta Type</h2>
-          <p tal:content="object/getId">Object ID</p>
-          <hr tal:condition="repeat/object/last/meta_type" />
+          <h2 tal:condition="path:repeat/object/first/meta_type"
+            tal:content="object.type">Meta Type</h2>
+          <p tal:content="object.id">Object ID</p>
+          <hr tal:condition="path:repeat/object/last/meta_type" />
         </div>
 
 .. note:: the objects in the above example should already be sorted by
@@ -591,10 +523,10 @@ the value is ``default``, then the element is left unchanged.
 Examples
 ~~~~~~~~
 
-The two ways to insert the title of a template::
+The two ways to insert the title of a "context" object::
 
-        <span tal:replace="template/title">Title</span>
-        <span tal:replace="text template/title">Title</span>
+        <span tal:replace="context.title">Title</span>
+        <span tal:replace="text template.title">Title</span>
 
 Inserting HTML/XML::
 
