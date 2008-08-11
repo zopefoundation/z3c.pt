@@ -26,7 +26,7 @@ as::
 
 Just like the TAL namespace URI, this URI is not attached to a web
 page; it's just a unique identifier.  This identifier must be used in
-all tempaltes which use METAL.
+all templates which use METAL.
 
 METAL Statements
 ----------------
