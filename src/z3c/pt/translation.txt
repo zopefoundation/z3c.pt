@@ -515,17 +515,26 @@ py:def
 
 py:with
 
+  >>> def quote():
+  ...     return dict(author=u"Some name", quote=u"Some random quote")
+     
   >>> print render("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      xmlns:py="http://genshi.edgewall.org">
   ...   <span py:with="x=2; y=7; z=x+10">${x} ${y} ${z}</span>
   ...   <py:with vars="x=4; y=3; z=x+5">${x} ${y} ${z}</py:with>
-  ... </div>""", translate_xml)
+  ...   <blockquote py:with="q=quote()">
+  ...       "${q["quote"]} <em>${q["author"]}</em>
+  ...   </blockquote>
+  ... </div>""", translate_xml, quote=quote)
   <div>
     <span>2 7 12</span>
     4 3 9
+    <blockquote>
+        "Some random quote <em>Some name</em>
+    </blockquote>
   </div>
-
+    
 py:attrs
 
   >>> print render("""\
