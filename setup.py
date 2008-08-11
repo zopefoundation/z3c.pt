@@ -4,7 +4,9 @@ version = '1.0dev'
 
 setup(name='z3c.pt',
       version=version,
-      description="An implementation of the TAL template language.",
+      description="Python template compiler which supports the Genshi and "
+                  "ZPT template languages including macro extensions and "
+                  "internationalization.",
       long_description=open("README.txt").read() + open("CHANGES.txt").read(),
       classifiers=[
         "Programming Language :: Python",
