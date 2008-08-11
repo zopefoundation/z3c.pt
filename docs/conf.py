@@ -31,7 +31,7 @@ master_doc = 'index'
 
 # General substitutions.
 project = 'z3c.pt'
-copyright = '2008, Malthe Borsch'
+copyright = '2008, Malthe Borch'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
