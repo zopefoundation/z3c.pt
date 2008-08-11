@@ -497,6 +497,8 @@ class Tag(object):
                 stream.outdent()
         else:
             for attribute, expression in static:
+                if isinstance(expression, unicode):
+                    expression = expression.encode('utf-8')
                 stream.out(
                     ' %s="%s"' % (attribute, escape(expression, '"')))
 

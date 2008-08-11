@@ -36,9 +36,11 @@ XHTML
 
   >>> print render("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml">
+  ...   La Peña
   ...   <img alt="La Peña" />
   ... </div>""", translate_xml)
     <div>
+      La Peña
       <img alt="La Peña" />
     </div>
 
