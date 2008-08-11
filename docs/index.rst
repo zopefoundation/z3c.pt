@@ -4,22 +4,30 @@
 z3c.pt
 ======
 
-:mod:`z3c.pt` is a Python templating language.
+Python template compiler which supports the `Genshi
+<http://genshi.edgewall.org/wiki/Documentation/xml-templates.html>`_
+and `ZPT <http://wiki.zope.org/ZPT/TAL>`_ template languages
+including macro extensions and i18n internationalization.
 
-:mod:`z3c.pt` is developed by Malthe Borch and other contributors as
-part of the `Zope <http://zope.org>`_ project.  It is licensed under a
-`ZPL license <http://www.zope.org/Resources/ZPL>`_.
+The compiler is developed by Malthe Borch and other contributors as
+part of the `Zope <http://zope.org>`_ project.  It is written and
+distributed under the `ZPL license
+<http://www.zope.org/Resources/ZPL>`_.
 
 Narrative documentation
 =======================
 
-Narrative documentation in chapter form explaining how to use
-:mod:`z3c.pt`.
+Narrative documentation in chapter form providing a reference on the
+template language, extensions and the compiler.
 
 Zope Page Templates (:term:`ZPT`) is a system which can generate HTML
 and XML.  ZPT is formed by the *Template Attribute Language* (*TAL*)
 and the *TAL Expression Syntax* (*TALES*), and the *Macro Expansion
 Template Attribute Language* (*METAL*).
+
+Genshi provides an XML-based template language that is heavily inspired
+by `Kid <http://kid-templating.org/>`_, which in turn was inspired by
+a number of existing template languages, namely XSLT, TAL, and PHP.
 
 .. toctree::
    :maxdepth: 2
