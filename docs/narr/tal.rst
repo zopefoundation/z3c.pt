@@ -499,7 +499,7 @@ between them::
    type.
 
 ``tal:replace``: Replace an element
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------------
 
 Syntax
 ~~~~~~
