@@ -353,7 +353,7 @@ Conditionally omitting a tag::
 
         <b tal:omit-tag="not:bold">I may be bold.</b>
 
-The above example will omit the ``b`` tag if the variable ``bold' is false.
+The above example will omit the ``b`` tag if the variable ``bold`` is false.
 
 Creating ten paragraph tags, with no enclosing tag::
 
