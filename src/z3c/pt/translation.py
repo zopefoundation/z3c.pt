@@ -1,7 +1,6 @@
 from zope import component
 
 from StringIO import StringIO
-import lxml.etree
 
 import generation
 import clauses
@@ -11,15 +10,16 @@ import itertools
 import types
 import utils
 import config
+import etree
 
-class Element(lxml.etree.ElementBase):
+class Element(etree.ElementBase):
     """Base compiler element class.
 
     This class represents a node in the template tree. To start
     compilation at this node, use the ``start`` method, providing a
     code stream object.
     """
-    
+
     metal_slot_prefix = '_fill'
 
     def start(self, stream):
@@ -168,7 +168,7 @@ class Element(lxml.etree.ElementBase):
                 if m is None:
                     break
 
-                t = parser.makeelement(utils.tal_attr('interpolation'))
+                t = etree.element_factory(utils.tal_attr('interpolation'))
                 t.attrib['replace'] = m.group('expression')
                 t.tail = self.text[m.end():]
                 self.insert(0, t)
@@ -185,7 +185,7 @@ class Element(lxml.etree.ElementBase):
                 if m is None:
                     break
 
-                t = parser.makeelement(utils.tal_attr('interpolation'))
+                t = etree.element_factory(utils.tal_attr('interpolation'))
                 t.attrib['replace'] = m.group('expression')
                 t.tail = self.tail[m.end():]
                 parent = self.getparent()
@@ -209,7 +209,7 @@ class Element(lxml.etree.ElementBase):
                     
     def _serialize(self):
         """Serialize element into clause-statements."""
-        
+
         _ = []
 
         # i18n domain
@@ -254,8 +254,11 @@ class Element(lxml.etree.ElementBase):
             _.append(clauses.Repeat(variables[0], expression))
 
         # tag tail (deferred)
-        if self.tail and not self.metal_fillslot:
-            _.append(clauses.Out(self.tail.encode('utf-8'), defer=True))
+        tail = self.tail
+        if tail and not self.metal_fillslot:
+            if isinstance(tail, unicode):
+                tail = tail.encode('utf-8')
+            _.append(clauses.Out(tail, defer=True))
 
         # dynamic content and content translation
         replace = self._replace
@@ -286,8 +289,11 @@ class Element(lxml.etree.ElementBase):
                 _.append(tag)
 
         # tag text (if we're not replacing tag body)
-        if self.text and not dynamic:
-            _.append(clauses.Out(self.text.encode('utf-8')))
+        text = self.text
+        if text and not dynamic:
+            if isinstance(text, unicode):
+                text = text.encode('utf-8')
+            _.append(clauses.Out(text))
 
         if replace and content:
             raise ValueError("Can't use replace clause together with "
@@ -380,9 +386,7 @@ class Element(lxml.etree.ElementBase):
                         value = types.value("%s['%s']" % (mapping, name))
                         subclauses.append(clauses.Write(value))
                     else:
-                        subclauses.append(clauses.Out(
-                            lxml.etree.tostring(element)))
-
+                        subclauses.append(clauses.Out(element.tostring()))
                 if subclauses:
                     _.append(clauses.Else(subclauses))
 
@@ -391,7 +395,7 @@ class Element(lxml.etree.ElementBase):
     def _wrap_literal(self, element):
         index = self.index(element)
 
-        t = parser.makeelement(utils.tal_attr('literal'))
+        t = etree.element_factory(utils.tal_attr('literal'))
         t.attrib['omit-tag'] = ''
         t.tail = element.tail
         t.text = unicode(element)
@@ -411,7 +415,7 @@ class Element(lxml.etree.ElementBase):
                 out.write("${%s}" % name)
                 out.write(element.tail)
             else:
-                out.write(lxml.etree.tostring(element))
+                out.write(element.tostring())
 
         msgid = out.getvalue().strip()
         msgid = msgid.replace('  ', ' ').replace('\n', '')
@@ -627,31 +631,21 @@ class PyMatchElement(PyElement):
     py_match = utils.attribute("path")
 
 # set up namespaces for XML parsing
-lookup = lxml.etree.ElementNamespaceClassLookup()
-parser = lxml.etree.XMLParser(resolve_entities=False)
-parser.setElementClassLookup(lookup)
-
-try:
-    ns_lookup = lookup.get_namespace
-except AttributeError:
-    ns_lookup = lxml.etree.Namespace
-    
-ns_lookup(config.XML_NS)[None] = Element
-ns_lookup(config.TAL_NS)[None] = TALElement
-ns_lookup(config.METAL_NS)[None] = METALElement
-ns_lookup(config.PY_NS)["if"] = PyIfElement
-ns_lookup(config.PY_NS)["for"] = PyForElement
-ns_lookup(config.PY_NS)["def"] = PyDefElement
-ns_lookup(config.PY_NS)["with"] = PyWithElement
-ns_lookup(config.PY_NS)["match"] = PyMatchElement
+etree.ns_lookup(config.XML_NS)[None] = Element
+etree.ns_lookup(config.TAL_NS)[None] = TALElement
+etree.ns_lookup(config.METAL_NS)[None] = METALElement
+etree.ns_lookup(config.PY_NS)["if"] = PyIfElement
+etree.ns_lookup(config.PY_NS)["for"] = PyForElement
+etree.ns_lookup(config.PY_NS)["def"] = PyDefElement
+etree.ns_lookup(config.PY_NS)["with"] = PyWithElement
+etree.ns_lookup(config.PY_NS)["match"] = PyMatchElement
 
 def translate_xml(body, *args, **kwargs):
-    tree = lxml.etree.parse(StringIO(body), parser)
-    root = tree.getroot()
+    root, doctype = etree.parse(body)
+    return translate_etree(root, doctype=doctype, *args, **kwargs)
 
-    return translate_etree(root, *args, **kwargs)
-
-def translate_etree(root, macro=None ,params=[], default_expression='python'):
+def translate_etree(root, macro=None, doctype=None,
+                    params=[], default_expression='python'):
     if None not in root.nsmap:
         raise ValueError, "Must set default namespace."
 
@@ -681,9 +675,8 @@ def translate_etree(root, macro=None ,params=[], default_expression='python'):
     stream = generator.stream
 
     # output doctype if any
-    tree = root.getroottree()
-    if tree.docinfo.doctype:
-        dt = (tree.docinfo.doctype +'\n').encode('utf-8')
+    if isinstance(doctype, (str, unicode)):
+        dt = (doctype +'\n').encode('utf-8')
         doctype = clauses.Out(dt)
         stream.scope.append(set())
         stream.begin([doctype])
@@ -695,11 +688,12 @@ def translate_etree(root, macro=None ,params=[], default_expression='python'):
     return generator
 
 def translate_text(body, *args, **kwargs):
-    xml = parser.makeelement(
+    root = etree.element_factory(
         utils.xml_attr('text'), nsmap={None: config.XML_NS})
-    xml.text = body
-    xml.attrib[utils.tal_attr('omit-tag')] = ''
-    return translate_etree(xml, *args, **kwargs)
+    
+    root.text = body
+    root.attrib[utils.tal_attr('omit-tag')] = ''
+    return translate_etree(root, *args, **kwargs)
     
 def _translate(value, mapping=None, default=None):
     format = ("_translate(%s, domain=_domain, mapping=%s, context=_context, "

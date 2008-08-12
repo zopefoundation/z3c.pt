@@ -4,6 +4,9 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Preliminary support for using ``xml.etree`` as fallback for
+  ``lxml.etree``. [malthe]
+
 - Fixed edge case bug where inserting both a numeric entity and a literal 
   set of unicode bytes into the same document would cause a
   UnicodeDecodeError. See also 
