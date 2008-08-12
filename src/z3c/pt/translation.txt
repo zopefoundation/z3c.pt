@@ -295,12 +295,18 @@ tal:omit-tag
 
 :: Using the "path:" expression
 
+  >>> class Test(object):
+  ...     greeting = u'Hello'
+  
   >>> print render("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   <span tal:replace="path: test/greeting" />
-  ... </div>""", translate_xml, request=object(), test={'greeting': u'Hello'})
+  ...   <span tal:replace="path: test1/greeting" />
+  ...   <span tal:replace="path: test2/greeting" />
+  ... </div>""", translate_xml, request=object(),
+  ... test1={'greeting': u'Hello'}, test2=Test())
   <div>
+    Hello
     Hello
   </div>
 

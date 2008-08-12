@@ -576,20 +576,28 @@ class StringTranslation(ExpressionTranslation):
         return string.replace(';;', ';')
         
 class PathTranslation(ExpressionTranslation):
-    path_regex = re.compile(r'^((nocall|not):\s*)*([A-Za-z_]+)(/[A-Za-z_@-]+)*$')
+    path_regex = re.compile(
+        r'^((nocall|not):\s*)*([A-Za-z_][A-Za-z0-9_]*)'+
+        r'(/[A-Za-z_@-][A-Za-z0-9_@-]*)*$')
 
     @classmethod
     def traverse(cls, base, request, call, *path_items):
         """See ``zope.app.pagetemplate.engine``."""
 
         _callable = callable(base)
-        
+
         for i in range(len(path_items)):
             name = path_items[i]
 
             next = getattr(base, name, _marker)
             if next is not _marker:
-                base = next()
+                _callable = callable(next)
+
+                if _callable:
+                    base = next()
+                else:
+                    base = next
+                    continue
             else:
                 # special-case dicts for performance reasons        
                 if getattr(base, '__class__', None) == dict:
