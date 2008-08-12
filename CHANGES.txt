@@ -4,6 +4,9 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Expression results are now validated for XML correctness when the
+  compiler is running in debug-mode. [malthe]
+
 - Preserve CDATA sections. [malthe]
 
 - The Genshi interpolation operator ${} should not have its result

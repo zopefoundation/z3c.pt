@@ -1,6 +1,7 @@
 from cgi import escape
 
 from z3c.pt import types
+from z3c.pt import config
 from z3c.pt.utils import unicode_required_flag
 
 class Assign(object):
@@ -748,6 +749,17 @@ class Write(object):
             stream.outdent()
             stream.write("_write(_urf)")
         stream.outdent()
+
+        # validate XML if enabled
+        if config.VALIDATION:
+            try:
+                import xml.etree
+            except ImportError:
+                raise ImportError(
+                    "xml.etree (required when XML validation is enabled).")
+            
+            stream.write("from xml.etree import ElementTree as ET")
+            stream.write("ET.fromstring('<div>%s</div>' % _urf)")
 
     def end(self, stream):
         if self.assign:
