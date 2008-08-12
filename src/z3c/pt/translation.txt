@@ -44,6 +44,16 @@ XHTML
       <img alt="La Peña" />
     </div>
 
+:: Variables containing markup
+
+  >>> print render("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml">
+  ...   ${message}
+  ... </div>""", translate_xml, message="Hello, <em>World</em>!")
+    <div>
+      Hello, <em>World</em>!
+    </div>
+
 Literals
 --------
 
