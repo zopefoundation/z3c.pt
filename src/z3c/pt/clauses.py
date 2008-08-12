@@ -2,6 +2,7 @@ from cgi import escape
 
 from z3c.pt import types
 from z3c.pt import config
+from z3c.pt import etree
 from z3c.pt.utils import unicode_required_flag
 
 class Assign(object):
@@ -761,13 +762,14 @@ class Write(object):
         # validate XML if enabled
         if config.VALIDATION:
             try:
-                import xml.etree
+                etree.import_elementtree()
             except ImportError:
                 raise ImportError(
-                    "xml.etree (required when XML validation is enabled).")
-            
-            stream.write("from xml.etree import ElementTree as ET")
-            stream.write("ET.fromstring('<div>%s</div>' % _urf)")
+                    "ElementTree (required when XML validation is enabled).")
+
+            stream.write("import z3c.pt.etree")
+            stream.write("_ET = z3c.pt.etree.import_elementtree()")
+            stream.write("_ET.fromstring('<div>%s</div>' % _urf)")
 
     def end(self, stream):
         if self.assign:

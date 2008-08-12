@@ -4,6 +4,10 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Generalized ElementTree-import to allow both Python 2.5's
+  ``xml.etree`` module and the standalone ``ElementTree``
+  package. [malthe]
+
 - CDATA sections are now correctly preserved when using expression
   interpolation. [malthe]
 

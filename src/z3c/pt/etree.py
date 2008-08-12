@@ -4,6 +4,17 @@ import utils
 import cgi
 from StringIO import StringIO
 
+def import_elementtree():
+    try:
+        import elementtree.ElementTree as ET
+    except ImportError:
+        try:
+            import cElementTree as ET
+        except ImportError:
+            import xml.etree.ElementTree as ET
+
+    return ET
+
 try:
     import lxml.etree
 
@@ -138,9 +149,9 @@ try:
         return root, tree.docinfo.doctype
 
 except ImportError:
-    import xml.etree.ElementTree
-    
-    class ElementBase(object, xml.etree.ElementTree._ElementInterface):
+    ET = import_elementtree()
+            
+    class ElementBase(object, ET._ElementInterface):
         _parent = None
         
         def __new__(cls, tag, attrs=None):
@@ -150,17 +161,17 @@ except ImportError:
             if attrs is None:
                 attrs = {}
             
-            xml.etree.ElementTree._ElementInterface.__init__(self, tag, attrs)
+            ET._ElementInterface.__init__(self, tag, attrs)
             
         def getparent(self):
             return self._parent
 
         def insert(self, position, element):
             element._parent = self
-            xml.etree.ElementTree._ElementInterface.insert(self, position, element)
+            ET._ElementInterface.insert(self, position, element)
 
         def tostring(self):
-            return xml.etree.ElementTree.tostring(self)
+            return ET.tostring(self)
 
         def xpath(self, expression, namespaces={}):
             return []
@@ -173,18 +184,18 @@ except ImportError:
     def ns_lookup(ns):
         return namespaces.setdefault(ns, {})
 
-    class TreeBuilder(xml.etree.ElementTree.TreeBuilder):
+    class TreeBuilder(ET.TreeBuilder):
         def start(self, tag, attrs):
             if len(self._elem):
                 parent = self._elem[-1]
             else:
                 parent = None
-            elem = xml.etree.ElementTree.TreeBuilder.start(self, tag, attrs)
+            elem = ET.TreeBuilder.start(self, tag, attrs)
             elem._parent = parent
 
-    class XMLParser(xml.etree.ElementTree.XMLParser):
+    class XMLParser(ET.XMLParser):
         def __init__(self, **kwargs):
-            xml.etree.ElementTree.XMLParser.__init__(self, **kwargs)
+            ET.XMLParser.__init__(self, **kwargs)
 
             # this makes up for ET's lack of support for comments and
             # processing instructions
