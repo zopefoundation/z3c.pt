@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import zope.interface
 import zope.component
 import zope.security
@@ -527,7 +525,7 @@ class StringTranslation(ExpressionTranslation):
         >>> split("abc${def | ghi}")
         ('abc', parts(value('def '), value('ghi')))
 
-        >>> print split("abc${La Peña}")
+        >>> print split("abc${La Pe\xc3\xb1a}")
         ('abc', value('La Pe\\xc3\\xb1a'))
         
         """

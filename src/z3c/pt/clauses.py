@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from cgi import escape
 
 from z3c.pt import types
@@ -16,7 +14,7 @@ class Assign(object):
     >>> bad_float = types.value("float('abc')")
     >>> abc = types.value("'abc'")
     >>> ghi = types.value("'ghi'")
-    >>> utf8_encoded = types.value("'La Peña'")
+    >>> utf8_encoded = types.value("'La Pe\xc3\xb1a'")
     >>> exclamation = types.value("'!'")
         
     Simple value assignment:
@@ -69,7 +67,7 @@ class Assign(object):
     >>> assign = Assign(types.join((utf8_encoded, exclamation)))
     >>> assign.begin(stream, 'b')
     >>> exec stream.getvalue()
-    >>> b == 'La Peña!'
+    >>> b == 'La Pe\xc3\xb1a!'
     True
     >>> assign.end(stream)
 
@@ -78,7 +76,7 @@ class Assign(object):
     >>> assign = Assign(types.join((utf8_encoded, u"!")))
     >>> assign.begin(stream, 'b')
     >>> exec stream.getvalue()
-    >>> b == 'La Peña!'
+    >>> b == 'La Pe\xc3\xb1a!'
     True
     >>> assign.end(stream)
 
@@ -448,12 +446,12 @@ class Tag(object):
       Unicode:
       
       >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
-      >>> tag = Tag('div', dict(alt=pyexp(repr('La Peña'))))
+      >>> tag = Tag('div', dict(alt=pyexp(repr('La Pe\xc3\xb1a'))))
       >>> tag.begin(stream)
       >>> stream.out('Hello Universe!')
       >>> tag.end(stream)
       >>> exec stream.getvalue()
-      >>> _out.getvalue() == '<div alt="La Peña">Hello Universe!</div>'
+      >>> _out.getvalue() == '<div alt="La Pe\xc3\xb1a">Hello Universe!</div>'
       True
             
     """
@@ -691,7 +689,10 @@ class Write(object):
     >>> write.begin(stream)
     >>> write.end(stream)
     >>> exec stream.getvalue()
-    >>> _out.getvalue() == unicode('La Pe\xc3\xb1a', 'utf-8')
+    >>> val = _out.getvalue()
+    >>> val == 'La Pe\xc3\xb1a'
+    True
+    >>> type(val) == str
     True
     """
 
@@ -722,6 +723,10 @@ class Write(object):
             stream.write("if not isinstance(_urf, unicode):")
             stream.indent()
             stream.write("_urf = str(_urf)")
+            stream.outdent()
+            stream.write("else:")
+            stream.indent()
+            stream.write("_urf = _urf.encode('utf-8')")
             stream.outdent()
         else:
             stream.write("_urf = str(_urf)")
@@ -771,7 +776,10 @@ class UnicodeWrite(Write):
     >>> write.begin(stream)
     >>> write.end(stream)
     >>> exec stream.getvalue()
-    >>> _out.getvalue() == unicode('La Pe\xc3\xb1a', 'utf-8')
+    >>> val = _out.getvalue()
+    >>> val == 'La Pe\xc3\xb1a'
+    True
+    >>> type(val) == str
     True
 
     Invalid:

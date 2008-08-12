@@ -163,8 +163,8 @@ class BaseTemplateFile(BaseTemplate):
         self._source = source
 
         # write source to disk
-        filename = "%s.source" % self.filename
-        if DEBUG_MODE:
+        if self.filename and DEBUG_MODE:
+            filename = "%s.source" % self.filename
             fs = open(filename, 'w')
             fs.write(source)
             fs.close()
