@@ -681,7 +681,7 @@ def translate_etree(root, macro=None, doctype=None,
     stream = generator.stream
 
     # output doctype if any
-    if isinstance(doctype, (str, unicode)):
+    if doctype and isinstance(doctype, (str, unicode)):
         dt = (doctype +'\n').encode('utf-8')
         doctype = clauses.Out(dt)
         stream.scope.append(set())
