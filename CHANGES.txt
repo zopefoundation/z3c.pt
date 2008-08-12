@@ -4,6 +4,8 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- No longer require default namespace. [malthe]
+
 - Changed source code debug mode files to be named <filename>.py instead of
   <filename>.source.
 

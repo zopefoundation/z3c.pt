@@ -140,6 +140,16 @@ Literals
 Zope TAL
 --------
 
+:: Namespace elements
+
+  >>> print render("""\
+  ... <tal:block xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   Hello, world!
+  ... </tal:block>""", translate_xml)
+  <BLANKLINE>
+    Hello, world!
+  <BLANKLINE>
+
 tal:define, tal:attributes, tal:contents    
   
   >>> print render("""\
@@ -730,7 +740,7 @@ No default namespace declaration:
   >>> render(body, translate_xml)
   Traceback (most recent call last):
     ...
-  ValueError: Must set default namespace.
+  ValueError: Must define valid namespace for tag: 'br.'
     
 Bad XML
   We expect the xml-parser to raise an exception.

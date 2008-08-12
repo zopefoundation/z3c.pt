@@ -36,8 +36,9 @@ def attribute(ns, factory=None, default=None):
             return f(value)
         elif default is not None:
             return default
-        
-    return property(get)
+    def set(self, value):
+        self.attrib[ns] = value
+    return property(get, set)
 
 class scope(list):
     def __init__(self, *args):

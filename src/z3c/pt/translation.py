@@ -590,9 +590,10 @@ class TALElement(Element):
     tal_attributes = utils.attribute("attributes", lambda p: p.expression)
     tal_content = utils.attribute("content", lambda p: p.output)
     tal_omit = utils.attribute("omit-tag", lambda p: p.expression, u"")
-    tal_default_expression = utils.attribute("default-expression", lambda p: p.name)
+    tal_default_expression = utils.attribute(
+        'default-expression')
     tal_cdata = utils.attribute("cdata")
-    
+
     def _get_static_attributes(self):
         attributes = {}
 
@@ -604,6 +605,7 @@ class TALElement(Element):
                            'attributes',
                            'content',
                            'omit-tag',
+                           'default-expression',
                            'cdata'):
                 raise ValueError(
                     u"Attribute '%s' not allowed in the namespace '%s'" %
@@ -652,8 +654,8 @@ def translate_xml(body, *args, **kwargs):
 
 def translate_etree(root, macro=None, doctype=None,
                     params=[], default_expression='python'):
-    if None not in root.nsmap:
-        raise ValueError, "Must set default namespace."
+    if not isinstance(root, Element):
+        raise ValueError("Must define valid namespace for tag: '%s.'" % root.tag)
 
     # skip to macro
     if macro is not None:
@@ -668,9 +670,8 @@ def translate_etree(root, macro=None, doctype=None,
         del root.attrib[utils.metal_attr('define-macro')]
         
     # set default expression name
-    key = utils.tal_attr('default-expression')
-    if key not in root.attrib:
-        root.attrib[key] = default_expression
+    if not root.tal_default_expression:
+        root.tal_default_expression = default_expression
 
     # set up code generation stream
     if macro is not None:
