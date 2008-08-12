@@ -4,6 +4,8 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Preserve CDATA sections. [malthe]
+
 - The Genshi interpolation operator ${} should not have its result
   escaped when used in the text or tail regions. [malthe]
 

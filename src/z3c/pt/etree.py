@@ -20,6 +20,79 @@ try:
         def tostring(self):
             return lxml.etree.tostring(self)
 
+        @property
+        def raw_text(self):
+            """Return raw text.
+
+            CDATA sections are returned in their original formatting;
+            the routine relies on the fact that ``tostring`` will
+            output CDATA sections even though they're not present in
+            the .text-attribute.
+            """
+
+            if self.text in ("", None):
+                return self.text
+
+            elements = tuple(self)
+            del self[:]
+            xml = lxml.etree.tostring(self, encoding='utf-8', with_tail=False)
+            self.extend(elements)
+
+            element = parser.makeelement(self.tag, nsmap=self.nsmap)
+            for attr, value in self.items():
+                element.attrib[attr] = value
+
+            html = lxml.etree.tostring(element)                
+            text = xml[len(html)-1:-len(element.tag[element.tag.rfind('}'):])-2]
+
+            return text
+
+        @property
+        def raw_tail(self):
+            """Return raw text.
+
+            CDATA sections are returned in their original formatting;
+            the routine relies on the fact that ``tostring`` will
+            output CDATA sections even though they're not present in
+            the .text-attribute.
+            """
+
+            if self.tail in ("", None):
+                return self.tail
+
+            elements = tuple(self)
+            del self[:]
+
+            parent = self.getparent()
+            if parent is None:
+                return self.tail
+            
+            length = len(lxml.etree.tostring(self, encoding='utf-8', with_tail=False))
+            
+            # wrap element
+            index = parent.index(self)
+            element = parser.makeelement(self.tag, nsmap=self.nsmap)
+            element.append(self)
+            xml = lxml.etree.tostring(element, encoding='utf-8', with_tail=False)
+            self.extend(elements)
+            parent.insert(index, self)
+
+            ns = self.tag[self.tag.find('{')+1:self.tag.find('}')]
+            for prefix, namespace in self.nsmap.items():
+                if ns == namespace:
+                    if prefix is None:
+                        tag = len(self.tag) - len(ns)
+                    else:
+                        tag = len(self.tag) - len(ns) + len(prefix) + 1
+                    break
+            else:
+                raise ValueError(
+                    "Unable to determine tag length: %s." % self.tag)
+                
+            tail = xml[length+tag:-tag-1]
+            
+            return tail
+            
     element_factory = parser.makeelement
 
     def parse(body):

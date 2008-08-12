@@ -254,7 +254,7 @@ class Element(etree.ElementBase):
             _.append(clauses.Repeat(variables[0], expression))
 
         # tag tail (deferred)
-        tail = self.tail
+        tail = self.raw_tail
         if tail and not self.metal_fillslot:
             if isinstance(tail, unicode):
                 tail = tail.encode('utf-8')
@@ -289,7 +289,7 @@ class Element(etree.ElementBase):
                 _.append(tag)
 
         # tag text (if we're not replacing tag body)
-        text = self.text
+        text = self.raw_text
         if text and not dynamic:
             if isinstance(text, unicode):
                 text = text.encode('utf-8')
