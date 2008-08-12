@@ -166,6 +166,11 @@ except ImportError:
         def getparent(self):
             return self._parent
 
+        def getroottree(self):
+            while self._parent is not None:
+                self = self._parent
+            return self
+            
         def insert(self, position, element):
             element._parent = self
             ET._ElementInterface.insert(self, position, element)
@@ -178,8 +183,20 @@ except ImportError:
             
         @property
         def nsmap(self):
+            # TODO: Return correct namespace map
             return {None: config.XML_NS}
-        
+
+        @property
+        def prefix(self):
+            try:
+                ns, prefix = self.tag.split('}')
+            except:
+                return None
+            
+            for prefix, namespace in self.nsmap.items():
+                if namespace == ns:
+                    return prefix
+            
     namespaces = {}
     def ns_lookup(ns):
         return namespaces.setdefault(ns, {})
@@ -201,7 +218,8 @@ except ImportError:
             # processing instructions
             self._parser.CommentHandler = self.handle_comment
             self._parser.ProcessingInstructionHandler = self.handle_pi
-            #self._target.start("document", {})
+            self._parser.StartCdataSectionHandler = self.handle_cdata_start
+            self._parser.EndCdataSectionHandler = self.handle_cdata_end
        
         def doctype(self, name, pubid, system):
             self.doctype = u'<!DOCTYPE %(name)s PUBLIC "%(pubid)s" "%(system)s">' % \
@@ -219,6 +237,13 @@ except ImportError:
             self._target.data("<?%(target)s %(data)s?>" % dict(target=target, data=data))
             self._target.end(name)
 
+        def handle_cdata_start(self):
+            self._target.start(utils.xml_attr('cdata'), {
+                utils.tal_attr('cdata'): ''})
+
+        def handle_cdata_end(self):
+            self._target.end(utils.xml_attr('cdata'))
+            
     def element_factory(tag, attrs=None, nsmap=None):
         if attrs is None:
             attrs = {}
@@ -236,7 +261,6 @@ except ImportError:
         element = object.__new__(factory)
         element.__init__(tag, attrs)
         return element
-        #return factory(tag, attrs)
 
     def parse(body):
         target = TreeBuilder(element_factory=element_factory)
@@ -247,6 +271,3 @@ except ImportError:
         root = parser.close()
 
         return root, parser.doctype
-
-    def CDATA(text):
-        return text

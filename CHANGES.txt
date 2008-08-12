@@ -4,6 +4,9 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- CDATA sections are now correctly handled when using the
+  ElementTree-parser. [malthe]
+
 - Fixed bug in path-expressions where string instances would be
   (attempted) called. [malthe]
 
