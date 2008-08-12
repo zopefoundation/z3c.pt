@@ -58,7 +58,7 @@ Browse and check out tagged and trunk versions of :mod:`z3c.pt`
 via the `Subversion repository <http://svn.zope.org/z3c.pt/>`_.  To
 check out the trunk via Subversion, use this command::
 
-  svn co http://svn.zope.org/repos/main/z3c.pt/trunk z3c.pt
+  svn co svn://svn.zope.org/repos/main/z3c.pt/trunk z3c.pt
 
 Indices and tables
 ==================
