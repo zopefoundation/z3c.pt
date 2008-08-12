@@ -139,7 +139,6 @@ try:
 
 except ImportError:
     import xml.etree.ElementTree
-    import html5lib.treebuilders.etree
     
     class ElementBase(object, xml.etree.ElementTree._ElementInterface):
         _parent = None
