@@ -4,6 +4,9 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Changed source code debug mode files to be named <filename>.py instead of
+  <filename>.source.
+
 - Generalized ElementTree-import to allow both Python 2.5's
   ``xml.etree`` module and the standalone ``ElementTree``
   package. [malthe]

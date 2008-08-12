@@ -20,5 +20,3 @@ METAL_NS = "http://xml.zope.org/namespaces/metal"
 I18N_NS = "http://xml.zope.org/namespaces/i18n"
 PY_NS = "http://genshi.edgewall.org"
 NS_MAP = dict(py=PY_NS, tal=TAL_NS, metal=METAL_NS)
-            
-        

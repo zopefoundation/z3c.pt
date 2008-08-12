@@ -163,14 +163,14 @@ class BaseTemplateFile(BaseTemplate):
         self._source = source
 
         # write source to disk
-        if self.filename and DEBUG_MODE:
-            filename = "%s.source" % self.filename
+        if source and self.filename and DEBUG_MODE:
+            filename = "%s.py" % self.filename
             fs = open(filename, 'w')
             fs.write(source)
             fs.close()
 
     source = property(_get_source, _set_source)
-    
+
     def read(self):
         fd = open(self.filename, 'r')
         self.body = body = fd.read()
