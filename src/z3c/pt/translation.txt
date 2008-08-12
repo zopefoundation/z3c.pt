@@ -47,14 +47,16 @@ XHTML
 :: CDATA blocks
   >>> print render("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml">
-  ... /* <![CDATA[ */
+  ...   /* <![CDATA[ */
   ...   This is protected
-  ... /* ]]> */
+  ...   /* ]]> */
+  ...   <span>Not protected</span> <![CDATA[ This is protected ]]>
   ... </div>""", translate_xml)
     <div>
       /* <![CDATA[ */
       This is protected
       /* ]]> */
+      <span>Not protected</span> <![CDATA[ This is protected ]]>
     </div>
 
 :: Variables containing markup
@@ -69,13 +71,19 @@ XHTML
 
 :: Variable expansion must preserve XML validity
 
+  >>> from z3c.pt import config
+  >>> config.VALIDATION = True
+  
   >>> print render("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml">
   ...   ${message}
   ... </div>""", translate_xml, message="Hello, <em>World!")
   Traceback (most recent call last):
-  ...
-
+   ...
+  ExpatError: ...
+  
+  >>> config.VALIDATION = False
+  
 :: Unless we are in a CDATA block
 
   >>> print render("""\

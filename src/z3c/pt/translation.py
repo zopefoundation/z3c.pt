@@ -164,20 +164,21 @@ class Element(etree.ElementBase):
         
         if self.text is not None:
             while self.text:
-                m = translator.interpolate(self.text)
+                text = self.text
+                m = translator.interpolate(text)
                 if m is None:
                     break
 
                 t = etree.element_factory(utils.tal_attr('interpolation'))
                 t.attrib['replace'] = "structure "+m.group('expression')
-                t.tail = self.text[m.end():]
+                t.tail = text[m.end():]
                 self.insert(0, t)
                 t.update()
 
                 if m.start() == 0:
-                    self.text = self.text[1:m.start()+1]
+                    self.text = text[1:m.start()+1]
                 else:
-                    self.text = self.text[:m.start()+1]
+                    self.text = text[:m.start()+1]
 
         if self.tail is not None:
             while self.tail:
@@ -254,7 +255,7 @@ class Element(etree.ElementBase):
             _.append(clauses.Repeat(variables[0], expression))
 
         # tag tail (deferred)
-        tail = self.raw_tail
+        tail = self.tail
         if tail and not self.metal_fillslot:
             if isinstance(tail, unicode):
                 tail = tail.encode('utf-8')
@@ -277,7 +278,8 @@ class Element(etree.ElementBase):
         if replace is None:
             selfclosing = self.text is None and not dynamic and len(self) == 0
             tag = clauses.Tag(self.tag, self._get_attributes(),
-                              expression=self.py_attrs, selfclosing=selfclosing)
+                              expression=self.py_attrs, selfclosing=selfclosing,
+                              cdata=self.tal_cdata is not None)
 
             if self._omit:
                 _.append(clauses.Condition(_not(self._omit), [tag],
@@ -289,7 +291,7 @@ class Element(etree.ElementBase):
                 _.append(tag)
 
         # tag text (if we're not replacing tag body)
-        text = self.raw_text
+        text = self.text
         if text and not dynamic:
             if isinstance(text, unicode):
                 text = text.encode('utf-8')
@@ -539,6 +541,8 @@ class Element(etree.ElementBase):
         utils.tal_attr('omit-tag'), lambda p: p.expression)
     tal_default_expression = utils.attribute(
         utils.tal_attr('default-expression'))
+    tal_cdata = utils.attribute(
+        utils.tal_attr('cdata'))
     metal_define = utils.attribute(
         utils.metal_attr('define-macro'), lambda p: p.method)
     metal_use = utils.attribute(
@@ -587,6 +591,7 @@ class TALElement(Element):
     tal_content = utils.attribute("content", lambda p: p.output)
     tal_omit = utils.attribute("omit-tag", lambda p: p.expression, u"")
     tal_default_expression = utils.attribute("default-expression", lambda p: p.name)
+    tal_cdata = utils.attribute("cdata")
     
     def _get_static_attributes(self):
         attributes = {}
@@ -598,7 +603,8 @@ class TALElement(Element):
                            'repeat',
                            'attributes',
                            'content',
-                           'omit-tag'):
+                           'omit-tag',
+                           'cdata'):
                 raise ValueError(
                     u"Attribute '%s' not allowed in the namespace '%s'" %
                     (key, self.nsmap[self.prefix]))

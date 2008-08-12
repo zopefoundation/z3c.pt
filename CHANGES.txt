@@ -4,6 +4,9 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- CDATA sections are now correctly preserved when using expression
+  interpolation. [malthe]
+
 - Expression results are now validated for XML correctness when the
   compiler is running in debug-mode. [malthe]
 

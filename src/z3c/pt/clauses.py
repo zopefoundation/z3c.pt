@@ -457,7 +457,8 @@ class Tag(object):
             
     """
 
-    def __init__(self, tag, attributes={}, selfclosing=False, expression=None):
+    def __init__(self, tag, attributes={},
+                 selfclosing=False, expression=None, cdata=False):
         i = tag.find('}')
 
         if i != -1:
@@ -468,8 +469,12 @@ class Tag(object):
         self.selfclosing = selfclosing
         self.attributes = attributes
         self.expression = expression and Assign(expression)
+        self.cdata = cdata
         
     def begin(self, stream):
+        if self.cdata:
+            stream.out('<![CDATA['); return
+
         stream.out('<%s' % self.tag)
 
         static = filter(
@@ -556,6 +561,9 @@ class Tag(object):
             stream.out(">")
 
     def end(self, stream):
+        if self.cdata:
+            stream.out(']]>'); return
+            
         if not self.selfclosing:
             stream.out('</%s>' % self.tag)
 

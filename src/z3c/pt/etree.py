@@ -1,6 +1,7 @@
 import htmlentitydefs
 import config
 import utils
+import cgi
 from StringIO import StringIO
 
 try:
@@ -17,11 +18,47 @@ try:
         ns_lookup = lxml.etree.Namespace
 
     class ElementBase(lxml.etree.ElementBase):
+        def _init(self):
+            self._convert_cdata_sections()
+            
         def tostring(self):
             return lxml.etree.tostring(self)
 
+        def _convert_cdata_sections(self):
+            start = '<![CDATA['
+            end = ']]>'
+
+            text = self._raw_text or ""
+            tail = self._raw_tail or ""
+
+            if start in text:
+                before, rest = text.split(start, 1)
+                cdata, after = rest.split(end, 1)
+
+                element = parser.makeelement(
+                    utils.xml_attr('cdata'))
+                element.attrib[utils.tal_attr('cdata')] = ""
+                element.text = cdata
+                element.tail = after
+                
+                self.text = before
+                self.insert(0, element)
+                
+            if start in tail:
+                before, rest = tail.split(start, 1)
+                cdata, after = rest.split(end, 1)
+
+                element = parser.makeelement(
+                    utils.xml_attr('cdata'))
+                element.attrib[utils.tal_attr('cdata')] = ""
+                self.addnext(element)
+
+                element.text = cdata
+                element.tail = after
+                self.tail = before
+                
         @property
-        def raw_text(self):
+        def _raw_text(self):
             """Return raw text.
 
             CDATA sections are returned in their original formatting;
@@ -48,13 +85,13 @@ try:
             return text
 
         @property
-        def raw_tail(self):
-            """Return raw text.
+        def _raw_tail(self):
+            """Return raw tail.
 
             CDATA sections are returned in their original formatting;
             the routine relies on the fact that ``tostring`` will
             output CDATA sections even though they're not present in
-            the .text-attribute.
+            the .tail-attribute.
             """
 
             if self.tail in ("", None):
