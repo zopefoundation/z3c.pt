@@ -87,8 +87,17 @@ class repeatitem(object):
 
 class repeatdict(dict):
     def insert(self, key, iterable):
-        length = len(iterable)
-        iterator = iterable.__iter__()
+        try:
+            length = len(iterable)
+        except TypeError:
+            length = None
+            
+        try:
+            iterator = iterable.__iter__()
+        except AttributeError:
+            raise TypeError(
+                "Can only repeat over an iterable object (%s)." % iterable)
+        
         self[key] = (iterator, length)
         return iterator
         

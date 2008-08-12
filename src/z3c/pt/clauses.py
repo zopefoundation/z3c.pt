@@ -603,6 +603,17 @@ class Repeat(object):
       >>> _repeat.end(stream)
       >>> exec stream.getvalue()
 
+    A repeat over a non-iterable raises an exception.
+
+      >>> stream = CodeIO()
+      >>> _repeat = Repeat("j", pyexp("None"))
+      >>> _repeat.begin(stream)
+      >>> _repeat.end(stream)
+      >>> exec stream.getvalue()
+      Traceback (most recent call last):
+       ...
+      TypeError: Can only repeat over an iterable object (None).
+      
     Simple for loop:
 
       >>> stream = CodeIO()
