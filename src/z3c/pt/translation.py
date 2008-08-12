@@ -169,7 +169,7 @@ class Element(etree.ElementBase):
                     break
 
                 t = etree.element_factory(utils.tal_attr('interpolation'))
-                t.attrib['replace'] = m.group('expression')
+                t.attrib['replace'] = "structure "+m.group('expression')
                 t.tail = self.text[m.end():]
                 self.insert(0, t)
                 t.update()
@@ -186,7 +186,7 @@ class Element(etree.ElementBase):
                     break
 
                 t = etree.element_factory(utils.tal_attr('interpolation'))
-                t.attrib['replace'] = m.group('expression')
+                t.attrib['replace'] = "structure "+m.group('expression')
                 t.tail = self.tail[m.end():]
                 parent = self.getparent()
                 parent.insert(parent.index(self)+1, t)
