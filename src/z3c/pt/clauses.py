@@ -527,7 +527,8 @@ class Tag(object):
             stream.escape(temp2)
             stream.write("_write(' %%s=\"%%s\"' %% (%s, %s))" % (temp, temp2))
             stream.outdent()
-        
+            stream.outdent()
+            
         for attribute, value in dynamic:
             assign = Assign(value)
             assign.begin(stream, temp)
