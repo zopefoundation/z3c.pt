@@ -81,6 +81,9 @@ These are the available TAL statements:
 - ``tal:replace`` - replace the content of an element and remove the
   element leaving the content.
 
+- ``tal:default-expression`` - set the default expression type for a
+  block of tags.
+
 .. warning:: The reference implementation of ZPT has an additonal command
    ``tal:on-error`` which :mod:`z3c.pt` does not implement.
 
@@ -260,11 +263,6 @@ Inserting HTML/XML::
 
         <p tal:content="structure context.getStory()">marked <b>up</b>
         content goes here.</p>
-
-See Also
-~~~~~~~~
-
-``tal:replace``
 
 ``tal:define``: Define variables
 --------------------------------
@@ -536,7 +534,28 @@ Inserting nothing::
 
         <div tal:replace="nothing">This element is a comment.</div>
 
-See Also
+``tal:default-expression``: Set the default expression type for a block
+-----------------------------------------------------------------------
 
-      ``tal:content``
+Syntax
+~~~~~~
 
+``tal:default-expression`` syntax::
+
+        argument ::= expression-type
+
+Description
+~~~~~~~~~~~
+
+The ``tal:default-expression`` statement sets the default expression
+type within a logical block of tags.  If this tag is not used anywhere
+in the document, the default expression type is always ``python``.
+
+Examples
+~~~~~~~~
+
+Setting the default expression type to ``path`` within a block::
+
+        <div tal:default-expression="path">
+           <span tal:content="template/title">Title</span>
+        </div>

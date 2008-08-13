@@ -31,6 +31,7 @@ a number of existing template languages, namely XSLT, TAL, and PHP.
 .. toctree::
    :maxdepth: 2
 
+   narr/refimpls
    narr/tal
    narr/tales
    narr/metal
@@ -52,7 +53,8 @@ Support and Development
 To report bugs, use the `bug tracker <http://code.google.com/p/z3c-pt>`_.
 
 If you've got questions that aren't answered by this documentation,
-contact the `maillist <http://groups.google.com/group/z3c_pt>`_ ,
+please contact the `maillist
+<http://groups.google.com/group/z3c_pt>`_.
 
 Browse and check out tagged and trunk versions of :mod:`z3c.pt`
 via the `Subversion repository <http://svn.zope.org/z3c.pt/>`_.  To
