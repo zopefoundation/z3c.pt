@@ -72,7 +72,7 @@ If you want to use the code directly from trunk (recommended only for
 development and testing usage), provide ``z3c.pt==dev`` as your
 dependency.
 
-http://svn.zope.org/z3c.pt/trunk#egg=z3c.pt-dev
+svn://svn.zope.org/repos/main/z3c.pt/trunk#egg=z3c.pt-dev
 
 Want to contribute? Join #zope3-dev on Freenode IRC.
 
