@@ -256,7 +256,7 @@ except ImportError:
             ns_tag = None
 
         namespace = ns_lookup(ns)
-        factory = namespace.get(ns_tag) or namespace.get(None) or Element
+        factory = namespace.get(ns_tag) or namespace.get(None) or ElementBase
             
         element = object.__new__(factory)
         element.__init__(tag, attrs)
