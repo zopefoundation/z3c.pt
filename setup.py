@@ -1,6 +1,18 @@
 from setuptools import setup, find_packages
-
+import sys
 version = '1.0dev'
+
+install_requires = [
+    'setuptools',
+    'zope.interface',
+    'zope.component',
+    'zope.i18n >= 3.5',
+    'zope.traversing',
+    'zope.security',
+    ]
+
+if sys.version_info[:3] < (2,5,0):
+    install_requires.append('elementtree')
 
 setup(name='z3c.pt',
       version=version,
@@ -24,13 +36,6 @@ setup(name='z3c.pt',
       package_dir = {'':'src'},
       include_package_data=True,
       zip_safe=False,
-      install_requires=[
-          'setuptools',
-          'lxml',
-          'zope.interface',
-          'zope.component',
-          'zope.i18n >= 3.5',
-          'zope.traversing',
-          'zope.security',
-      ],
+      install_requires=install_requires,
+      extras_require={'lxml':['lxml']},
       )

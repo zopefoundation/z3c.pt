@@ -4,6 +4,14 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Make lxml a setuptools "extra".  To install with lxml support
+  (currently required by Genshi), specify "z3c.pt [lxml]" in
+  any references you need to make to the package in buildout or
+  in setup.py install_requires.  [chrism]
+
+- Add test-nolxml and py-nolxml parts to buildout so the package's
+  tests can be run without lxml.  [chrism]  
+
 - CDATA sections are now correctly handled when using the
   ElementTree-parser. [malthe]
 
