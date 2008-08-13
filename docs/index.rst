@@ -17,9 +17,6 @@ distributed under the `ZPL license
 Narrative documentation
 =======================
 
-Narrative documentation in chapter form providing a reference on the
-template language, extensions and the compiler.
-
 Zope Page Templates (:term:`ZPT`) is a system which can generate HTML
 and XML.  ZPT is formed by the *Template Attribute Language* (*TAL*)
 and the *TAL Expression Syntax* (*TALES*), and the *Macro Expansion
@@ -29,12 +26,15 @@ Genshi provides an XML-based template language that is heavily inspired
 by `Kid <http://kid-templating.org/>`_, which in turn was inspired by
 a number of existing template languages, namely XSLT, TAL, and PHP.
 
+:mod:`z3c.pt` provides support for both ZPT and Genshi syntax.
+
 .. toctree::
    :maxdepth: 2
 
    narr/tal
    narr/tales
    narr/metal
+   narr/i18n
 
 API documentation
 =================
