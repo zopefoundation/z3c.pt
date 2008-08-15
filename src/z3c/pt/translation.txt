@@ -59,6 +59,15 @@ XHTML
       <span>Not protected</span> <![CDATA[ This is protected ]]>
     </div>
 
+:: Variables containing quotes
+  >>> print render("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml">
+  ...   <strong>"${quote}"</strong>
+  ... </div>""", translate_xml, quote="Hello, World!")
+    <div>
+      <strong>"Hello, World!"</strong>
+    </div>
+  
 :: Variables containing markup
 
   >>> print render("""\
