@@ -578,7 +578,7 @@ class StringTranslation(ExpressionTranslation):
 class PathTranslation(ExpressionTranslation):
     path_regex = re.compile(
         r'^((nocall|not):\s*)*([A-Za-z_][A-Za-z0-9_]*)'+
-        r'(/[A-Za-z_@-][A-Za-z0-9_@-]*)*$')
+        r'(/[A-Za-z_@-][A-Za-z0-9_@-\\.]*)*$')
 
     @classmethod
     def traverse(cls, base, request, call, *path_items):
