@@ -458,7 +458,7 @@ class Tag(object):
             
     """
 
-    def __init__(self, tag, attributes={},
+    def __init__(self, tag, attributes=None,
                  selfclosing=False, expression=None, cdata=False):
         i = tag.find('}')
 
@@ -468,7 +468,7 @@ class Tag(object):
             self.tag = tag
 
         self.selfclosing = selfclosing
-        self.attributes = attributes
+        self.attributes = attributes or {}
         self.expression = expression and Assign(expression)
         self.cdata = cdata
         

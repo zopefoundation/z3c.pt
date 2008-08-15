@@ -2,6 +2,7 @@ import htmlentitydefs
 import config
 import utils
 import cgi
+import copy
 from StringIO import StringIO
 
 def import_elementtree():
@@ -15,23 +16,18 @@ def import_elementtree():
 
     return ET
 
+class Parser(object):
+    element_mapping = {}
+
+    @classmethod
+    def parse(self, body):
+        global parse
+        return parse(body, self.element_mapping)
+        
 try:
     import lxml.etree
 
-    lookup = lxml.etree.ElementNamespaceClassLookup()
-    parser = lxml.etree.XMLParser(resolve_entities=False, strip_cdata=False)
-    parser.setElementClassLookup(lookup)
-
-    # lxml 1.3-compatibility
-    try:
-        ns_lookup = lookup.get_namespace
-    except AttributeError:
-        ns_lookup = lxml.etree.Namespace
-
     class ElementBase(lxml.etree.ElementBase):
-        def _init(self):
-            self._convert_cdata_sections()
-            
         def tostring(self):
             return lxml.etree.tostring(self)
 
@@ -46,27 +42,29 @@ try:
                 before, rest = text.split(start, 1)
                 cdata, after = rest.split(end, 1)
 
-                element = parser.makeelement(
-                    utils.xml_attr('cdata'))
-                element.attrib[utils.tal_attr('cdata')] = ""
+                element = self.makeelement(
+                    utils.xhtml_attr('cdata'))
+                element.attrib[utils.meta_attr('cdata')] = ""
                 element.text = cdata
                 element.tail = after
                 
                 self.text = before
                 self.insert(0, element)
+                element._convert_cdata_sections()
                 
             if start in tail:
                 before, rest = tail.split(start, 1)
                 cdata, after = rest.split(end, 1)
 
-                element = parser.makeelement(
-                    utils.xml_attr('cdata'))
-                element.attrib[utils.tal_attr('cdata')] = ""
+                element = self.makeelement(
+                    utils.xhtml_attr('cdata'))
+                element.attrib[utils.meta_attr('cdata')] = ""
                 self.addnext(element)
 
                 element.text = cdata
                 element.tail = after
                 self.tail = before
+                element._convert_cdata_sections()
                 
         @property
         def _raw_text(self):
@@ -81,12 +79,13 @@ try:
             if self.text in ("", None):
                 return self.text
 
+            
             elements = tuple(self)
             del self[:]
             xml = lxml.etree.tostring(self, encoding='utf-8', with_tail=False)
             self.extend(elements)
-
-            element = parser.makeelement(self.tag, nsmap=self.nsmap)
+                
+            element = self.makeelement(self.tag, nsmap=self.nsmap)
             for attr, value in self.items():
                 element.attrib[attr] = value
 
@@ -119,7 +118,7 @@ try:
             
             # wrap element
             index = parent.index(self)
-            element = parser.makeelement(self.tag, nsmap=self.nsmap)
+            element = self.makeelement(self.tag, nsmap=self.nsmap)
             element.append(self)
             xml = lxml.etree.tostring(element, encoding='utf-8', with_tail=False)
             self.extend(elements)
@@ -140,12 +139,42 @@ try:
             tail = xml[length+tag:-tag-1]
             
             return tail
-            
-    element_factory = parser.makeelement
 
-    def parse(body):
+    def convert_cdata_section(node):
+        parent = node.getparent()
+        if parent is not None:
+            index = parent.index(node)
+            element = node.makeelement(node.tag, nsmap=node.nsmap)
+            element.append(node)
+            xml = lxml.etree.tostring(element, encoding='utf-8', with_tail=False)
+            parent.insert(index, node)
+        else:
+            xml = lxml.etree.tostring(node, encoding='utf-8', with_tail=False)
+            
+        if 'CDATA' in xml:
+            node._convert_cdata_sections()
+            for child in tuple(node):
+                convert_cdata_section(child)
+        
+    def parse(body, element_mapping):
+        lookup = lxml.etree.ElementNamespaceClassLookup()
+        parser = lxml.etree.XMLParser(resolve_entities=False, strip_cdata=False)
+        parser.setElementClassLookup(lookup)
+
+        # lxml 1.3-compatibility
+        try:
+            ns_lookup = lookup.get_namespace
+        except AttributeError:
+            ns_lookup = lxml.etree.Namespace
+
+        for key, mapping in element_mapping.items():
+            ns_lookup(key).update(mapping)
+        
         tree = lxml.etree.parse(StringIO(body), parser)
         root = tree.getroot()
+
+        convert_cdata_section(root)
+        
         return root, tree.docinfo.doctype
 
 except ImportError:
@@ -184,7 +213,7 @@ except ImportError:
         @property
         def nsmap(self):
             # TODO: Return correct namespace map
-            return {None: config.XML_NS}
+            return {None: config.XHTML_NS}
 
         @property
         def prefix(self):
@@ -209,7 +238,8 @@ except ImportError:
                 parent = None
             elem = ET.TreeBuilder.start(self, tag, attrs)
             elem._parent = parent
-
+            elem.makeelement = self._factory
+            
     class XMLParser(ET.XMLParser):
         def __init__(self, **kwargs):
             ET.XMLParser.__init__(self, **kwargs)
@@ -238,33 +268,33 @@ except ImportError:
             self._target.end(name)
 
         def handle_cdata_start(self):
-            self._target.start(utils.xml_attr('cdata'), {
+            self._target.start(utils.xhtml_attr('cdata'), {
                 utils.tal_attr('cdata'): ''})
 
         def handle_cdata_end(self):
-            self._target.end(utils.xml_attr('cdata'))
+            self._target.end(utils.xhtml_attr('cdata'))
             
-    def element_factory(tag, attrs=None, nsmap=None):
-        if attrs is None:
-            attrs = {}
+    def parse(body, element_mapping):
+        def element_factory(tag, attrs=None, nsmap=None):
+            if attrs is None:
+                attrs = {}
 
-        if '{' in tag:
-            ns = tag[tag.find('{')+1:tag.find('}')]
-            ns_tag = tag[tag.find('}')+1:]
-        else:
-            ns = None
-            ns_tag = None
+            if '{' in tag:
+                ns = tag[tag.find('{')+1:tag.find('}')]
+                ns_tag = tag[tag.find('}')+1:]
+            else:
+                ns = None
+                ns_tag = None
 
-        namespace = ns_lookup(ns)
-        factory = namespace.get(ns_tag) or namespace.get(None) or ElementBase
-            
-        element = object.__new__(factory)
-        element.__init__(tag, attrs)
-        return element
+            namespace = element_mapping[ns]
+            factory = namespace.get(ns_tag) or namespace.get(None) or ElementBase
 
-    def parse(body):
+            element = object.__new__(factory)
+            element.__init__(tag, attrs)
+
+            return element
+        
         target = TreeBuilder(element_factory=element_factory)
-
         parser = XMLParser(target=target)
         parser.entity = dict([(name, "&%s;" % name) for name in htmlentitydefs.entitydefs])
         parser.feed(body)

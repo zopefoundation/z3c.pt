@@ -4,6 +4,12 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Substantially reduced compiler overhead for lxml CDATA
+  workaround. [malthe]
+
+- Split out element compiler classes for Genshi and Zope language
+  dialects. [malthe]
+
 - Make lxml a setuptools "extra".  To install with lxml support
   (currently required by Genshi), specify "z3c.pt [lxml]" in
   any references you need to make to the package in buildout or

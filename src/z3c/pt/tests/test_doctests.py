@@ -14,7 +14,8 @@ def setUp(suite):
     zope.configuration.xmlconfig.XMLConfig('configure.zcml', z3c.pt)()
 
 def test_suite():
-    filesuites = ('template.txt', 'translation.txt', 'i18n.txt', 'codegen.txt')
+    filesuites = ('zpt.txt', 'genshi.txt', 'template.txt',
+                  'i18n.txt', 'codegen.txt', 'translation.txt')
     testsuites = ('z3c.pt.translation', 'z3c.pt.clauses', 'z3c.pt.expressions')
 
     return unittest.TestSuite(

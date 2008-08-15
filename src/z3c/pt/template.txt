@@ -7,7 +7,8 @@ z3c.pt.pagetemplate.PageTemplate
 --------------------------------
 
   >>> from z3c.pt import PageTemplate
-
+  >>> from z3c.pt.testing import MockParser
+  
   >>> print PageTemplate("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml">
   ...   Hello World!
@@ -38,7 +39,8 @@ z3c.pt.pagetemplate.ViewPageTemplate
   >>> from z3c.pt import ViewPageTemplate
   
   >>> class ViewPageTemplateView(object):
-  ...     __call__ = ViewPageTemplate(open(path+'/view.pt').read())
+  ...     __call__ = ViewPageTemplate(
+  ...          open(path+'/view.pt').read())
   ...     request = u'request'
   ...     context = u'context'
 
@@ -114,13 +116,15 @@ compiler and the page template classes.
 
 py:match integration
 
+  >>> from z3c.pt.genshi import GenshiParser
+  
   >>> print PageTemplate("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      xmlns:py="http://genshi.edgewall.org">
   ...   <py:match path="xmlns:greeting">Hello ${select('@name')[0]}!</py:match>
   ...   <greeting name="World" />
   ... </div>
-  ... """)()
+  ... """, parser=GenshiParser)()
   <div>
     Hello World!
   <BLANKLINE>

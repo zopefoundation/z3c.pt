@@ -3,6 +3,7 @@ import sys
 import macro
 import codegen
 import traceback
+import zpt
 
 from z3c.pt.config import DEBUG_MODE, PROD_MODE
 from z3c.pt import filecache
@@ -17,9 +18,10 @@ class BaseTemplate(object):
 
     registry = {}
     cachedir = None
+    parser = zpt.ZopePageTemplateParser
     default_expression = 'python'
 
-    def __init__(self, body, default_expression=None):
+    def __init__(self, body, parser=None, default_expression=None):
         self.body = body
         self.signature = hash(body)
         self.source = ''
@@ -27,6 +29,9 @@ class BaseTemplate(object):
         if default_expression:
             self.default_expression = default_expression
 
+        if parser:
+            self.parser = parser
+            
     @property
     def translate(self):
         return NotImplementedError("Must be implemented by subclass.")
@@ -37,7 +42,7 @@ class BaseTemplate(object):
 
     def cook(self, params, macro=None):
         generator = self.translate(
-            self.body, macro=macro, params=params,
+            self.body, self.parser, macro=macro, params=params,
             default_expression=self.default_expression)
         
         source, _globals = generator()
@@ -127,8 +132,9 @@ class BaseTemplateFile(BaseTemplate):
     default if nothing is passed."""
 
     def __init__(self, filename, auto_reload=False, cachedir=None,
-                 default_expression=None):
-        BaseTemplate.__init__(self, None, default_expression=default_expression)
+                 parser=None, default_expression=None):
+        BaseTemplate.__init__(
+            self, None, parser=parser, default_expression=default_expression)
         self.auto_reload = auto_reload
         self.cachedir = cachedir
 

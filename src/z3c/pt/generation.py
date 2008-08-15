@@ -210,7 +210,7 @@ class CodeIO(BufferIO):
                 self.begin(clause)
         else:
             clauses.begin(self)
-
+                
     def end(self, clauses):
         if isinstance(clauses, (list, tuple)):
             for clause in reversed(clauses):

@@ -3,30 +3,29 @@ Translation
 
 This document contains functional template tests.
 
-  >>> from z3c.pt.testing import render
-  >>> from z3c.pt.translation import translate_xml
+  >>> from z3c.pt.testing import render_xhtml
 
 XHTML
 -----
 
 :: Plain HTML document
 
-  >>> print render("""\
+  >>> print render_xhtml("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml">
   ...   Hello World!
-  ... </div>""", translate_xml)
+  ... </div>""")
     <div>
       Hello World!
     </div>
 
 :: Setting DOCTYPE
 
-  >>> print render("""\
+  >>> print render_xhtml("""\
   ... <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
   ...    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
   ... <html xmlns="http://www.w3.org/1999/xhtml">
   ...   Hello World!
-  ... </html>""", translate_xml)
+  ... </html>""")
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
     <html>
       Hello World!
@@ -34,77 +33,29 @@ XHTML
 
 :: Unicode 
 
-  >>> print render("""\
+  >>> print render_xhtml("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml">
   ...   La Peña
   ...   <img alt="La Peña" />
-  ... </div>""", translate_xml)
+  ... </div>""")
     <div>
       La Peña
       <img alt="La Peña" />
     </div>
 
 :: CDATA blocks
-  >>> print render("""\
+  >>> print render_xhtml("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml">
   ...   /* <![CDATA[ */
   ...   This is protected
   ...   /* ]]> */
   ...   <span>Not protected</span> <![CDATA[ This is protected ]]>
-  ... </div>""", translate_xml)
+  ... </div>""")
     <div>
       /* <![CDATA[ */
       This is protected
       /* ]]> */
       <span>Not protected</span> <![CDATA[ This is protected ]]>
-    </div>
-
-:: Variables containing quotes
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml">
-  ...   <strong>"${quote}"</strong>
-  ... </div>""", translate_xml, quote="Hello, World!")
-    <div>
-      <strong>"Hello, World!"</strong>
-    </div>
-  
-:: Variables containing markup
-
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml">
-  ...   ${message}
-  ... </div>""", translate_xml, message="Hello, <em>World</em>!")
-    <div>
-      Hello, <em>World</em>!
-    </div>
-
-:: Variable expansion must preserve XML validity
-
-  >>> from z3c.pt import config
-  >>> config.VALIDATION = True
-  
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml">
-  ...   ${message}
-  ... </div>""", translate_xml, message="Hello, <em>World!")
-  Traceback (most recent call last):
-   ...
-  ExpatError: ...
-  
-  >>> config.VALIDATION = False
-  
-:: Unless we are in a CDATA block
-
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml">
-  ... /* <![CDATA[ */
-  ...   ${message}
-  ... /* ]]> */
-  ... </div>""", translate_xml, message="Hello, <em>World!")
-    <div>
-      /* <![CDATA[ */
-      Hello, <em>World!
-      /* ]]> */
     </div>
 
 Literals
@@ -113,12 +64,12 @@ Literals
 :: Named entities output literally (note doctype is required to prevent
    lxml from raising a XMLSyntaxError :-( )
 
-  >>> print render("""\
+  >>> print render_xhtml("""\
   ... <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
   ...    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
   ... <html xmlns="http://www.w3.org/1999/xhtml">
   ...   Hello &nbsp; World!
-  ... </html>""", translate_xml)
+  ... </html>""")
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
     <html>
       Hello &nbsp; World!
@@ -126,11 +77,11 @@ Literals
 
 :: Processing instructions output literally
 
-  >>> print render("""\
+  >>> print render_xhtml("""\
   ... <html xmlns="http://www.w3.org/1999/xhtml">
   ...   <?xml-stylesheet href="classic.xsl" type="text/xml"?>
   ...   Hello World!
-  ... </html>""", translate_xml)
+  ... </html>""")
     <html>
       <?xml-stylesheet href="classic.xsl" type="text/xml"?>
       Hello World!
@@ -138,589 +89,18 @@ Literals
 
 :: Literal comments (without embedded expressions) output literally
 
-  >>> print render("""\
+  >>> print render_xhtml("""\
   ... <html xmlns="http://www.w3.org/1999/xhtml">
   ...   <!-- hello world -->
-  ... </html>""", translate_xml)
+  ... </html>""")
     <html>
       <!-- hello world -->
     </html>
-
-Zope TAL
---------
-
-:: Namespace elements
-
-  >>> print render("""\
-  ... <tal:block xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   Hello, world!
-  ... </tal:block>""", translate_xml)
-  <BLANKLINE>
-    Hello, world!
-  <BLANKLINE>
-
-tal:define, tal:attributes, tal:contents    
-  
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   <span id="test"
-  ...         class="dummy"
-  ...         tal:define="a 'abc'"
-  ...         tal:attributes="class 'def' + a; style 'hij'"
-  ...         tal:content="a + 'ghi'" />
-  ...   <span tal:replace="'Hello World!'">Hello Universe!</span>
-  ...   <span tal:replace="'Hello World!'"><b>Hello Universe!</b></span>
-  ...   <span tal:content="None" />
-  ... </div>""", translate_xml)
-    <div>
-      <span id="test" style="hij" class="defabc">abcghi</span>
-      Hello World!
-      Hello World!
-      <span></span>
-    </div>
-
-tal:repeat
-    
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   <ul>
-  ...     <li tal:repeat="i range(5)"><span tal:replace="'Item ' + str(i) + ')'" /></li>
-  ...   </ul>
-  ... </div>""", translate_xml)
-    <div>
-      <ul>
-        <li>Item 0)</li>
-        <li>Item 1)</li>
-        <li>Item 2)</li>
-        <li>Item 3)</li>
-        <li>Item 4)</li>
-      </ul>
-    </div>
-
-tal:repeat (repeat-variable)
-
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   <ul>
-  ...     <li tal:repeat="i range(3)"><span tal:replace="str(i) + ' ' + str(repeat['i'].even())" /></li>
-  ...   </ul>
-  ... </div>""", translate_xml)
-    <div>
-      <ul>
-        <li>0 True</li>
-        <li>1 False</li>
-        <li>2 True</li>
-      </ul>
-    </div>
-
-tal:condition
-
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   <div tal:condition="True">
-  ...     Show me!
-  ...   </div>
-  ...   <div tal:condition="False">
-  ...     Do not show me!
-  ...   </div>
-  ... </div>""", translate_xml)
-    <div>
-      <div>
-        Show me!
-      </div>
-    </div>
-
-:: HTML comments
-
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   <!-- a comment -->
-  ...   <!-- a multi-
-  ...        line comment -->
-  ...   <!-- a comment with an ${'expression'} -->
-  ... </div>""", translate_xml)
-    <div>
-      <!-- a comment -->
-      <!-- a multi-
-           line comment -->
-      <!-- a comment with an expression -->
-    </div>
-
-:: TAL elements with namespace prefix
-
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   <tal:example replace="'Hello World!'" />
-  ...   <tal:div content="'Hello World!'" />
-  ...   <tal:multiple repeat="i range(3)" replace="i" />
-  ...   <tal:div condition="True">True</tal:div>
-  ... </div>""", translate_xml)
-    <div>
-      Hello World!
-      Hello World!
-      0
-      1
-      2
-      True
-    </div>
-
-tal:omit-tag
-
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   <p tal:omit-tag="">No paragraph here.</p>
-  ...   <p tal:omit-tag="True">No paragraph here either.</p>
-  ...   <p tal:omit-tag="False">A paragraph here.</p>
-  ... </div>""", translate_xml)
-    <div>
-      No paragraph here.
-      No paragraph here either.
-      <p>A paragraph here.</p>
-    </div>
-
-:: Unicode with dynamic attributes and content
-    
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   <img tal:attributes="title '%sHello%s' % (chr(60), chr(62))" />
-  ...   <span tal:replace="structure '%sbr /%s' % (chr(60), chr(62))" />
-  ...   <span tal:replace="'%sbr /%s' % (chr(60), chr(62))" />
-  ...   <span tal:content="unicode('La Pe\xc3\xb1a', 'utf-8')" />
-  ... </div>""", translate_xml)
-    <div>
-      <img title="&lt;Hello&gt;" />
-      <br />
-      &lt;br /&gt;
-      <span>La Peña</span>
-    </div>
-
-:: Using the "path:" expression
-
-  >>> class Test(object):
-  ...     greeting = u'Hello'
-  
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   <span tal:replace="path: test1/greeting" />
-  ...   <span tal:replace="path: test2/greeting" />
-  ... </div>""", translate_xml, request=object(),
-  ... test1={'greeting': u'Hello'}, test2=Test())
-  <div>
-    Hello
-    Hello
-  </div>
-
-:: Using the "string:" expression
-
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   <span tal:replace="string:${greeting}, world!" />
-  ...   <img tal:attributes="alt string:Leonardo da Vinci;; Musee du Louvre, 1503;
-  ...                        title string:Mona Lisa" />
-  ... </div>""", translate_xml, request=object(), greeting=u'Hello')
-  <div>
-    Hello, world!
-    <img alt="Leonardo da Vinci; Musee du Louvre, 1503" title="Mona Lisa" />
-  </div>
-
-:: Setting the default expression
-
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   <div tal:default-expression="path">
-  ...     <span tal:replace="test/greeting" />
-  ...   </div>
-  ... </div>""", translate_xml, request=object(), test={'greeting': u'Hello'})
-  <div>
-    <div>
-      Hello
-    </div>
-  </div>
-
-:: Using different expressions with try-except operator (|)
-  
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   <tal:path-expression-testing 
-  ...         define="request object();
-  ...                 mydict {'a': 1, 'c': {'a': 2}}">
-  ...       <div tal:default-expression="path">
-  ...          <span tal:replace="mydict/a" />
-  ...          <span tal:replace="mydict/b|mydict/a" />
-  ...          <span tal:replace="mydict/c/a" />
-  ...          <span tal:replace="python: 5+5" />
-  ...       </div>
-  ...       <span tal:replace="path: mydict/a" />
-  ...       <span tal:replace="python: 1+1" />
-  ...       <span tal:replace="path: mydict/b|True" />
-  ...       <span tal:replace="int('a')|path: mydict/a" />
-  ...   </tal:path-expression-testing>
-  ... </div>""", translate_xml)
-  <div>
-  <BLANKLINE>
-        <div>
-           1
-           1
-           2
-           10
-        </div>
-        1
-        2
-        True
-        1
-  <BLANKLINE>
-  </div>
-
-:: Using TAL pragmas "nocall" and "structure"
-
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   <span tal:default-expression="path"
-  ...         tal:replace="structure nocall: dir" />
-  ...   <span tal:replace="structure dir" />
-  ... </div>""", translate_xml, request=object())
-    <div>
-      <built-in function dir>
-      <built-in function dir>
-    </div>
-
-METAL
------
-
-metal:define-macro, metal:use-macro
-
-  >>> body = """\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal"
-  ...      xmlns:metal="http://xml.zope.org/namespaces/metal">
-  ...   <div class="greeting" metal:define-macro="greeting">
-  ...     Hello, ${name}!
-  ...   </div>
-  ...   <div tal:define="name 'world'">
-  ...     <div metal:use-macro="template.macros['greeting']" />
-  ...   </div>  
-  ... </div>"""
-
-  >>> from z3c.pt.testing import MockTemplate
-  >>> template = MockTemplate(body, translate_xml)
-  >>> print render(body, translate_xml, template=template)
-  <div>
-    <div>
-      <div class="greeting">
-        Hello, world!
-      </div>
-    </div>  
-  </div>
-
-metal:define-slot, metal:fill-slot
-
-  >>> body = """\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal"
-  ...      xmlns:metal="http://xml.zope.org/namespaces/metal">
-  ...   <div metal:define-macro="greeting">
-  ...     Hello, <b class="name" metal:define-slot="name">stranger!</b>
-  ...   </div>
-  ...   <div metal:use-macro="template.macros['greeting']">
-  ...     <span metal:fill-slot="name">earth!</span>
-  ...   </div>
-  ...   <div metal:use-macro="template.macros['greeting']">
-  ...     <!-- display fallback greeting -->
-  ...   </div>
-  ...   <div metal:use-macro="template.macros['greeting']">
-  ...     <span metal:fill-slot="dummy">dummy!</span>
-  ...   </div>
-  ... </div>"""
-
-  >>> from z3c.pt.testing import MockTemplate
-  >>> template = MockTemplate(body, translate_xml)
-  >>> print render(body, translate_xml, template=template)
-  <div>
-  <BLANKLINE>
-      <div>
-      Hello, <b class="name">earth!</b>
-    </div>
-  <BLANKLINE>
-  <BLANKLINE>
-      <div>
-      Hello, <b class="name">stranger!</b>
-    </div>
-  <BLANKLINE>
-  <BLANKLINE>
-      <div>
-      Hello, <b class="name">stranger!</b>
-    </div>
-  <BLANKLINE>
-  </div>
-
-Genshi
-------
-
-py:if
-
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
-  ...   <div py:if="False">
-  ...     <p>Bar</p>
-  ...   </div>
-  ...   <div py:if="True">
-  ...     <p>Foo</p>
-  ...   </div>
-  ...   <py:if test="False">
-  ...     <b>Bar</b>
-  ...   </py:if>
-  ...   <py:if test="True">
-  ...     <b>Foo</b>
-  ...   </py:if>
-  ... </div>""", translate_xml)
-  <div>
-    <div>
-      <p>Foo</p>
-    </div>
-  <BLANKLINE>
-      <b>Foo</b>
-  <BLANKLINE>
-  </div>
-
-py:choose, py:when, py:otherwise
-
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
-  ...   <div py:choose="">
-  ...     <span py:when="0 == 1">0</span>
-  ...     <span py:when="1 == 1">1</span>
-  ...     <div>
-  ...       <span py:when="2 == 2">2</span>
-  ...       <span py:when="2 == 3">3</span>
-  ...       <div py:choose="1">
-  ...          <b py:when="1">3</b>
-  ...          <b py:when="2">4</b>
-  ...       </div>
-  ...     </div>
-  ...     <span py:otherwise="">3</span>
-  ...     <div py:choose="1">
-  ...       <span py:when="0">1</span>
-  ...       <span py:otherwise="">1</span>
-  ...     </div>
-  ...     <div py:choose="">
-  ...       <span py:when="0 == 1">1</span>
-  ...       <span py:otherwise="">2</span>
-  ...     </div>
-  ...   </div>
-  ... </div>""", translate_xml)
-  <div>
-    <div>
-      <span>1</span>
-      <div>
-        <span>2</span>
-        <div>
-           <b>3</b>
-           </div>
-      </div>
-      <div>
-        <span>1</span>
-      </div>
-      <div>
-        <span>2</span>
-      </div>
-    </div>
-  </div>
-
-py:for
-
-  >>> print render("""\
-  ... <ul xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
-  ...   <li py:for="item in range(3)">${item}</li>
-  ...  <py:for each="item in range(3, 5)">
-  ...    <li>${item}</li>
-  ...  </py:for>
-  ... </ul>""", translate_xml)
-  <ul>
-    <li>0</li>
-  <li>1</li>
-  <li>2</li>
-  <li>3</li>
-  <li>4</li>
-  </ul>
-
-py:def
-
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
-  ...  <p py:def="greeting(name)" class="greeting">
-  ...    Hello, ${name}!
-  ...  </p>
-  ...  ${greeting('world')}
-  ...  ${greeting('everyone else')}
-  ...  <py:def function="goodbye(name)">
-  ...    <p class="goodbye">Goodbye, ${name}!</p>
-  ...  </py:def>
-  ...  ${goodbye('world')}
-  ...  ${goodbye('everyone')}  
-  ... </div>""", translate_xml)
-  <div>
-   <p class="greeting">
-     Hello, world!
-   </p>
-  <BLANKLINE>
-   <p class="greeting">
-     Hello, everyone else!
-   </p>
-  <BLANKLINE>
-  <BLANKLINE>
-     <p class="goodbye">Goodbye, world!</p>
-  <BLANKLINE>
-  <BLANKLINE>
-  <BLANKLINE>
-     <p class="goodbye">Goodbye, everyone!</p>
-  <BLANKLINE>
-  <BLANKLINE>
-  </div>
-
-py:with
-
-  >>> def quote():
-  ...     return dict(author=u"Some name", quote=u"Some random quote")
-     
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
-  ...   <span py:with="x=2; y=7; z=x+10">${x} ${y} ${z}</span>
-  ...   <py:with vars="x=4; y=3; z=x+5">${x} ${y} ${z}</py:with>
-  ...   <blockquote py:with="q=quote()">
-  ...       "${q["quote"]} <em>${q["author"]}</em>
-  ...   </blockquote>
-  ... </div>""", translate_xml, quote=quote)
-  <div>
-    <span>2 7 12</span>
-    4 3 9
-    <blockquote>
-        "Some random quote <em>Some name</em>
-    </blockquote>
-  </div>
-    
-py:attrs
-
-  >>> print render("""\
-  ... <ul xmlns="http://www.w3.org/1999/xhtml"
-  ...     xmlns:py="http://genshi.edgewall.org">
-  ...   <li class="expand" py:attrs="{'class': 'collapse'}">Bar</li>
-  ... </ul>""", translate_xml)
-  <ul>
-    <li class="collapse">Bar</li>
-  </ul>
-
-py:content, py:replace
-
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
-  ...   <span py:content="'Hello, world!'" />
-  ...   <span py:replace="'Goodbye, world!'" />
-  ... </div>""", translate_xml)
-  <div>
-    <span>Hello, world!</span>
-    Goodbye, world!
-  </div>
-
-py:strip
-
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
-  ...    <span py:strip="True"><b>foo</b></span>
-  ... </div>""", translate_xml)
-  <div>
-     <b>foo</b>
-  </div>
-
-py:match
-
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
-  ...   <span py:match="xmlns:greeting">
-  ...     Hello, ${select('@name')[0]}!
-  ...   </span>
-  ...   <py:match path="xmlns:farewell">
-  ...      <span>Goodbye, ${select('@name')[0]}!</span>
-  ...   </py:match>
-  ...   <greeting name="dude" />
-  ...   <farewell name="dude" />
-  ... </div>""", translate_xml)
-  <div>
-    <span>
-      Hello, dude!
-    </span>
-  <BLANKLINE>
-  <BLANKLINE>
-       <span>Goodbye, dude!</span>
-  <BLANKLINE>
-  <BLANKLINE>
-  </div>
-
-:: Genshi variable interpolation (${<exp>} notation)
-
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   <span>inter${'pol' + 'ati'}on</span>is ${int('test') | 'convenient'}!
-  ...   <span>${'a'}${'b'}${'c'} ${'d'}</span>
-  ...   <span tal:define="hello 'Hello'" class="${hello} World!" />
-  ...   <span class="my-${'class'} item${'Last'}" />
-  ...   <span style="position: ${'abs'}olute"
-  ...         class="my-${int('test') | 'class'} item${'Last'}" />
-  ... </div>""", translate_xml)
-    <div>
-      <span>interpolation</span>is convenient!
-      <span>abc d</span>
-      <span class="Hello World!" />
-      <span class="my-class itemLast" />
-      <span style="position: absolute" class="my-class itemLast" />
-    </div>
-
-:: Genshi variable interpolation and unicode values
-    
-  >>> print render("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
-  ...   <img alt="${'La Peña'}" />
-  ...   <img alt="Hello ${'La Peña'}" />
-  ...   <img alt="La Peña, oh ${'La Peña'}" />
-  ...   ${unicode('La Pe\xc3\xb1a', 'utf-8').encode('utf-8')}
-  ...   <img alt="${unicode('La Pe\xc3\xb1a', 'utf-8').encode('utf-8')}" />
-  ...   <img alt="Hello ${unicode('La Pe\xc3\xb1a', 'utf-8').encode('utf-8')}!" />
-  ... </div>""", translate_xml)
-    <div>
-      <img alt="La Peña" />
-      <img alt="Hello La Peña" />
-      <img alt="La Peña, oh La Peña" />
-      La Peña
-      <img alt="La Peña" />
-      <img alt="Hello La Peña!" />
-    </div>
   
 Text templates
 --------------
 
-  >>> from z3c.pt.translation import translate_text
+  >>> from z3c.pt.testing import render_text
 
 An example with a CSS stylesheet document:
   
@@ -729,7 +109,7 @@ An example with a CSS stylesheet document:
   ...    background: url(${'http://nohost/plone'}/logo.gif) no-repeat;
   ... }"""
 
-  >>> print render(css, translate_text)
+  >>> print render_text(css)
   #some-region {
      background: url(http://nohost/plone/logo.gif) no-repeat;
   }
@@ -739,7 +119,7 @@ A javascript document that prints out HTML:
   >>> js = """\
   ... print '<div class="description">Hello ${'World!'}</div>';"""
 
-  >>> print render(js, translate_text)
+  >>> print render_text(js)
   print '<div class="description">Hello World!</div>';
 
 Error handling
@@ -752,7 +132,7 @@ No default namespace declaration:
   A default namespace must be explicitly declared for the parser to work.
   
   >>> body = '<br />'
-  >>> render(body, translate_xml)
+  >>> render_xhtml(body)
   Traceback (most recent call last):
     ...
   ValueError: Must define valid namespace for tag: 'br.'
@@ -761,7 +141,7 @@ Bad XML
   We expect the xml-parser to raise an exception.
   
   >>> body = '<div xmlns="http://www.w3.org/1999/xhtml"'
-  >>> render(body, translate_xml)
+  >>> render_xhtml(body)
   Traceback (most recent call last):
     ...
   XMLSyntaxError: Couldn't find end of Start Tag div line 1, line 1, column 11
@@ -775,7 +155,7 @@ Missing namespace definition:
   ... <div xmlns="http://www.w3.org/1999/xhtml" tal:content="'Hello World'" />
   ... """
 
-  >>> print render(body, translate_xml)
+  >>> print render_xhtml(body)
   Traceback (most recent call last):
     ...
   XMLSyntaxError: Namespace prefix tal for content on div is not defined, line 1, column 23

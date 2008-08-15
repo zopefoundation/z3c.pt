@@ -110,11 +110,29 @@ class repeatdict(dict):
             
         return value
 
-def xml_attr(name):
-    return "{%s}%s" % (config.XML_NS, name)
+def get_attributes_from_namespace(element, namespace):
+    if element.nsmap.get(element.prefix) == namespace:
+        return dict([
+            (name, value) for (name, value) in element.attrib.items() \
+            if '{' not in name])
+
+    return dict([
+        (name, value) for (name, value) in element.attrib.items() \
+        if name.startswith('{%s}' % namespace)])
+
+def get_namespace(element):
+    if '}' in element.tag:
+        return element.tag.split('}')[0][1:]
+    return element.nsmap[None]
+
+def xhtml_attr(name):
+    return "{%s}%s" % (config.XHTML_NS, name)
 
 def tal_attr(name):
     return "{%s}%s" % (config.TAL_NS, name)
+
+def meta_attr(name):
+    return "{%s}%s" % (config.META_NS, name)
 
 def metal_attr(name):
     return "{%s}%s" % (config.METAL_NS, name)
