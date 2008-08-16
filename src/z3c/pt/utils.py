@@ -93,8 +93,12 @@ class repeatdict(dict):
             length = None
             
         try:
-            iterator = iterable.__iter__()
-        except AttributeError:
+            # We used to do iterable.__iter__() but, e.g. BTreeItems
+            # objects are iterable (via __getitem__) but don't possess
+            # an __iter__.  call iter(iterable) instead to determine
+            # iterability.
+            iterator = iter(iterable)
+        except TypeError:
             raise TypeError(
                 "Can only repeat over an iterable object (%s)." % iterable)
         
