@@ -127,7 +127,7 @@ class GenshiElement(translation.Element, translation.VariableInterpolation):
 
         # Step 2: Process "py:match" macros
         for element in self:
-            if element.py_match is None:
+            if getattr(element, 'py_match', None) is None:
                 continue
             
             nsmap = element.nsmap.copy()
