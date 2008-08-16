@@ -235,7 +235,6 @@ py:match
 :: Simple variable names do not need { .. }. From `py:with specs`_.
 
 
-
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      xmlns:py="http://genshi.edgewall.org">
@@ -314,6 +313,23 @@ py:match
       Hello, <em>World!
       /* ]]> */
     </div>
+
+:: z3c.pt used to forget to output the ]; after the for loop
+
+  >>> print render_genshi("""\
+  ... <script xmlns="http://www.w3.org/1999/xhtml"
+  ...         xmlns:py="http://genshi.edgewall.org"
+  ...         type="text/javascript">
+  ...  var brands = [
+  ...  <py:for each="brand in []">
+  ...    { value :  "${brand['id']}", "title" : "${brand['title']}" },
+  ...  </py:for>
+  ...  ];
+  ... </script>""")
+  <script type="text/javascript">
+  var brands = [
+  ];
+  </script>
 
 
 .. _py:with specs: http://genshi.edgewall.org/wiki/Documentation/0.4.x/xml-templates.html#py-with
