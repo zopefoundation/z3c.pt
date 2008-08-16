@@ -149,9 +149,27 @@ py:with
         "Some random quote <em>Some name</em>
     </blockquote>
   </div>
-    
-py:attrs
 
+    
+  >>> print render_genshi("""\
+  ... <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  ...     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+  ... <html xmlns="http://www.w3.org/1999/xhtml"
+  ...       xmlns:py="http://genshi.edgewall.org">
+  ...  <body> py:with="bla=1">
+  ...     <em>${bla}</em>
+  ...   </body>
+  ... </html>""")
+  <html>
+    <body>
+      <em>1</em>
+    </body>
+  </html>
+  
+  
+  
+py:attrs
+  
   >>> print render_genshi("""\
   ... <ul xmlns="http://www.w3.org/1999/xhtml"
   ...     xmlns:py="http://genshi.edgewall.org">
