@@ -7,7 +7,7 @@ class TemplateLoader(object):
     """Template loader tool.
     """
 
-    def __init__(self, search_path=None, auto_reload=False, cachedir=None):
+    def __init__(self, search_path=None, auto_reload=False, cachedir=None, parser=None):
         if search_path is None:
             search_path = []
         if isinstance(search_path, basestring):
@@ -15,6 +15,7 @@ class TemplateLoader(object):
         self.search_path = search_path
         self.auto_reload = auto_reload
         self.cachedir = cachedir
+        self.parser = parser
         if cachedir is not None:
             if not os.path.isdir(cachedir):
                 raise ValueError("Invalid cachedir")
@@ -28,7 +29,7 @@ class TemplateLoader(object):
             path = os.path.join(path, filename)
             try:
                 return klass(path, auto_reload=self.auto_reload,
-                                cachedir=self.cachedir)
+                                cachedir=self.cachedir, parser=self.parser)
             except OSError, e:
                 if e.errno != errno.ENOENT:
                     raise
