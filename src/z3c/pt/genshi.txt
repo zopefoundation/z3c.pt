@@ -248,6 +248,20 @@ py:match
       <span style="position: absolute" class="my-class itemLast" />
     </div>
 
+
+:: Simple variable names do not need { .. }
+
+  >>> print render_genshi("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:py="http://genshi.edgewall.org">
+  ...   <span py:with="y=7; z=x+10">$x $y $z</span>
+  ... </div>""", x=42)
+  <div>
+    <span>42 7 52</span>
+  </div>
+
+
+
 :: Genshi variable interpolation and unicode values
     
   >>> print render_genshi("""\
