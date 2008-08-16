@@ -156,7 +156,7 @@ py:with
   ...     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
   ... <html xmlns="http://www.w3.org/1999/xhtml"
   ...       xmlns:py="http://genshi.edgewall.org">
-  ...  <body> py:with="bla=1">
+  ...  <body py:with="bla=1">
   ...     <em>${bla}</em>
   ...   </body>
   ... </html>""")
@@ -249,7 +249,9 @@ py:match
     </div>
 
 
-:: Simple variable names do not need { .. }
+:: Simple variable names do not need { .. }. From `py:with specs`_.
+
+
 
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
@@ -329,3 +331,7 @@ py:match
       Hello, <em>World!
       /* ]]> */
     </div>
+
+
+.. _py:with specs: http://genshi.edgewall.org/wiki/Documentation/0.4.x/xml-templates.html#py-with
+
