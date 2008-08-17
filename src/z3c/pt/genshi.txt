@@ -266,13 +266,15 @@ py:match
       <img alt="Hello La Peña!" />
     </div>
 
-:: Unicode in parameters
+:: Unicode combined with attribute expansion
 
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml">
+  ...   <img alt="La Peña" />
   ...   <img alt="${alt}" />
   ... </div>""", alt=u"La Peña")
   <div xmlns="http://www.w3.org/1999/xhtml">
+    <img alt="La Peña" />
     <img alt="La Peña" />
   </div>
 
