@@ -278,7 +278,7 @@ py:match
 
 
 :: Variables containing quotes
-  >> print render_xhtml("""\
+  >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml">
   ...   <strong>"${quote}"</strong>
   ... </div>""", quote="Hello, World!")
