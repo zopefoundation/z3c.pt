@@ -29,7 +29,7 @@ class TestNumericEntityPlusUnicodeParameterInsertedLiterally(unittest.TestCase,
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html>
         foo \xc2\xa9
-        </html>"""
+        </html>""".decode('utf-8')
         t = PageTemplate(body)
         self.assertEqual(norm(t.render(foo=u'foo')), norm(expected))
 
