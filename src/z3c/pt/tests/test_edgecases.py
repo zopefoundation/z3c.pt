@@ -62,6 +62,31 @@ class TestUnicodeAttributeLiteral(unittest.TestCase, PlacelessSetup):
         c = unicode('\xc2\xa9', 'utf-8')
         self.assertEqual(norm(t.render(foo=c)), norm(expected))
 
+    def test_torture(self):
+        import z3c.pt
+        from z3c.pt.genshi import GenshiParser
+        from zope.configuration import xmlconfig
+        xmlconfig.file('configure.zcml', z3c.pt)
+        from z3c.pt.pagetemplate import PageTemplate
+        body = unicode("""\
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        <html xmlns="http://www.w3.org/1999/xhtml">
+        <title>\xc2\xa9n</title>
+        <div id="${foo}"/>
+        </html>
+        """, 'utf-8')
+        expected = """\
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        <html>
+        <title>\xc2\xa9</title>
+        <div id="${foo}"/>
+        </html>"""
+        t = PageTemplate(body, parser=GenshiParser())
+        c = unicode('\xc2\xa9', 'utf-8')
+        self.assertEqual(norm(t.render(foo=c)), norm(expected))
+
 def norm(s):
     return s.replace(' ', '').replace('\n', '')
 
