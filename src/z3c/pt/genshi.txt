@@ -157,9 +157,11 @@ py:attrs
   ... <ul xmlns="http://www.w3.org/1999/xhtml"
   ...     xmlns:py="http://genshi.edgewall.org">
   ...   <li class="expand" py:attrs="{'class': 'collapse'}">Bar</li>
-  ... </ul>""")
+  ...   <li class="expand" py:attrs="d">Bar</li>
+  ... </ul>""", d=dict({'class': u'\u1234'}))
   <ul>
     <li class="collapse">Bar</li>
+    <li class="ሴ">Bar</li>
   </ul>
 
 py:content, py:replace
@@ -234,7 +236,6 @@ py:match
 
 :: Simple variable names do not need { .. }. From `py:with specs`_.
 
-
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      xmlns:py="http://genshi.edgewall.org">
@@ -243,8 +244,6 @@ py:match
   <div>
     <span>42 7 52</span>
   </div>
-
-
 
 :: Genshi variable interpolation and unicode values
     
@@ -344,10 +343,8 @@ py:match
   ];
   </script>
 
-
 :: Both py:for and ${..} should be ignored in a comment, or both should be
    handled.
-
 
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
