@@ -346,7 +346,7 @@ py:match
 :: Both py:for and ${..} should be ignored in a comment, or both should be
    handled.
 
-  >> print render_genshi("""\
+  >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...       xmlns:py="http://genshi.edgewall.org">
   ... <!--
@@ -393,12 +393,6 @@ py:match
   });
   </script>
   </div>
-
-:: XML Inclusions (XIncludes)
-
-Genshi supports inclusion of other templates using the XInclude
-specification.
-
 
   
 .. _py:with specs: http://genshi.edgewall.org/wiki/Documentation/0.4.x/xml-templates.html#py-with
