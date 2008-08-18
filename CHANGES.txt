@@ -4,6 +4,8 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Fixed off-by-one bug in interpolation routine. [malthe]
+
 - The repeat-clause should not output tail with every iteration. [malthe]
 
 - UTF-8 encode Unicode attribute literals. [chrism]

@@ -368,7 +368,7 @@ class VariableInterpolation:
                 t.update()
 
                 if m.start() == 0:
-                    self.text = text[1:m.start()+1]
+                    self.text = text[2-len(m.group('prefix')):m.start()+1]
                 else:
                     self.text = text[:m.start()+1]
 
