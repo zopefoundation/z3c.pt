@@ -68,7 +68,7 @@ class TestUnicodeAttributeLiteral(unittest.TestCase, PlacelessSetup):
         from zope.configuration import xmlconfig
         xmlconfig.file('configure.zcml', z3c.pt)
         from z3c.pt.pagetemplate import PageTemplate
-        body = unicode("""\
+        body = """\
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml"
@@ -76,7 +76,7 @@ class TestUnicodeAttributeLiteral(unittest.TestCase, PlacelessSetup):
         <title>\xc2\xa9n</title>
         <div id="${foo}" py:attrs="dict(label=foo)"/>
         </html>
-        """, 'utf-8')
+        """
         expected = """\
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
