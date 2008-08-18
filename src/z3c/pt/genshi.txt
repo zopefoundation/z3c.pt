@@ -374,7 +374,7 @@ py:match
   ... <script type="text/javascript">
   ... var brands = [
   ...     <py:for each="brand in brands">
-  ...         { value :  "${brand['id']}", "title" : "${brand['title']}" },
+  ...         { value :  "${brand['id']}", title : "${brand['title']}" },
   ...     </py:for>
   ...     ];
   ...
@@ -386,12 +386,12 @@ py:match
   <div>
   <script type="text/javascript">
     var brands = [
-      { value : "1", "title" : "One" },
-      { value : "2", "title" : "Two" },
-      { value : "3", "title" : "Three" },
+      { value : "1", title : "One" },
+      { value : "2", title : "Two" },
+      { value : "3", title : "Three" },
       ];
   <BLANKLINE>
-  $(document.read(function() {
+  $(document.ready(function() {
     alert("Hello, World");
   });
   </script>
