@@ -272,8 +272,8 @@ py:match
   ... <div xmlns="http://www.w3.org/1999/xhtml">
   ...   <img alt="La Peña" />
   ...   <img alt="${alt}" />
-  ... </div>""", alt=u"La Peña")
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  ... </div>""", alt=unicode("La Pe\xc3\xb1a", 'utf-8'))
+  <div>
     <img alt="La Peña" />
     <img alt="La Peña" />
   </div>
