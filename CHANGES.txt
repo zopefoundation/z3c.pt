@@ -4,6 +4,8 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- UTF-8 encode Unicode attribute literals. [chrism]
+
 - Substantially reduced compiler overhead for lxml CDATA
   workaround. [malthe]
 

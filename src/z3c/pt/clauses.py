@@ -537,7 +537,7 @@ class Tag(object):
                 stream.write("if isinstance(%s, unicode):" % temp)
                 stream.indent()
                 stream.write("_write(' %s=\"')" % attribute)
-                stream.write("_esc = %s" % temp)
+                stream.write("_esc = %s.encode('utf-8')" % temp)
                 stream.escape("_esc")
                 stream.write("_write(_esc)")
                 stream.write("_write('\"')")
