@@ -46,8 +46,7 @@ class BaseTemplate(object):
             default_expression=self.default_expression)
         
         source, _globals = generator()
-        
-        suite = codegen.Suite(source)
+        suite = codegen.Suite(source, _globals.keys())
 
         if self.cachedir:
             self.registry.store(params, suite.code)

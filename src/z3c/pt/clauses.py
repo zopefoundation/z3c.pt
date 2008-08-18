@@ -200,7 +200,7 @@ class Define(object):
     Tuple assignments:
 
       >>> stream = CodeIO()
-      >>> define = Define(['e', 'f'], pyexp("[1, 2]"))
+      >>> define = Define(types.declaration(('e', 'f')), pyexp("[1, 2]"))
       >>> define.begin(stream)
       >>> exec stream.getvalue()
       >>> e == 1 and f == 2
@@ -243,56 +243,68 @@ class Define(object):
       1
     
     """
-    def __init__(self, definition, expression):
-        if not isinstance(definition, (list, tuple)):
-            definition = (definition,)
+    def __init__(self, declaration, expression, dictionary=None):
+        if not isinstance(declaration, types.declaration):
+            declaration = types.declaration((declaration,))
 
-        if len(definition) == 1:
-            variable = definition[0]
+        if len(declaration) == 1:
+            variable = declaration[0]
         else:
-            variable = u"(%s,)" % ", ".join(definition)
+            variable = u"(%s,)" % ", ".join(declaration)
 
+        if dictionary is not None:
+           variable = "%s['%s'] = %s" % (dictionary, variable, variable)
+            
         self.assign = Assign(expression, variable)        
-        self.definitions = definition
+        self.declaration = declaration
+        self.dictionary = dictionary
         
     def begin(self, stream):
-        # save local variables already in in scope
-        for var in self.definitions:
-            temp = stream.save()
+        if self.declaration.global_scope:
+            # if the declaration belongs to a global scope, remove this
+            # symbol from previous scopes
+            for scope in stream.scope:
+                for variable in self.declaration:
+                    if variable in scope:
+                        scope.remove(variable)
+        else:
+            # save local variables already in in scope
+            for var in self.declaration:
+                temp = stream.save()
 
-            # If we didn't set the variable in this scope already
-            if var not in stream.scope[-1]:
+                # If we didn't set the variable in this scope already
+                if var not in stream.scope[-1]:
 
-                # we'll check if it's set in one of the older scopes
-                for scope in stream.scope[:-1]:
-                    if var in scope:
-                        # in which case we back it up
-                        stream.write('%s = %s' % (temp, var))
+                    # we'll check if it's set in one of the older scopes
+                    for scope in stream.scope[:-1]:
+                        if var in scope:
+                            # in which case we back it up
+                            stream.write('%s = %s' % (temp, var))
 
-                stream.scope[-1].add(var)
+                    stream.scope[-1].add(var)
                    
         self.assign.begin(stream)
 
     def end(self, stream):
         self.assign.end(stream)
 
-        # back come the variables that were already in scope in the
-        # first place
-        for var in reversed(self.definitions):
-            temp = stream.restore()
+        if not self.declaration.global_scope:
+            # restore the variables that were previously in scope
+            for var in reversed(self.declaration):
+                temp = stream.restore()
 
-            # If we set the variable in this scope already
-            if var in stream.scope[-1]:
+                # If we set the variable in this scope already
+                if var in stream.scope[-1]:
 
-                # we'll check if it's set in one of the older scopes
-                for scope in stream.scope[:-1]:
-                    if var in scope:
-                        # in which case we restore it
-                        stream.write('%s = %s' % (var, temp))
-                        stream.scope[-1].remove(var)
-                        break
-                else:
-                    stream.write("del %s" % var)
+                    # we'll check if it's set in one of the older scopes
+                    for scope in stream.scope[:-1]:
+                        if var in scope:
+                            # in which case we restore it
+                            stream.write('%s = %s' % (var, temp))
+                            stream.scope[-1].remove(var)
+                            break
+                    else:
+                        stream.write("del %s" % var)
 
 class Condition(object):
     """

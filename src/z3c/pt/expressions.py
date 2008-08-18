@@ -72,7 +72,7 @@ class ExpressionTranslation(object):
         Single variable:
 
           >>> declaration("variable")
-          declaration('variable',)
+          declaration('variable')
 
         Multiple variables:
 
@@ -165,13 +165,13 @@ class ExpressionTranslation(object):
         Single define:
         
         >>> definitions("variable expression")
-        definitions((declaration('variable',), value('expression')),)
+        definitions((declaration('variable'), value('expression')),)
         
         Multiple defines:
         
         >>> definitions("variable1 expression1; variable2 expression2")
-        definitions((declaration('variable1',), value('expression1')),
-                    (declaration('variable2',), value('expression2')))
+        definitions((declaration('variable1'), value('expression1')),
+                    (declaration('variable2'), value('expression2')))
         
         Tuple define:
         
@@ -179,35 +179,40 @@ class ExpressionTranslation(object):
         definitions((declaration('variable1', 'variable2'),
                     value('(expression1, expression2)')),)
 
+        Global defines:
+
+        >>> definitions("global variable expression")
+        definitions((declaration('variable', global_scope=True), value('expression')),)
+
         Space, the 'in' operator and '=' may be used to separate
         variable from expression.
 
         >>> definitions("variable in expression")
-        definitions((declaration('variable',), value('expression')),)        
+        definitions((declaration('variable'), value('expression')),)        
         
         >>> definitions("variable1 = expression1; variable2 = expression2")
-        definitions((declaration('variable1',), value('expression1')),
-                    (declaration('variable2',), value('expression2')))
+        definitions((declaration('variable1'), value('expression1')),
+                    (declaration('variable2'), value('expression2')))
 
         >>> definitions("variable1=expression1; variable2=expression2")
-        definitions((declaration('variable1',), value('expression1')),
-                    (declaration('variable2',), value('expression2')))
+        definitions((declaration('variable1'), value('expression1')),
+                    (declaration('variable2'), value('expression2')))
         
         A define clause that ends in a semicolon:
         
         >>> definitions("variable expression;")
-        definitions((declaration('variable',), value('expression')),)
+        definitions((declaration('variable'), value('expression')),)
         
         A define clause with a trivial expression (we do allow this):
         
         >>> definitions("variable")
-        definitions((declaration('variable',), None),)
+        definitions((declaration('variable'), None),)
         
         A proper define clause following one with a trivial expression:
         
         >>> definitions("variable1 expression; variable2")
-        definitions((declaration('variable1',), value('expression')),
-                    (declaration('variable2',), None))
+        definitions((declaration('variable1'), value('expression')),
+                    (declaration('variable2'), None))
 
         """
 
@@ -216,6 +221,11 @@ class ExpressionTranslation(object):
         defines = []
         i = 0
         while i < len(string):
+            global_scope = False
+            if string.startswith('global'):
+                global_scope = True
+                i += 6
+
             while string[i] == ' ':
                 i += 1
 
@@ -238,6 +248,8 @@ class ExpressionTranslation(object):
                 else:
                     var = self.declaration(string[i:j])
 
+            var.global_scope = global_scope
+            
             # get expression
             i = j + len(string) - j - len(string[j:].lstrip())
 
@@ -567,11 +579,11 @@ class StringTranslation(ExpressionTranslation):
         Semi-colon literal.
         
         >>> definitions("variable part1;; part2")
-        definitions((declaration('variable',), join('part1; part2',)),)
+        definitions((declaration('variable'), join('part1; part2',)),)
 
         >>> definitions("variable1 part1;; part2; variable2 part3")
-        definitions((declaration('variable1',), join('part1; part2',)),
-                    (declaration('variable2',), join('part3',)))
+        definitions((declaration('variable1'), join('part1; part2',)),
+                    (declaration('variable2'), join('part3',)))
     
         """
 

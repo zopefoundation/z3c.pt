@@ -23,6 +23,7 @@ class Element(etree.ElementBase):
     metal_slot_prefix = '_fill'
     metal_variable = '_metal'
     macro_variable = '_macro'
+    scope_variable = '_scope'
     
     def start(self, stream):
         self._stream = stream
@@ -85,8 +86,12 @@ class Element(etree.ElementBase):
 
         # variable definitions
         if self.node.define is not None:
-            for variables, expression in self.node.define:
-                _.append(clauses.Define(variables, expression))
+            for declaration, expression in self.node.define:
+                if declaration.global_scope:
+                    _.append(clauses.Define(
+                        declaration, expression, self.scope_variable))
+                else:
+                    _.append(clauses.Define(declaration, expression))
 
         # macro method
         for element in tuple(self):
@@ -223,7 +228,7 @@ class Element(etree.ElementBase):
                 
                 subclauses = []
                 subclauses.append(clauses.Define(
-                    ('_out', '_write'),
+                    types.declaration(('_out', '_write')),
                     types.value('generation.initialize_stream()')))
                 subclauses.append(clauses.Visit(element))
                 subclauses.append(clauses.Assign(
@@ -238,7 +243,8 @@ class Element(etree.ElementBase):
                       itertools.chain(*self.stream.scope))+
                 tuple("%s=%s" % kwarg for kwarg in kwargs))
                 
-            _.append(clauses.Write(types.value("%s(%s)" % (self.metal_variable, arguments))))
+            _.append(clauses.Write(
+                types.value("%s(%s)" % (self.metal_variable, arguments))))
 
         # translate body
         elif self.node.translate is not None:
@@ -261,7 +267,7 @@ class Element(etree.ElementBase):
 
                 subclauses = []
                 subclauses.append(clauses.Define(
-                    ('_out', '_write'),
+                    types.declaration(('_out', '_write')),
                     types.value('generation.initialize_stream()')))
                 subclauses.append(clauses.Visit(element))
                 subclauses.append(clauses.Assign(

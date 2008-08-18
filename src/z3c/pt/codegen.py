@@ -3,10 +3,21 @@ from compiler.pycodegen import ModuleCodeGenerator
 
 from transformer import ASTTransformer
 
+import __builtin__
 
 CONSTANTS = frozenset(['False', 'True', 'None', 'NotImplemented', 'Ellipsis'])
 UNDEFINED = object()
 
+def flatten(items):
+    """Flattens a potentially nested sequence into a flat list."""
+
+    retval = []
+    for item in items:
+        if isinstance(item, (frozenset, list, set, tuple)):
+            retval += flatten(item)
+        else:
+            retval.append(item)
+    return retval
 
 class Lookup(object):
     """Abstract base class for variable lookup implementations."""
@@ -18,6 +29,7 @@ class Lookup(object):
         """
         return {
             '_lookup_attr': cls.lookup_attr,
+            '_lookup_name': cls.lookup_name,
         }
 
     @classmethod
@@ -30,16 +42,99 @@ class Lookup(object):
             except (KeyError, TypeError):
                 raise e
 
+    @classmethod
+    def lookup_name(cls, data, name):
+        try:
+            return data[name]
+        except KeyError:
+            raise NameError(name)
+
 class TemplateASTTransformer(ASTTransformer):
-    def __init__(self):
+    """Concrete AST transformer that implements the AST transformations needed
+    for code embedded in templates.
+    """
+
+    def __init__(self, globals):
         self.locals = [CONSTANTS]
+        self.locals.append(set(globals))
+        self.locals.append(set(dir(__builtin__)))
         
+    def visitConst(self, node):
+        if isinstance(node.value, str):
+            try: # If the string is ASCII, return a `str` object
+                node.value.decode('ascii')
+            except ValueError: # Otherwise return a `unicode` object
+                return ast.Const(node.value.decode('utf-8'))
+        return node
+
+    def visitAssName(self, node):
+        if len(self.locals) > 1:
+            if node.flags == 'OP_ASSIGN':
+                self.locals[-1].add(node.name)
+            else:
+                self.locals[-1].remove(node.name)
+        return node
+
+    def visitClass(self, node):
+        if len(self.locals) > 1:
+            self.locals[-1].add(node.name)
+        self.locals.append(set())
+        try:
+            return ASTTransformer.visitClass(self, node)
+        finally:
+            self.locals.pop()
+
+    def visitFor(self, node):
+        self.locals.append(set())
+        try:
+            return ASTTransformer.visitFor(self, node)
+        finally:
+            self.locals.pop()
+
+    def visitFunction(self, node):
+        if len(self.locals) > 1:
+            self.locals[-1].add(node.name)
+        self.locals.append(set(node.argnames))
+        try:
+            return ASTTransformer.visitFunction(self, node)
+        finally:
+            self.locals.pop()
+
+    def visitGenExpr(self, node):
+        self.locals.append(set())
+        try:
+            return ASTTransformer.visitGenExpr(self, node)
+        finally:
+            self.locals.pop()
+
+    def visitLambda(self, node):
+        self.locals.append(set(flatten(node.argnames)))
+        try:
+            return ASTTransformer.visitLambda(self, node)
+        finally:
+            self.locals.pop()
+
+    def visitListComp(self, node):
+        self.locals.append(set())
+        try:
+            return ASTTransformer.visitListComp(self, node)
+        finally:
+            self.locals.pop()
+
+    def visitName(self, node):
+        # If the name refers to a local inside a lambda, list comprehension, or
+        # generator expression, leave it alone
+        if node.name not in flatten(self.locals):
+            # Otherwise, translate the name ref into a context lookup
+            func_args = [ast.Name('_scope'), ast.Const(node.name)]
+            node = ast.CallFunc(ast.Name('_lookup_name'), func_args)
+        return node
+
     def visitGetattr(self, node):
-        """
-        Allow fallback to dictionary lookup if attribute does not exist.
+        """Get attribute with fallback to dictionary lookup.
 
-        Variables starting with an underscore are exempt.
-
+        Note: Variables starting with an underscore are exempt
+        (reserved for internal use).
         """
         
         if hasattr(node.expr, 'name') and node.expr.name.startswith('_'):
@@ -52,16 +147,15 @@ class TemplateASTTransformer(ASTTransformer):
 class Suite(object):
     __slots__ = ['code', '_globals']
 
-    xform = TemplateASTTransformer
     mode = 'exec'
     
-    def __init__(self, source):
+    def __init__(self, source, globals=()):
         """Create the code object from a string."""
 
         node = parse(source, self.mode)
 
         # build tree
-        transform = self.xform()
+        transform = TemplateASTTransformer(globals)
         tree = transform.visit(node)
         filename = tree.filename = '<script>'
 

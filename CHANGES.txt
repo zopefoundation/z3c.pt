@@ -4,6 +4,10 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Implemented TAL global defines. [malthe]
+
+- Added support for variables with global scope. [malthe]
+
 - Curly braces may now be omitted in an expression interpolation if
   the expression is just a variable name; this complies with the
   Genshi syntax. [malthe]

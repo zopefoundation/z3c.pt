@@ -14,8 +14,13 @@ class join(tuple, expression):
         return 'join'+tuple.__repr__(self)
 
 class declaration(tuple):
+    global_scope = False
+    
     def __repr__(self):
-        return 'declaration'+tuple.__repr__(self)
+        items = map(repr, self)
+        if self.global_scope:
+            items.append('global_scope=%s' % repr(self.global_scope))
+        return 'declaration(%s)' % ', '.join(items)
 
 class mapping(tuple):
     def __repr__(self):

@@ -18,7 +18,7 @@ def render(%(args)s%(extra)starget_language=None):
 \t_domain, _negotiate, _translate = generation.initialize_i18n()
 \t_marker = generation.initialize_helpers()
 \t_path = generation.initialize_traversal()
-
+\t_scope = {}
 \t_target_language = _negotiate(_context, target_language)
 %(code)s
 \treturn _out.getvalue()
@@ -74,7 +74,7 @@ class Generator(object):
         self.stream = CodeIO(indentation=1, indentation_string="\t")
 
         # initialize variable scope
-        self.stream.scope.append(set(('_out', '_write') + tuple(params)))
+        self.stream.scope.append(set(('_out', '_write', '_scope') + tuple(params)))
 
     def __call__(self):
         params = self.params

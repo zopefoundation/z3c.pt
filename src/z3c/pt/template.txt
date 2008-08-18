@@ -138,6 +138,10 @@ metal:define-macro, metal:use-macro
   ...      xmlns:metal="http://xml.zope.org/namespaces/metal">
   ...   <div metal:define-macro="greeting">
   ...     Hello, ${name}!
+  ...     <span tal:define="global name 'earth'">
+  ...       Hello, ${name}!
+  ...     </span>
+  ...     Hello, ${name}!
   ...   </div>
   ... </div>""")
 
@@ -147,7 +151,9 @@ metal:define-macro, metal:use-macro
   ...      xmlns:metal="http://xml.zope.org/namespaces/metal">
   ...   <div tal:define="name 'world'">
   ...     <div metal:use-macro="template1.macros['greeting']" />
-  ...   </div>  
+  ...     Hello, ${name}!
+  ...   </div>
+  ...   Hello, ${name}!
   ... </div>""")
 
   >>> print template2(template1=template1)
@@ -155,9 +161,15 @@ metal:define-macro, metal:use-macro
     <div>
       <div>
       Hello, world!
+      <span>
+        Hello, earth!
+      </span>
+      Hello, earth!
     </div>
   <BLANKLINE>
-    </div>  
+      Hello, world!
+    </div>
+    Hello, earth!
   </div>
   
 Error handling
