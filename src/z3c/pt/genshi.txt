@@ -363,6 +363,40 @@ py:match
   ...  """) 
   one two
 
+:: Strange looping behaviour
+
+  >>> brands=[dict(id=1, title="One"),
+  ...         dict(id=2, title="Two"),
+  ...         dict(id=3, title="Three")]
+  >>> print render_genshi("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...       xmlns:py="http://genshi.edgewall.org">
+  ... <script type="text/javascript">
+  ... var brands = [
+  ...     <py:for each="brand in brands">
+  ...         { value :  "${brand['id']}", "title" : "${brand['title']}" },
+  ...     </py:for>
+  ...     ];
+  ...
+  ... $(document.ready(function() {
+  ...   alert("Hello, World");
+  ... });
+  ... </script>
+  ... </div>""", brands=brands)
+  <div>
+  <script type="text/javascript">
+    var brands = [
+      { value : "1", "title" : "One" },
+      { value : "2", "title" : "Two" },
+      { value : "3", "title" : "Three" },
+      ];
+  <BLANKLINE>
+  $(document.read(function() {
+    alert("Hello, World");
+  });
+  </script>
+  </div>
+
 
 .. _py:with specs: http://genshi.edgewall.org/wiki/Documentation/0.4.x/xml-templates.html#py-with
 
