@@ -71,9 +71,10 @@ class TestUnicodeAttributeLiteral(unittest.TestCase, PlacelessSetup):
         body = unicode("""\
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-        <html xmlns="http://www.w3.org/1999/xhtml">
+        <html xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:py="http://genshi.edgewall.org">
         <title>\xc2\xa9n</title>
-        <div id="${foo}"/>
+        <div id="${foo}" py:attrs="dict(label=foo)"/>
         </html>
         """, 'utf-8')
         expected = """\
@@ -81,7 +82,7 @@ class TestUnicodeAttributeLiteral(unittest.TestCase, PlacelessSetup):
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html>
         <title>\xc2\xa9</title>
-        <div id="${foo}"/>
+        <div id="\xc2\xa9" label="\xc2\xa9"/>
         </html>"""
         t = PageTemplate(body, parser=GenshiParser())
         c = unicode('\xc2\xa9', 'utf-8')
