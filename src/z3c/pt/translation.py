@@ -361,7 +361,8 @@ class VariableInterpolation:
                     break
 
                 t = self.makeelement(utils.meta_attr('interpolation'))
-                expression = "structure "+m.group('expression')
+                expression = "structure " + \
+                             (m.group('expression') or m.group('variable'))
                 t.attrib[utils.meta_attr('replace')] = expression
                 t.tail = text[m.end():]
                 self.insert(0, t)
@@ -379,7 +380,8 @@ class VariableInterpolation:
                     break
 
                 t = self.makeelement(utils.meta_attr('interpolation'))
-                expression = "structure "+m.group('expression')
+                expression = "structure " + \
+                             (m.group('expression') or m.group('variable'))
                 t.attrib[utils.meta_attr('replace')] = expression
                 t.tail = self.tail[m.end():]
                 parent = self.getparent()

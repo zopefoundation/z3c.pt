@@ -4,6 +4,10 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Curly braces may now be omitted in an expression interpolation if
+  the expression is just a variable name; this complies with the
+  Genshi syntax. [malthe]
+
 - Fixed off-by-one bug in interpolation routine. [malthe]
 
 - The repeat-clause should not output tail with every iteration. [malthe]

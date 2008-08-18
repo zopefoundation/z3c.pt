@@ -16,7 +16,7 @@ class ExpressionTranslation(object):
     zope.interface.implements(interfaces.IExpressionTranslation)
 
     re_pragma = re.compile(r'^\s*(?P<pragma>[a-z]+):\s*')
-    re_interpolation = re.compile(r'(?P<prefix>[^\\]\$|^\$){((?P<expression>.*)})?')
+    re_interpolation = re.compile(r'(?P<prefix>[^\\]\$|^\$)({((?P<expression>.*)})?|(?P<variable>[A-Za-z][A-Za-z0-9_]*))')
     re_method = re.compile(r'^(?P<name>[A-Za-z0-9_]+)'
                            '(\((?P<args>[A-Za-z0-9_]+\s*(,\s*[A-Za-z0-9_]+)*)\))?')
 
@@ -415,6 +415,9 @@ class ExpressionTranslation(object):
         >>> interpolate('abc${def}ghi${jkl}').group('expression')
         'def'
 
+        >>> interpolate('$abc').group('variable')
+        'abc'
+
         >>> interpolate('${abc')
         Traceback (most recent call last):
           ...
@@ -427,14 +430,15 @@ class ExpressionTranslation(object):
             return None
 
         expression = m.group('expression')
-
+        variable = m.group('variable')
+        
         if expression:
             left = m.start()+len(m.group('prefix'))
             exp = self.search(string[left+1:])
             right = left+2+len(exp)
             m = self.re_interpolation.search(string[:right])
-            
-        if expression is None or m is None:
+
+        if m is None or (expression is None and variable is None):
             raise SyntaxError(
                 "Interpolation expressions must of the "
                 "form ${<expression>} (%s)" % string)
@@ -542,8 +546,13 @@ class StringTranslation(ExpressionTranslation):
             parts.append(self._unescape(text))
 
         expression = m.group('expression')
-        parts.append(self.translator.expression(expression))
+        variable = m.group('variable')
 
+        if expression:
+            parts.append(self.translator.expression(expression))
+        elif variable:
+            parts.append(self.translator.expression(variable))
+                
         rest = string[m.end():]
         if len(rest):
             parts.extend(self.split(rest))
