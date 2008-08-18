@@ -106,6 +106,13 @@ class Element(etree.ElementBase):
                 _.append(clauses.Define(
                     macro.name, types.parts((types.value(self.macro_variable),))))
 
+        # tag tail (deferred)
+        tail = self.tail
+        if tail and not self.node.fill_slot:
+            if isinstance(tail, unicode):
+                tail = tail.encode('utf-8')
+            _.append(clauses.Out(tail, defer=True))
+
         # condition
         if self.node.condition is not None:
             _.append(clauses.Condition(self.node.condition))
@@ -118,13 +125,6 @@ class Element(etree.ElementBase):
                     "Cannot unpack more than one variable in a "
                     "repeat statement.")
             _.append(clauses.Repeat(variables[0], expression))
-
-        # tag tail (deferred)
-        tail = self.tail
-        if tail and not self.node.fill_slot:
-            if isinstance(tail, unicode):
-                tail = tail.encode('utf-8')
-            _.append(clauses.Out(tail, defer=True))
 
         content = self.node.content
 

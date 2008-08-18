@@ -581,11 +581,13 @@ class Repeat(object):
 
     Simple repeat loop and repeat data structure:
 
-      >>> stream = CodeIO()
+      >>> from StringIO import StringIO
+      >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
       >>> _repeat = Repeat("i", pyexp("range(5)"))
       >>> _repeat.begin(stream)
       >>> stream.write("r = repeat['i']")
-      >>> stream.write("print (i, r.index, r.start, r.end, r.number(), r.odd(), r.even())")
+      >>> stream.write(
+      ...     "print (i, r.index, r.start, r.end, r.number(), r.odd(), r.even())")
       >>> _repeat.end(stream)
       >>> exec stream.getvalue()
       (0, 0, True, False, 1, False, True)
@@ -665,8 +667,9 @@ class Repeat(object):
     def end(self, stream):
         # cook before leaving loop
         stream.cook()
+        stream.out('\n')
         stream.outdent()
-
+        
         if self.repeatdict:
             stream.outdent()
             stream.write("except StopIteration:")
@@ -860,8 +863,10 @@ class Out(object):
     def begin(self, stream):
         if not self.defer:
             stream.out(self.string)
-
+        
     def end(self, stream):
+        stream.cook()
+        
         if self.defer:
             stream.out(self.string)
 
