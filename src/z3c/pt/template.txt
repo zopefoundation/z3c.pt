@@ -179,7 +179,7 @@ metal:define-macro, metal:use-macro, metal:define-slot, metal:fill-slot
   ...       xmlns:tal="http://xml.zope.org/namespaces/tal"
   ...       xmlns:metal="http://xml.zope.org/namespaces/metal"
   ...       metal:define-macro="master">
-  ...   <div tal:define-slot="content">
+  ...   <div metal:define-slot="content">
   ...       I will be replaced
   ...   </div>
   ... </html>""")
