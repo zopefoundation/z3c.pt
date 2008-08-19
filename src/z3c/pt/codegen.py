@@ -60,11 +60,8 @@ class TemplateASTTransformer(ASTTransformer):
         self.locals.append(set(dir(__builtin__)))
         
     def visitConst(self, node):
-        if isinstance(node.value, str):
-            try: # If the string is ASCII, return a `str` object
-                node.value.decode('ascii')
-            except ValueError: # Otherwise return a `unicode` object
-                return ast.Const(node.value.decode('utf-8'))
+        if isinstance(node.value, unicode):
+            return ast.Const(node.value.encode('utf-8'))
         return node
 
     def visitAssName(self, node):
