@@ -526,8 +526,14 @@ class Tag(object):
             stream.write("for %s, %s in _exp.items():" % (temp, temp2))
             stream.indent()
             if unicode_required_flag:
-                stream.write("if isinstance(%s, unicode):" % temp2)
+                stream.write(
+                    "if isinstance(%s, unicode) or isinstance(%s, unicode):" % (temp, temp2))
                 stream.indent()
+                for t in (temp, temp2):
+                    stream.write("if isinstance(%s, unicode):" % t)
+                    stream.indent()
+                    stream.write("%s = %s.encode('utf-8')" % (t, t))
+                    stream.outdent()
                 stream.escape(temp2)
                 stream.write("_write(' %%s=\"%%s\"' %% (%s, %s))" % (temp, temp2))
                 stream.outdent()

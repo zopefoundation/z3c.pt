@@ -4,6 +4,11 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Fixed a few more UnicodeDecodeErrors (test contributed by Wiggy).
+  In particular, never upcast to unicode during transformation, and
+  utf-8 encode Unicode attribute keys and values in Assign expressions
+  (e.g. py:attrs). [chrism]
+
 - Implemented TAL global defines. [malthe]
 
 - Added support for variables with global scope. [malthe]

@@ -29,7 +29,7 @@ class TestNumericEntityPlusUnicodeParameterInsertedLiterally(unittest.TestCase,
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html>
         foo \xc2\xa9
-        </html>""".decode('utf-8')
+        </html>"""
         t = PageTemplate(body)
         self.assertEqual(norm(t.render(foo=u'foo')), norm(expected))
 
@@ -73,7 +73,7 @@ class TestUnicodeAttributeLiteral(unittest.TestCase, PlacelessSetup):
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml"
         xmlns:py="http://genshi.edgewall.org">
-        <title>\xc2\xa9n</title>
+        <title>\xc2\xa9</title>
         <div id="${foo}" py:attrs="dict(label=foo)"/>
         </html>
         """
@@ -82,7 +82,7 @@ class TestUnicodeAttributeLiteral(unittest.TestCase, PlacelessSetup):
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html>
         <title>\xc2\xa9</title>
-        <div id="\xc2\xa9" label="\xc2\xa9"/>
+        <div label="\xc2\xa9" id="\xc2\xa9"/>
         </html>"""
         t = PageTemplate(body, parser=GenshiParser())
         c = unicode('\xc2\xa9', 'utf-8')
