@@ -171,6 +171,35 @@ metal:define-macro, metal:use-macro
     </div>
     Hello, earth!
   </div>
+
+metal:define-macro, metal:use-macro, metal:define-slot, metal:fill-slot
+
+  >>> main = PageTemplate("""\
+  ... <html xmlns="http://www.w3.org/1999/xhtml"
+  ...       xmlns:tal="http://xml.zope.org/namespaces/tal"
+  ...       xmlns:metal="http://xml.zope.org/namespaces/metal"
+  ...       metal:define-macro="master">
+  ...   <div tal:define-slot="content">
+  ...       I will be replaced
+  ...   </div>
+  ... </html>""")
+
+  >>> content = PageTemplate("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal"
+  ...      xmlns:metal="http://xml.zope.org/namespaces/metal"
+  ...      metal:use-macro="main.macros['master']">
+  ...   <div metal:fill-slot="content">
+  ...       I replace you.
+  ...   </div>
+  ... </div>""")
+
+  >>> print content(main=main)
+  <html>
+    <div>
+         I replace you.
+    </div>
+  </html>
   
 Error handling
 --------------
