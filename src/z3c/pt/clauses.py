@@ -763,13 +763,13 @@ class Write(object):
         stream.write("if _urf is not None:")
         stream.indent()
         if unicode_required_flag:
-            stream.write("if not isinstance(_urf, unicode):")
+            stream.write("if isinstance(_urf, unicode):")
             stream.indent()
-            stream.write("_urf = str(_urf)")
+            stream.write("_urf = _urf.encode('utf-8')")
             stream.outdent()
             stream.write("else:")
             stream.indent()
-            stream.write("_urf = _urf.encode('utf-8')")
+            stream.write("_urf = str(_urf)")
             stream.outdent()
         else:
             stream.write("_urf = str(_urf)")
