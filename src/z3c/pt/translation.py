@@ -421,7 +421,7 @@ def translate_etree(root, macro=None, doctype=None,
     # skip to macro
     if macro is not None:
         elements = root.xpath(
-            './/*[@metal:define-macro="%s"]' % macro,
+            'descendant-or-self::*[@metal:define-macro="%s"]' % macro,
             namespaces={'metal': config.METAL_NS})
 
         if not elements:
