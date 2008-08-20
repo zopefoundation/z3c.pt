@@ -1,11 +1,9 @@
 import os
-import sys
 import macro
 import codegen
-import traceback
 import zpt
 
-from z3c.pt.config import DEBUG_MODE, PROD_MODE
+from z3c.pt.config import DEBUG_MODE
 from z3c.pt import filecache
 import z3c.pt.generation
 
