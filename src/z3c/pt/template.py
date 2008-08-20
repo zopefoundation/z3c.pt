@@ -78,39 +78,7 @@ class BaseTemplate(object):
         # pass in selectors
         kwargs.update(self.selectors)
 
-        if PROD_MODE:
-            return template(**kwargs)
-
-        return self.safe_render(template, **kwargs)
-
-    def safe_render(self, template, **kwargs):
-        try:
-            return template(**kwargs)
-        except Exception, e:
-            __traceback_info__ = getattr(e, '__traceback_info__', None)
-            if __traceback_info__ is not None:
-                raise e
-            
-            etype, value, tb = sys.exc_info()
-            lineno = tb.tb_next.tb_lineno-1
-            annotations = self.annotations
-
-            while lineno >= 0:
-                if lineno in annotations:
-                    annotation = annotations.get(lineno)
-                    break
-
-                lineno -= 1
-            else:
-                annotation = "n/a"
-
-            e.__traceback_info__ = "While rendering %s, an exception was "\
-                                   "raised evaluating ``%s``:\n\n" % \
-                                   (repr(self), str(annotation))
-            
-            e.__traceback_info__ += "".join(traceback.format_tb(tb))
-            
-            raise e
+        return template(**kwargs)
 
     def __call__(self, **kwargs):
         return self.render(**kwargs)

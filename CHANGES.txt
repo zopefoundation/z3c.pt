@@ -4,6 +4,9 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Remove ``safe_render`` implementation detail.  It hid information
+  in tracebacks. [chrism]
+
 - Fixed a few more UnicodeDecodeErrors (test contributed by Wiggy).
   In particular, never upcast to unicode during transformation, and
   utf-8 encode Unicode attribute keys and values in Assign expressions
