@@ -7,11 +7,11 @@ from z3c.pt.utils import unicode_required_flag
 
 class Assign(object):
     """
-    >>> from z3c.pt.generation import CodeIO; stream = CodeIO()
-    >>> from z3c.pt.testing import pyexp
+    >>> from z3c.pt import testing
 
     We'll define some values for use in the tests.
-    
+
+    >>> _out, _write, stream = testing.setup_stream()
     >>> one = types.value("1")
     >>> bad_float = types.value("float('abc')")
     >>> abc = types.value("'abc'")
@@ -113,7 +113,10 @@ class Assign(object):
 
     def _assign(self, variable, value, stream):
         stream.annotate(value)
+        symbols = stream.symbols.as_dict()
         
+        if isinstance(value, types.template):
+            value = types.value(value % symbols)
         if isinstance(value, types.value):
             stream.write("%s = %s" % (variable, value))
         elif isinstance(value, types.join):
@@ -121,6 +124,8 @@ class Assign(object):
             _v_count = 0
             
             for part in value:
+                if isinstance(part, types.template):
+                    part = types.value(part % symbols)
                 if isinstance(part, (types.parts, types.join)):
                     _v = stream.save()
                     assign = Assign(part, _v)
@@ -149,100 +154,100 @@ class Assign(object):
 
 class Define(object):
     """
-      >>> from z3c.pt.generation import CodeIO; stream = CodeIO()
-      >>> from z3c.pt.testing import pyexp
-      
+    >>> from z3c.pt import testing
+
     Variable scope:
 
-      >>> define = Define("a", pyexp("b"))
-      >>> b = object()
-      >>> define.begin(stream)
-      >>> exec stream.getvalue()
-      >>> a is b
-      True
-      >>> del a
-      >>> define.end(stream)
-      >>> exec stream.getvalue()
-      >>> a
-      Traceback (most recent call last):
-          ...
-      NameError: name 'a' is not defined
-      >>> b is not None
-      True
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> define = Define("a", testing.pyexp("b"))
+    >>> b = object()
+    >>> define.begin(stream)
+    >>> exec stream.getvalue()
+    >>> a is b
+    True
+    >>> del a
+    >>> define.end(stream)
+    >>> exec stream.getvalue()
+    >>> a
+    Traceback (most recent call last):
+        ...
+    NameError: name 'a' is not defined
+    >>> b is not None
+    True
 
     Multiple defines:
 
-      >>> stream = CodeIO()
-      >>> define1 = Define("a", pyexp("b"))
-      >>> define2 = Define("c", pyexp("d"))
-      >>> d = object()
-      >>> define1.begin(stream)
-      >>> define2.begin(stream)
-      >>> exec stream.getvalue()
-      >>> a is b and c is d
-      True
-      >>> define2.end(stream)
-      >>> define1.end(stream)
-      >>> del a; del c
-      >>> stream.scope[-1].remove('a'); stream.scope[-1].remove('c')
-      >>> exec stream.getvalue()
-      >>> a
-      Traceback (most recent call last):
-          ...
-      NameError: name 'a' is not defined
-      >>> c
-      Traceback (most recent call last):
-          ...
-      NameError: name 'c' is not defined
-      >>> b is not None and d is not None
-      True
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> define1 = Define("a", testing.pyexp("b"))
+    >>> define2 = Define("c", testing.pyexp("d"))
+    >>> d = object()
+    >>> define1.begin(stream)
+    >>> define2.begin(stream)
+    >>> exec stream.getvalue()
+    >>> a is b and c is d
+    True
+    >>> define2.end(stream)
+    >>> define1.end(stream)
+    >>> del a; del c
+    >>> stream.scope[-1].remove('a'); stream.scope[-1].remove('c')
+    >>> exec stream.getvalue()
+    >>> a
+    Traceback (most recent call last):
+        ...
+    NameError: name 'a' is not defined
+    >>> c
+    Traceback (most recent call last):
+        ...
+    NameError: name 'c' is not defined
+    >>> b is not None and d is not None
+    True
 
     Tuple assignments:
 
-      >>> stream = CodeIO()
-      >>> define = Define(types.declaration(('e', 'f')), pyexp("[1, 2]"))
-      >>> define.begin(stream)
-      >>> exec stream.getvalue()
-      >>> e == 1 and f == 2
-      True
-      >>> define.end(stream)
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> define = Define(types.declaration(('e', 'f')), testing.pyexp("[1, 2]"))
+    >>> define.begin(stream)
+    >>> exec stream.getvalue()
+    >>> e == 1 and f == 2
+    True
+    >>> define.end(stream)
 
     Verify scope is preserved on tuple assignment:
 
-      >>> stream = CodeIO()
-      >>> e = None; f = None
-      >>> stream.scope[-1].add('e'); stream.scope[-1].add('f')
-      >>> stream.scope.append(set())
-      >>> define.begin(stream)
-      >>> define.end(stream)
-      >>> exec stream.getvalue()
-      >>> e is None and f is None
-      True
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> e = None; f = None
+    >>> stream.scope[-1].add('e'); stream.scope[-1].add('f')
+    >>> stream.scope.append(set())
+    >>> define.begin(stream)
+    >>> define.end(stream)
+    >>> exec stream.getvalue()
+    >>> e is None and f is None
+    True
 
     Using semicolons in expressions within a define:
 
-      >>> stream = CodeIO()
-      >>> define = Define("a", pyexp("';'"))
-      >>> define.begin(stream)
-      >>> exec stream.getvalue()
-      >>> a
-      ';'
-      >>> define.end(stream)
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> define = Define("a", testing.pyexp("';'"))
+    >>> define.begin(stream)
+    >>> exec stream.getvalue()
+    >>> a
+    ';'
+    >>> define.end(stream)
 
     Scope:
 
-      >>> stream = CodeIO()
-      >>> a = 1
-      >>> stream.scope[-1].add('a')
-      >>> stream.scope.append(set())
-      >>> define = Define("a", pyexp("2"))
-      >>> define.begin(stream)
-      >>> define.end(stream)
-      >>> exec stream.getvalue()
-      >>> a
-      1
-    
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> a = 1
+    >>> stream.scope[-1].add('a')
+    >>> stream.scope.append(set())
+    >>> define = Define("a", testing.pyexp("2"))
+    >>> define.begin(stream)
+    >>> define.end(stream)
+    >>> exec stream.getvalue()
+    >>> a
+    1
     """
+    
     def __init__(self, declaration, expression, dictionary=None):
         if not isinstance(declaration, types.declaration):
             declaration = types.declaration((declaration,))
@@ -308,53 +313,51 @@ class Define(object):
 
 class Condition(object):
     """
-      >>> from z3c.pt.generation import CodeIO
-      >>> from z3c.pt.testing import pyexp
-      >>> from StringIO import StringIO
-      
+    >>> from z3c.pt import testing
+
     Unlimited scope:
-    
-      >>> stream = CodeIO()
-      >>> true = Condition(pyexp("True"))
-      >>> false = Condition(pyexp("False"))
-      >>> true.begin(stream)
-      >>> stream.write("print 'Hello'")
-      >>> true.end(stream)
-      >>> false.begin(stream)
-      >>> stream.write("print 'Universe!'")
-      >>> false.end(stream)
-      >>> stream.write("print 'World!'")
-      >>> exec stream.getvalue()
-      Hello
-      World!
+
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> true = Condition(testing.pyexp("True"))
+    >>> false = Condition(testing.pyexp("False"))
+    >>> true.begin(stream)
+    >>> stream.write("print 'Hello'")
+    >>> true.end(stream)
+    >>> false.begin(stream)
+    >>> stream.write("print 'Universe!'")
+    >>> false.end(stream)
+    >>> stream.write("print 'World!'")
+    >>> exec stream.getvalue()
+    Hello
+    World!
 
     Finalized limited scope:
 
-      >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
-      >>> true = Condition(pyexp("True"), [Write(pyexp("'Hello'"))])
-      >>> false = Condition(pyexp("False"), [Write(pyexp("'Hallo'"))])
-      >>> true.begin(stream)
-      >>> true.end(stream)
-      >>> false.begin(stream)
-      >>> false.end(stream)
-      >>> exec stream.getvalue()
-      >>> _out.getvalue()
-      'Hello'
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> true = Condition(testing.pyexp("True"), [Write(testing.pyexp("'Hello'"))])
+    >>> false = Condition(testing.pyexp("False"), [Write(testing.pyexp("'Hallo'"))])
+    >>> true.begin(stream)
+    >>> true.end(stream)
+    >>> false.begin(stream)
+    >>> false.end(stream)
+    >>> exec stream.getvalue()
+    >>> _out.getvalue()
+    'Hello'
 
     Open limited scope:
 
-      >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
-      >>> true = Condition(pyexp("True"), [Tag('div')], finalize=False)
-      >>> false = Condition(pyexp("False"), [Tag('span')], finalize=False)
-      >>> true.begin(stream)
-      >>> stream.out("Hello World!")
-      >>> true.end(stream)
-      >>> false.begin(stream)
-      >>> false.end(stream)
-      >>> exec stream.getvalue()
-      >>> _out.getvalue()
-      '<div>Hello World!</div>'
-          
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> true = Condition(testing.pyexp("True"), [Tag('div')], finalize=False)
+    >>> false = Condition(testing.pyexp("False"), [Tag('span')], finalize=False)
+    >>> true.begin(stream)
+    >>> stream.out("Hello World!")
+    >>> true.end(stream)
+    >>> false.begin(stream)
+    >>> false.end(stream)
+    >>> exec stream.getvalue()
+    >>> _out.getvalue()
+    '<div>Hello World!</div>'
+
     """
       
     def __init__(self, value, clauses=None, finalize=True):
@@ -432,42 +435,40 @@ class Visit(object):
 
 class Tag(object):
     """
-      >>> from z3c.pt.generation import CodeIO
-      >>> from z3c.pt.testing import pyexp
-      >>> from StringIO import StringIO
+    >>> from z3c.pt import testing
 
-      Dynamic attribute:
-      
-      >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
-      >>> tag = Tag('div', dict(alt=pyexp(repr('Hello World!'))))
-      >>> tag.begin(stream)
-      >>> stream.out('Hello Universe!')
-      >>> tag.end(stream)
-      >>> exec stream.getvalue()
-      >>> _out.getvalue()
-      '<div alt="Hello World!">Hello Universe!</div>'
+    Dynamic attribute:
 
-      Self-closing tag:
-      
-      >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
-      >>> tag = Tag('br', {}, True)
-      >>> tag.begin(stream)
-      >>> tag.end(stream)
-      >>> exec stream.getvalue()
-      >>> _out.getvalue()
-      '<br />'
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> tag = Tag('div', dict(alt=testing.pyexp(repr('Hello World!'))))
+    >>> tag.begin(stream)
+    >>> stream.out('Hello Universe!')
+    >>> tag.end(stream)
+    >>> exec stream.getvalue()
+    >>> _out.getvalue()
+    '<div alt="Hello World!">Hello Universe!</div>'
 
-      Unicode:
-      
-      >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
-      >>> tag = Tag('div', dict(alt=pyexp(repr('La Pe\xc3\xb1a'))))
-      >>> tag.begin(stream)
-      >>> stream.out('Hello Universe!')
-      >>> tag.end(stream)
-      >>> exec stream.getvalue()
-      >>> _out.getvalue() == '<div alt="La Pe\xc3\xb1a">Hello Universe!</div>'
-      True
-            
+    Self-closing tag:
+
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> tag = Tag('br', {}, True)
+    >>> tag.begin(stream)
+    >>> tag.end(stream)
+    >>> exec stream.getvalue()
+    >>> _out.getvalue()
+    '<br />'
+
+    Unicode:
+
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> tag = Tag('div', dict(alt=testing.pyexp(repr('La Pe\xc3\xb1a'))))
+    >>> tag.begin(stream)
+    >>> stream.out('Hello Universe!')
+    >>> tag.end(stream)
+    >>> exec stream.getvalue()
+    >>> _out.getvalue() == '<div alt="La Pe\xc3\xb1a">Hello Universe!</div>'
+    True
+
     """
 
     def __init__(self, tag, attributes=None,
@@ -501,16 +502,17 @@ class Tag(object):
             self.attributes.items())
 
         if self.expression:
-            self.expression.begin(stream, '_exp')
+            self.expression.begin(stream, stream.symbols.tmp)
 
         names = ", ".join([repr(a) for a, e in static]+[repr(a) for a, v in dynamic])
         
         if self.expression:
             for attribute, expression in static:
-                stream.write("if '%s' not in _exp:" % attribute)
+                stream.write("if '%s' not in %s:" % (attribute, stream.symbols.tmp))
                 stream.indent()
                 stream.write(
-                    "_write(' %s=\"%s\"')" % (attribute, escape(expression, '"')))
+                    "%s(' %s=\"%s\"')" % (
+                    stream.symbols.write, attribute, escape(expression, '"')))
                 stream.outdent()
         else:
             for attribute, expression in static:
@@ -523,7 +525,8 @@ class Tag(object):
         temp2 = stream.save()
 
         if self.expression:
-            stream.write("for %s, %s in _exp.items():" % (temp, temp2))
+            stream.write("for %s, %s in %s.items():" % \
+                         (temp, temp2, stream.symbols.tmp))            
             stream.indent()
             if unicode_required_flag:
                 stream.write(
@@ -535,7 +538,8 @@ class Tag(object):
                     stream.write("%s = %s.encode('utf-8')" % (t, t))
                     stream.outdent()
                 stream.escape(temp2)
-                stream.write("_write(' %%s=\"%%s\"' %% (%s, %s))" % (temp, temp2))
+                stream.write("%s(' %%s=\"%%s\"' %% (%s, %s))" % \
+                             (stream.symbols.write, temp, temp2))
                 stream.outdent()
                 stream.write("elif %s is not None:" % temp2)
             else:
@@ -543,7 +547,8 @@ class Tag(object):
             stream.indent()
             stream.write("%s = str(%s)" % (temp2, temp2))
             stream.escape(temp2)
-            stream.write("_write(' %%s=\"%%s\"' %% (%s, %s))" % (temp, temp2))
+            stream.write("%s(' %%s=\"%%s\"' %% (%s, %s))" % \
+                         (stream.symbols.write, temp, temp2))
             stream.outdent()
             stream.outdent()
             
@@ -554,21 +559,21 @@ class Tag(object):
             if unicode_required_flag:
                 stream.write("if isinstance(%s, unicode):" % temp)
                 stream.indent()
-                stream.write("_write(' %s=\"')" % attribute)
-                stream.write("_esc = %s.encode('utf-8')" % temp)
-                stream.escape("_esc")
-                stream.write("_write(_esc)")
-                stream.write("_write('\"')")
+                stream.write("%s(' %s=\"')" % (stream.symbols.write, attribute))
+                stream.write("%s = %s.encode('utf-8')" % (stream.symbols.tmp, temp))
+                stream.escape(stream.symbols.tmp)
+                stream.write("%s(%s)" % (stream.symbols.write, stream.symbols.tmp))
+                stream.write("%s('\"')" % stream.symbols.write)
                 stream.outdent()
                 stream.write("elif %s is not None:" % temp)
             else:
                 stream.write("if %s is not None:" % temp)
             stream.indent()
-            stream.write("_write(' %s=\"')" % attribute)
-            stream.write("_esc = str(%s)" % temp)
-            stream.escape("_esc")
-            stream.write("_write(_esc)")
-            stream.write("_write('\"')")
+            stream.write("%s(' %s=\"')" % (stream.symbols.write, attribute))
+            stream.write("%s = str(%s)" % (stream.symbols.tmp, temp))
+            stream.escape(stream.symbols.tmp)
+            stream.write("%s(%s)" % (stream.symbols.write, stream.symbols.tmp))
+            stream.write("%s('\"')" % stream.symbols.write)
             stream.outdent()
             assign.end(stream)
 
@@ -589,63 +594,61 @@ class Tag(object):
 
 class Repeat(object):
     """
-      >>> from z3c.pt.generation import CodeIO
-      >>> from z3c.pt.testing import pyexp
+    >>> from z3c.pt import testing
 
     We need to set up the repeat object.
 
-      >>> from z3c.pt import utils
-      >>> repeat = utils.repeatdict()
+    >>> from z3c.pt import utils
+    >>> repeat = utils.repeatdict()
 
     Simple repeat loop and repeat data structure:
 
-      >>> from StringIO import StringIO
-      >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
-      >>> _repeat = Repeat("i", pyexp("range(5)"))
-      >>> _repeat.begin(stream)
-      >>> stream.write("r = repeat['i']")
-      >>> stream.write(
-      ...     "print (i, r.index, r.start, r.end, r.number(), r.odd(), r.even())")
-      >>> _repeat.end(stream)
-      >>> exec stream.getvalue()
-      (0, 0, True, False, 1, False, True)
-      (1, 1, False, False, 2, True, False)
-      (2, 2, False, False, 3, False, True)
-      (3, 3, False, False, 4, True, False)
-      (4, 4, False, True, 5, False, True)
-      >>> _repeat.end(stream)
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> _repeat = Repeat("i", testing.pyexp("range(5)"))
+    >>> _repeat.begin(stream)
+    >>> stream.write("r = repeat['i']")
+    >>> stream.write(
+    ...     "print (i, r.index, r.start, r.end, r.number(), r.odd(), r.even())")
+    >>> _repeat.end(stream)
+    >>> exec stream.getvalue()
+    (0, 0, True, False, 1, False, True)
+    (1, 1, False, False, 2, True, False)
+    (2, 2, False, False, 3, False, True)
+    (3, 3, False, False, 4, True, False)
+    (4, 4, False, True, 5, False, True)
+    >>> _repeat.end(stream)
 
     A repeat over an empty set.
 
-      >>> stream = CodeIO()
-      >>> _repeat = Repeat("j", pyexp("range(0)"))
-      >>> _repeat.begin(stream)
-      >>> _repeat.end(stream)
-      >>> exec stream.getvalue()
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> _repeat = Repeat("j", testing.pyexp("range(0)"))
+    >>> _repeat.begin(stream)
+    >>> _repeat.end(stream)
+    >>> exec stream.getvalue()
 
     A repeat over a non-iterable raises an exception.
 
-      >>> stream = CodeIO()
-      >>> _repeat = Repeat("j", pyexp("None"))
-      >>> _repeat.begin(stream)
-      >>> _repeat.end(stream)
-      >>> exec stream.getvalue()
-      Traceback (most recent call last):
-       ...
-      TypeError: Can only repeat over an iterable object (None).
-      
-    Simple for loop:
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> _repeat = Repeat("j", testing.pyexp("None"))
+    >>> _repeat.begin(stream)
+    >>> _repeat.end(stream)
+    >>> exec stream.getvalue()
+    Traceback (most recent call last):
+     ...
+    TypeError: Can only repeat over an iterable object (None).
 
-      >>> stream = CodeIO()
-      >>> _for = Repeat("i", pyexp("range(3)"), repeatdict=False)
-      >>> _for.begin(stream)
-      >>> stream.write("print i")
-      >>> _for.end(stream)
-      >>> exec stream.getvalue()
-      0
-      1
-      2
-      >>> _for.end(stream)
+    Simple for loop:
+  
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> _for = Repeat("i", testing.pyexp("range(3)"), repeatdict=False)
+    >>> _for.begin(stream)
+    >>> stream.write("print i")
+    >>> _for.end(stream)
+    >>> exec stream.getvalue()
+    0
+    1
+    2
+    >>> _for.end(stream)
 
     """
 
@@ -701,14 +704,12 @@ class Repeat(object):
 
 class Write(object):
     """
-    >>> from z3c.pt.generation import CodeIO
-    >>> from z3c.pt.testing import pyexp
-    >>> from StringIO import StringIO
+    >>> from z3c.pt import testing
 
     Basic write:
-    
-    >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
-    >>> write = Write(pyexp("'New York'"))
+
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> write = Write(testing.pyexp("'New York'"))
     >>> write.begin(stream)
     >>> write.end(stream)
     >>> exec stream.getvalue()
@@ -717,8 +718,8 @@ class Write(object):
 
     Try-except parts:
 
-    >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
-    >>> write = Write(pyexp("undefined | 'New Delhi'"))
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> write = Write(testing.pyexp("undefined | 'New Delhi'"))
     >>> write.begin(stream)
     >>> write.end(stream)
     >>> exec stream.getvalue()
@@ -727,7 +728,7 @@ class Write(object):
 
     Unicode:
 
-    >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
+    >>> _out, _write, stream = testing.setup_stream()
     >>> write = Write(types.value("unicode('La Pe\xc3\xb1a', 'utf-8')"))
     >>> write.begin(stream)
     >>> write.end(stream)
@@ -752,44 +753,34 @@ class Write(object):
     def begin(self, stream):
         temp = stream.save()
 
+        def write(template):
+            stream.write(template % stream.symbols.as_dict())
+            
         if self.value:
             expr = self.value
         else:
             self.assign.begin(stream, temp)
             expr = temp
 
-        stream.write("_urf = %s" % expr)
-
-        stream.write("if _urf is not None:")
+        stream.write("%s = %s" % (stream.symbols.tmp, expr))
+        write("if %(tmp)s is not None:")
         stream.indent()
         if unicode_required_flag:
-            stream.write("if isinstance(_urf, unicode):")
+            write("if isinstance(%(tmp)s, unicode):")
             stream.indent()
-            stream.write("_urf = _urf.encode('utf-8')")
+            write("%(tmp)s = %(tmp)s.encode('utf-8')")
             stream.outdent()
-            stream.write("else:")
+            write("else:")
             stream.indent()
-            stream.write("_urf = str(_urf)")
+            write("%(tmp)s = str(%(tmp)s)")
             stream.outdent()
         else:
-            stream.write("_urf = str(_urf)")
+            write("%(tmp)s = str(%(tmp)s)")
         if self.structure:
-            stream.write("_write(_urf)")
+            write("%(write)s(%(tmp)s)")
         else:
-            # Inlined escape function
-            stream.write("if '&' in _urf:")
-            stream.indent()
-            stream.write("_urf = _urf.replace('&', '&amp;')")
-            stream.outdent()
-            stream.write("if '<' in _urf:")
-            stream.indent()
-            stream.write("_urf = _urf.replace('<', '&lt;')")
-            stream.outdent()
-            stream.write("if '>' in _urf:")
-            stream.indent()
-            stream.write("_urf = _urf.replace('>', '&gt;')")
-            stream.outdent()
-            stream.write("_write(_urf)")
+            stream.escape(stream.symbols.tmp)
+            write("%(write)s(%(tmp)s)")
         stream.outdent()
 
         # validate XML if enabled
@@ -802,7 +793,7 @@ class Write(object):
 
             stream.write("import z3c.pt.etree")
             stream.write("_ET = z3c.pt.etree.import_elementtree()")
-            stream.write("_ET.fromstring('<div>%s</div>' % _urf)")
+            write("_ET.fromstring('<div>%%s</div>' %% %(tmp)s)")
 
     def end(self, stream):
         if self.assign:
@@ -811,12 +802,11 @@ class Write(object):
 
 class UnicodeWrite(Write):
     """
-    >>> from z3c.pt.generation import CodeIO
-    >>> from StringIO import StringIO
+    >>> from z3c.pt import testing
 
     Basic write:
 
-    >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
+    >>> _out, _write, stream = testing.setup_stream()
     >>> write = Write(types.value("'New York'"))
     >>> write.begin(stream)
     >>> write.end(stream)
@@ -826,7 +816,7 @@ class UnicodeWrite(Write):
 
     Unicode:
 
-    >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
+    >>> _out, _write, stream = testing.setup_stream()
     >>> write = Write(types.value("unicode('La Pe\xc3\xb1a', 'utf-8')"))
     >>> write.begin(stream)
     >>> write.end(stream)
@@ -839,7 +829,7 @@ class UnicodeWrite(Write):
 
     Invalid:
 
-    >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
+    >>> _out, _write, stream = testing.setup_stream()
     >>> write = Write(types.value("None"))
     >>> write.begin(stream)
     >>> write.end(stream)
@@ -857,21 +847,19 @@ class UnicodeWrite(Write):
             self.assign.begin(stream, temp)
             expr = temp
 
-        stream.write("_write(%s)" % expr)
+        stream.write("%s(%s)" % (stream.symbols.write, expr))
 
 class Out(object):
     """
-      >>> from z3c.pt.generation import CodeIO
-      >>> from z3c.pt.testing import pyexp
-      >>> from StringIO import StringIO
+    >>> from z3c.pt import testing
       
-      >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
-      >>> out = Out('Hello World!')
-      >>> out.begin(stream)
-      >>> out.end(stream)
-      >>> exec stream.getvalue()
-      >>> _out.getvalue()
-      'Hello World!'      
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> out = Out('Hello World!')
+    >>> out.begin(stream)
+    >>> out.end(stream)
+    >>> exec stream.getvalue()
+    >>> _out.getvalue()
+    'Hello World!'
     """
     
     def __init__(self, string, defer=False):

@@ -9,6 +9,10 @@ class value(str, expression):
     def __repr__(self):
         return 'value(%s)' % str.__repr__(self)
 
+class template(value):
+    def __repr__(self):
+        return 'template(%s)' % str.__repr__(self)
+
 class join(tuple, expression):
     def __repr__(self):
         return 'join'+tuple.__repr__(self)

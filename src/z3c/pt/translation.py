@@ -15,16 +15,13 @@ import etree
 class Element(etree.ElementBase):
     """Base compiler element class.
 
-    This class represents a node in the template tree. To start
-    compilation at this node, use the ``start`` method, providing a
-    code stream object.
+    This class represents an element in the template document tree. To
+    start compilation at this node, use the ``start`` method,
+    providing a code stream object.
     """
 
-    metal_slot_prefix = '_fill'
-    metal_variable = '_metal'
-    macro_variable = '_macro'
-    scope_variable = '_scope'
-    
+    symbols = config.SYMBOLS
+
     def start(self, stream):
         self._stream = stream
         self.visit()
@@ -82,14 +79,14 @@ class Element(etree.ElementBase):
         # i18n domain
         if self.node.translation_domain is not None:
             _.append(clauses.Define(
-                "_domain", types.value(repr(self.node.translation_domain))))
+                self.symbols.domain, types.value(repr(self.node.translation_domain))))
 
         # variable definitions
         if self.node.define is not None:
             for declaration, expression in self.node.define:
                 if declaration.global_scope:
                     _.append(clauses.Define(
-                        declaration, expression, self.scope_variable))
+                        declaration, expression, self.symbols.scope))
                 else:
                     _.append(clauses.Define(declaration, expression))
 
@@ -103,13 +100,13 @@ class Element(etree.ElementBase):
                 # define macro
                 subclauses = []
                 subclauses.append(clauses.Method(
-                    self.macro_variable, macro.args))
+                    self.symbols.macro, macro.args))
                 subclauses.append(clauses.Visit(element))
                 _.append(clauses.Group(subclauses))
                 
                 # assign to variable
                 _.append(clauses.Define(
-                    macro.name, types.parts((types.value(self.macro_variable),))))
+                    macro.name, types.parts((types.value(self.symbols.macro),))))
 
         # tag tail (deferred)
         tail = self.tail
@@ -136,7 +133,7 @@ class Element(etree.ElementBase):
         # macro slot definition
         if self.node.define_slot:
             # check if slot has been filled
-            variable = self.metal_slot_prefix + self.node.define_slot
+            variable = self.symbols.slot + self.node.define_slot
             if variable in itertools.chain(*self.stream.scope):
                 content = types.value(variable)
 
@@ -223,19 +220,19 @@ class Element(etree.ElementBase):
             kwargs = []
             for element in self.xpath(
                 './/*[@metal:fill-slot]', namespaces={'metal': config.METAL_NS}):
-                variable = self.metal_slot_prefix+element.node.fill_slot
+                variable = self.symbols.slot+element.node.fill_slot
                 kwargs.append((variable, variable))
                 
                 subclauses = []
                 subclauses.append(clauses.Define(
-                    types.declaration(('_out', '_write')),
-                    types.value('generation.initialize_stream()')))
+                    types.declaration((self.symbols.out, self.symbols.write)),
+                    types.template('%(generation)s.initialize_stream()')))
                 subclauses.append(clauses.Visit(element))
                 subclauses.append(clauses.Assign(
-                    types.value('_out.getvalue()'), variable))
+                    types.template('%(out)s.getvalue()'), variable))
                 _.append(clauses.Group(subclauses))
                 
-            _.append(clauses.Assign(self.node.use_macro, self.metal_variable))
+            _.append(clauses.Assign(self.node.use_macro, self.symbols.metal))
 
             # compute macro function arguments and create argument string
             arguments = ", ".join(
@@ -244,7 +241,7 @@ class Element(etree.ElementBase):
                 tuple("%s=%s" % kwarg for kwarg in kwargs))
                 
             _.append(clauses.Write(
-                types.value("%s(%s)" % (self.metal_variable, arguments))))
+                types.value("%s(%s)" % (self.symbols.metal, arguments))))
 
         # translate body
         elif self.node.translate is not None:
@@ -257,7 +254,7 @@ class Element(etree.ElementBase):
             elements = [e for e in self if e.i18n_name]
 
             if elements:
-                mapping = '_mapping'
+                mapping = self.symbols.mapping
                 _.append(clauses.Assign(types.value('{}'), mapping))
             else:
                 mapping = 'None'
@@ -267,23 +264,23 @@ class Element(etree.ElementBase):
 
                 subclauses = []
                 subclauses.append(clauses.Define(
-                    types.declaration(('_out', '_write')),
-                    types.value('generation.initialize_stream()')))
+                    types.declaration((self.symbols.out, self.symbols.write)),
+                    types.template('%(generation)s.initialize_stream()')))
                 subclauses.append(clauses.Visit(element))
                 subclauses.append(clauses.Assign(
-                    types.value('_out.getvalue()'),
+                    types.template('%(out)s.getvalue()'),
                     "%s['%s']" % (mapping, name)))
 
                 _.append(clauses.Group(subclauses))
 
             _.append(clauses.Assign(
                 _translate(types.value(repr(msgid)), mapping=mapping,
-                           default='_marker'), '_result'))
+                           default=self.symbols.marker), self.symbols.result))
 
             # write translation to output if successful, otherwise
             # fallback to default rendition; 
-            result = types.value('_result')
-            condition = types.value('_result is not _marker')
+            result = types.value(self.symbols.result)
+            condition = types.template('%(result)s is not %(marker)s')
             _.append(clauses.Condition(condition,
                         [clauses.UnicodeWrite(result)]))
 
@@ -444,8 +441,15 @@ def translate_etree(root, macro=None, doctype=None,
         wrapper = generation.macro_wrapper
     else:
         wrapper = generation.template_wrapper
-    generator = generation.Generator(params, wrapper)
-    stream = generator.stream
+
+    # initialize code stream object
+    stream = generation.CodeIO(
+        root.symbols, indentation=1, indentation_string="\t")
+
+    # initialize variable scope
+    stream.scope.append(set(
+        (stream.symbols.out, stream.symbols.write, stream.symbols.scope) + \
+        tuple(params)))
 
     # output doctype if any
     if doctype and isinstance(doctype, (str, unicode)):
@@ -456,8 +460,46 @@ def translate_etree(root, macro=None, doctype=None,
         stream.end([doctype])
         stream.scope.pop()
 
+    # start generation
     root.start(stream)
-    return generator
+
+    extra = ''
+
+    # prepare args
+    args = ', '.join(params)
+    if args:
+        args += ', '
+
+    # prepare kwargs
+    kwargs = ', '.join("%s=None" % param for param in params)
+    if kwargs:
+        kwargs += ', '
+
+    # prepare selectors
+    for selector in stream.selectors:
+        extra += '%s=None, ' % selector
+
+    # we need to ensure we have _context for the i18n handling in
+    # the arguments. the default template implementations pass
+    # this in explicitly.
+    if stream.symbols.context not in params:
+        extra += '%s=None, ' % stream.symbols.context
+
+    code = stream.getvalue()
+
+    class generator(object):
+        @property
+        def stream(self):
+            return stream
+        
+        def __call__(self):
+            parameters = dict(
+                args=args, kwargs=kwargs, extra=extra, code=code)
+            parameters.update(stream.symbols.__dict__)
+
+            return wrapper % parameters, {stream.symbols.generation: generation}
+
+    return generator()
 
 def translate_text(body, parser, *args, **kwargs):
     root, doctype = parser.parse("<html xmlns='%s'></html>" % config.XHTML_NS)
@@ -466,9 +508,10 @@ def translate_text(body, parser, *args, **kwargs):
     return translate_etree(root, doctype=doctype, *args, **kwargs)
     
 def _translate(value, mapping=None, default=None):
-    format = ("_translate(%s, domain=_domain, mapping=%s, context=_context, "
-              "target_language=_target_language, default=%s)")
-    return types.value(format % (value, mapping, default))
+    format = "_translate(%s, domain=%%(domain)s, mapping=%s, context=%%(context)s, " \
+             "target_language=%%(language)s, default=%s)"
+    return types.template(
+        format % (value, mapping, default))
 
 def _not(value):
     return types.value("not (%s)" % value)

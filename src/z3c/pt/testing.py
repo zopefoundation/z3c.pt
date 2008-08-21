@@ -1,4 +1,5 @@
 import translation
+import generation
 import expressions
 import macro
 import etree
@@ -8,8 +9,20 @@ import utils
 import zpt
 import genshi
 
+from StringIO import StringIO
+
 def pyexp(string):
     return expressions.PythonTranslation.expression(string)
+
+def setup_stream():
+    class symbols(translation.Element.symbols):
+        out = '_out'
+        write = '_write'
+
+    out = StringIO()
+    write = out.write
+    stream = generation.CodeIO(symbols)
+    return out, write, stream
 
 def cook(generator, **kwargs):
     source, _globals = generator()

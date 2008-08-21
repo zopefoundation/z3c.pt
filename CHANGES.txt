@@ -4,6 +4,8 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- System variables are now defined in a configuration class. [malthe]
+
 - Improve performance of codegen by not repeatedly calling
   an expensive "flatten" function. [chrism]
 

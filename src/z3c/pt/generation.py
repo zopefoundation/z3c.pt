@@ -10,23 +10,24 @@ import z3c.pt.generation
 from z3c.pt.config import DISABLE_I18N
 
 template_wrapper = """\
-def render(%(args)s%(extra)starget_language=None):
-\tglobal generation
+def render(%(args)s%(extra)s%(language)s=None):
+\tglobal %(generation)s
 
-\t_out, _write = generation.initialize_stream()
-\t_attributes, repeat = generation.initialize_tal()
-\t_domain, _negotiate, _translate = generation.initialize_i18n()
-\t_marker = generation.initialize_helpers()
-\t_path = generation.initialize_traversal()
-\t_scope = {}
-\t_target_language = _negotiate(_context, target_language)
+\t%(out)s, %(write)s = generation.initialize_stream()
+\t%(attributes)s, %(repeat)s = generation.initialize_tal()
+\t%(domain)s, %(negotiate)s, %(translate)s = generation.initialize_i18n()
+\t%(marker)s = %(generation)s.initialize_helpers()
+\t%(path)s = %(generation)s.initialize_traversal()
+\t%(scope)s = {}
+
+\t%(language)s = %(negotiate)s(%(context)s, %(language)s)
 %(code)s
-\treturn _out.getvalue()
+\treturn %(out)s.getvalue()
 """
 
 macro_wrapper = """\
 def render(%(kwargs)s%(extra)s):
-\tglobal generation
+\tglobal %(generation)s
 %(code)s
 """
 
@@ -67,44 +68,6 @@ def initialize_stream():
 def initialize_traversal():
     return expressions.PathTranslation.traverse
 
-class Generator(object):
-    def __init__(self, params, wrapper):
-        self.params = list(params)
-        self.wrapper = wrapper
-        self.stream = CodeIO(indentation=1, indentation_string="\t")
-
-        # initialize variable scope
-        self.stream.scope.append(set(('_out', '_write', '_scope') + tuple(params)))
-
-    def __call__(self):
-        params = self.params
-        extra = ''
-
-        # prepare args
-        args = ', '.join(params)
-        if args:
-            args += ', '
-
-        # prepare kwargs
-        kwargs = ', '.join("%s=None" % param for param in params)
-        if kwargs:
-            kwargs += ', '
-            
-        # prepare selectors
-        for selector in self.stream.selectors:
-            extra += '%s=None, ' % selector
-
-        # we need to ensure we have _context for the i18n handling in
-        # the arguments. the default template implementations pass
-        # this in explicitly.
-        if '_context' not in params:
-            extra += '_context=None, '
-
-        code = self.stream.getvalue()
-        return self.wrapper % dict(
-            args=args, kwargs=kwargs, extra=extra, code=code), \
-            {'generation': z3c.pt.generation}
-
 class BufferIO(list):
     write = list.append
 
@@ -127,8 +90,9 @@ class CodeIO(BufferIO):
     t_prefix = '_tmp'
     v_prefix = '_var'
 
-    def __init__(self, indentation=0, indentation_string="\t"):
+    def __init__(self, symbols=None, indentation=0, indentation_string="\t"):
         BufferIO.__init__(self)
+        self.symbols = symbols or object
         self.indentation = indentation
         self.indentation_string = indentation_string
         self.queue = ''
@@ -169,8 +133,9 @@ class CodeIO(BufferIO):
         if self.queue:
             queue = self.queue
             self.queue = ''
-            self.write("_write('%s')" %
-                       queue.replace('\n', '\\n').replace("'", "\\'"))
+            self.write(
+                "%s('%s')" %
+                (self.symbols.write, queue.replace('\n', '\\n').replace("'", "\\'")))
 
     def write(self, string):
         if isinstance(string, unicode):
