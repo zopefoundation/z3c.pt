@@ -343,23 +343,6 @@ py:match
   ];
   </script>
 
-:: Both py:for and ${..} should be ignored in a comment, or both should be
-   handled.
-
-  >>> print render_genshi("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...       xmlns:py="http://genshi.edgewall.org">
-  ... <!--
-  ... <script type="text/javascript">
-  ...   <py:for each="i in range(10)">
-  ...     alert(${i});
-  ...   </py:for>
-  ...  </script>
-  ... -->
-  ...  </div>
-  ...  """) 
-  one two
-
 :: Strange looping behaviour
 
   >>> brands=[dict(id=1, title="One"),
