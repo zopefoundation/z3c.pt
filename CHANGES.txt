@@ -4,6 +4,9 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Improve performance of codegen by not repeatedly calling
+  an expensive "flatten" function. [chrism]
+
 - Remove ``safe_render`` implementation detail.  It hid information
   in tracebacks. [chrism]
 

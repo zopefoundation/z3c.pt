@@ -8,16 +8,18 @@ import __builtin__
 CONSTANTS = frozenset(['False', 'True', 'None', 'NotImplemented', 'Ellipsis'])
 UNDEFINED = object()
 
-def flatten(items):
-    """Flattens a potentially nested sequence into a flat list."""
-
-    retval = []
-    for item in items:
-        if isinstance(item, (frozenset, list, set, tuple)):
-            retval += flatten(item)
+def flatten(list):
+    """Flattens a potentially nested sequence into a flat list.
+    """
+    l = []
+    for elt in list:
+        t = type(elt)
+        if t is set or t is tuple or t is list or t is frozenset:
+            for elt2 in flatten(elt):
+                l.append(elt2)
         else:
-            retval.append(item)
-    return retval
+            l.append(elt)
+    return l
 
 class Lookup(object):
     """Abstract base class for variable lookup implementations."""
@@ -52,13 +54,21 @@ class Lookup(object):
 class TemplateASTTransformer(ASTTransformer):
     """Concrete AST transformer that implements the AST transformations needed
     for code embedded in templates.
+
     """
 
     def __init__(self, globals):
         self.locals = [CONSTANTS]
+        builtin = dir(__builtin__)
         self.locals.append(set(globals))
-        self.locals.append(set(dir(__builtin__)))
-        
+        self.locals.append(set(builtin))
+        # self.names is an optimization for visitName (so we don't
+        # need to flatten the locals every time it's called)
+        self.names = set()
+        self.names.update(CONSTANTS)
+        self.names.update(builtin)
+        self.names.update(globals)
+
     def visitConst(self, node):
         if isinstance(node.value, unicode):
             return ast.Const(node.value.encode('utf-8'))
@@ -68,13 +78,16 @@ class TemplateASTTransformer(ASTTransformer):
         if len(self.locals) > 1:
             if node.flags == 'OP_ASSIGN':
                 self.locals[-1].add(node.name)
+                self.names.add(node.name)
             else:
                 self.locals[-1].remove(node.name)
+                self.names.remove(node.name)
         return node
 
     def visitClass(self, node):
         if len(self.locals) > 1:
             self.locals[-1].add(node.name)
+            self.names.add(node.name)
         self.locals.append(set())
         try:
             return ASTTransformer.visitClass(self, node)
@@ -91,7 +104,9 @@ class TemplateASTTransformer(ASTTransformer):
     def visitFunction(self, node):
         if len(self.locals) > 1:
             self.locals[-1].add(node.name)
+            self.names.add(node.name)
         self.locals.append(set(node.argnames))
+        self.names.update(node.argnames)
         try:
             return ASTTransformer.visitFunction(self, node)
         finally:
@@ -105,7 +120,9 @@ class TemplateASTTransformer(ASTTransformer):
             self.locals.pop()
 
     def visitLambda(self, node):
-        self.locals.append(set(flatten(node.argnames)))
+        argnames = flatten(node.argnames)
+        self.names.update(argnames)
+        self.locals.append(set(argnames))
         try:
             return ASTTransformer.visitLambda(self, node)
         finally:
@@ -121,7 +138,7 @@ class TemplateASTTransformer(ASTTransformer):
     def visitName(self, node):
         # If the name refers to a local inside a lambda, list comprehension, or
         # generator expression, leave it alone
-        if node.name not in flatten(self.locals):
+        if not node.name in self.names:
             # Otherwise, translate the name ref into a context lookup
             func_args = [ast.Name('_scope'), ast.Const(node.name)]
             node = ast.CallFunc(ast.Name('_lookup_name'), func_args)
