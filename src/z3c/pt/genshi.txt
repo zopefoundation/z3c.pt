@@ -394,6 +394,23 @@ py:match
   </script>
   </div>
 
+:: Sometimes a function does not return a result
+
+  >>> print render_genshi("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...       xmlns:py="http://genshi.edgewall.org">
+  ... <ul py:def="rendermenu(menu)" py:if="menu">
+  ...   Menu entry
+  ...   ${rendermenu([])}
+  ... </ul>
+  ... </div>""")
+  <div xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:py="http://genshi.edgewall.org">
+  <ul py:def="rendermenu(menu)" py:if="menu">
+    Menu entry
+  </ul>
+  </div>
+
   
 .. _py:with specs: http://genshi.edgewall.org/wiki/Documentation/0.4.x/xml-templates.html#py-with
 
