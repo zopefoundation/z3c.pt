@@ -75,7 +75,7 @@ class ZopePageTemplateElement(
         def translation_domain(self):
             return self.element.i18n_domain
 
-        method = None
+        macro = None
         
         @property
         def use_macro(self):

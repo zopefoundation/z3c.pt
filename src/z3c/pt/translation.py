@@ -52,7 +52,7 @@ class Node(object):
     def visit(self, skip_macro=True):
         assert self.stream is not None, "Must use ``start`` method."
 
-        if skip_macro and (self.method or self.define_macro):
+        if skip_macro and (self.define_macro):
             return
 
         for element in self.element:
@@ -84,23 +84,14 @@ class Node(object):
                     _.append(clauses.Define(declaration, expression))
 
         # macro method
-        for element in tuple(self.element):
-            if not isinstance(element, Element):
-                continue
-
-            macro = element.node.method
-            if macro is not None:
-                # define macro
-                subclauses = []
-                subclauses.append(clauses.Method(
-                    self.symbols.macro, macro.args))
-                subclauses.append(clauses.Visit(element.node))
-                _.append(clauses.Group(subclauses))
+        macro = self.macro
+        if macro is not None:
+            _.append(clauses.Method(
+                macro.name, macro.args))
+            _.append(clauses.Assign(
+                types.value(macro.name), "%s['%s']" % \
+                (self.symbols.scope, macro.name)))
                 
-                # assign to variable
-                _.append(clauses.Define(
-                    macro.name, types.parts((types.value(self.symbols.macro),))))
-
         # tag tail (deferred)
         tail = self.element.tail
         if tail and not self.fill_slot:

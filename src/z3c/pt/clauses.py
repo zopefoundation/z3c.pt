@@ -872,7 +872,6 @@ class Out(object):
         
     def end(self, stream):
         stream.cook()
-        
         if self.defer:
             stream.out(self.string)
 

@@ -63,7 +63,7 @@ class GenshiElement(translation.Element, translation.VariableInterpolation):
         translation_domain = None
 
         @property
-        def method(self):
+        def macro(self):
             return self.element.py_def
 
         use_macro = None

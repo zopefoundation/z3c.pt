@@ -4,6 +4,8 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Genshi macros (py:def) are now available globally. [malthe]
+
 - A syntax error is now raised when an interpolation expression is not
   exhausted, e.g. only a part of the string is a valid
   Python-expression. [malthe]
