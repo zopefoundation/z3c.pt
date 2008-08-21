@@ -394,7 +394,7 @@ py:match
   </script>
   </div>
 
-:: Sometimes a function does not return a result
+:: Very basic recursing
 
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
@@ -411,6 +411,29 @@ py:match
   </ul>
   </div>
 
+:: Slightly more complex recursive function calls
+ 
+  >>> print render_genshi("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...       xmlns:py="http://genshi.edgewall.org">
+  ...   <ul py:def="rendermenu(menu)">
+  ...     <li py:for="entry in menu"
+  ...         py:attrs="{'class' : entry['current'] and 'current' or None}">
+  ...       <a py:attrs="dict(href=entry['url'])"
+  ...          py:content="entry['title']">Merken</a>
+  ...       
+  ...       ${rendermenu(entry.get('children', []))}
+  ...     </li>
+  ...   </ul>
+  ...   ${rendermenu(menu))}
+  ... </div>""", menu=[dict(title=u"Menu entry", url="/test", current=True)])
+  <div xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:py="http://genshi.edgewall.org">
+  <ul>
+    <li>
+    </li>
+  </ul>
+  </div>
   
 .. _py:with specs: http://genshi.edgewall.org/wiki/Documentation/0.4.x/xml-templates.html#py-with
 
