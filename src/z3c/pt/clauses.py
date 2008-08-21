@@ -424,11 +424,11 @@ class Group(object):
         pass
 
 class Visit(object):
-    def __init__(self, element):
-        self.element = element
+    def __init__(self, node):
+        self.node = node
         
     def begin(self, stream):
-        self.element.visit(skip_macro=False)
+        self.node.visit(skip_macro=False)
 
     def end(self, stream):
         pass

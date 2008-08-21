@@ -13,10 +13,7 @@ class ZopePageTemplateElement(
     Implements the ZPT subset of the attribute template language.
     """
 
-    class node(object):
-        def __init__(self, element):
-            self.element = element
-            
+    class node(translation.Node):
         @property
         def omit(self):
             if self.element.tal_omit is not None:
@@ -69,6 +66,10 @@ class ZopePageTemplateElement(
         @property
         def translate(self):
             return self.element.i18n_translate
+
+        @property
+        def translation_name(self):
+            return self.element.i18n_name
 
         @property
         def translation_domain(self):

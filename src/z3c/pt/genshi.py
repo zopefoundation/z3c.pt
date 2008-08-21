@@ -12,10 +12,7 @@ class GenshiElement(translation.Element, translation.VariableInterpolation):
 
     translator = expressions.PythonTranslation
     
-    class node(object):
-        def __init__(self, element):
-            self.element = element
-            
+    class node(translation.Node):
         @property
         def omit(self):
             if self.element.py_strip is not None:
@@ -62,6 +59,7 @@ class GenshiElement(translation.Element, translation.VariableInterpolation):
                 self.element, config.XHTML_NS)
 
         translate = None
+        translation_name = None
         translation_domain = None
 
         @property
@@ -161,6 +159,14 @@ class GenshiElement(translation.Element, translation.VariableInterpolation):
             self.attrib[name] += define
         else:
             self.attrib[name] = define
+
+    def _pull_attribute(self, name, default=None):
+        attrib = self.attrib
+        if name in attrib:
+            value = attrib[name]
+            del attrib[name]
+            return value
+        return default    
 
 class XHTMLElement(GenshiElement):
     """XHTML namespace element."""

@@ -198,7 +198,11 @@ except ImportError:
         def getroottree(self):
             while self._parent is not None:
                 self = self._parent
-            return self
+            class roottree(object):
+                @classmethod
+                def getroot(cls):
+                    return self
+            return roottree
             
         def insert(self, position, element):
             element._parent = self

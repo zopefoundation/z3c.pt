@@ -15,7 +15,7 @@ def pyexp(string):
     return expressions.PythonTranslation.expression(string)
 
 def setup_stream():
-    class symbols(translation.Element.symbols):
+    class symbols(translation.Node.symbols):
         out = '_out'
         write = '_write'
 
@@ -74,10 +74,7 @@ class MockElement(translation.Element, translation.VariableInterpolation):
     def update(self):
         translation.VariableInterpolation.update(self)
         
-    class node(object):
-        def __init__(self, element):
-            self.element = element
-
+    class node(translation.Node):
         def __getattr__(self, name):
             return None
 
