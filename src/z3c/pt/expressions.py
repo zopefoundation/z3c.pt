@@ -455,6 +455,9 @@ class ExpressionTranslation(object):
                 "Interpolation expressions must of the "
                 "form ${<expression>} (%s)" % string)
 
+        if expression and not m.group('expression'):
+            raise SyntaxError(expression)
+
         return m
 
     def method(self, string):

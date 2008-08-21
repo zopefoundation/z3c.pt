@@ -4,6 +4,10 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- A syntax error is now raised when an interpolation expression is not
+  exhausted, e.g. only a part of the string is a valid
+  Python-expression. [malthe]
+
 - System variables are now defined in a configuration class. [malthe]
 
 - Improve performance of codegen by not repeatedly calling
