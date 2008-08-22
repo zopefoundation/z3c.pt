@@ -183,6 +183,7 @@ class METALElement(ZopePageTemplateElement):
     metal_defineslot = utils.attribute('define-slot')
 
 class ZopePageTemplateParser(etree.Parser):
+    """ The parser implementation for ZPT """
     element_mapping = {
         config.XHTML_NS: {None: XHTMLElement},
         config.META_NS: {None: XHTMLElement},

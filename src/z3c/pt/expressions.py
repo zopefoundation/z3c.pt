@@ -495,7 +495,7 @@ class PythonTranslation(ExpressionTranslation):
 
         return types.value(string)
 
-PythonTranslation = PythonTranslation()
+python_translation = PythonTranslation()
 
 class StringTranslation(ExpressionTranslation):
     zope.component.adapts(interfaces.IExpressionTranslation)
@@ -577,7 +577,7 @@ class StringTranslation(ExpressionTranslation):
     def definitions(self, string):
         """
         
-        >>> definitions = StringTranslation(PythonTranslation).definitions
+        >>> definitions = StringTranslation(python_translation).definitions
         
         Semi-colon literal.
         
@@ -598,7 +598,7 @@ class StringTranslation(ExpressionTranslation):
             raise SyntaxError(
                 "Semi-colons in string-expressions must be escaped.")
         return string.replace(';;', ';')
-        
+
 class PathTranslation(ExpressionTranslation):
     path_regex = re.compile(
         r'^((nocall|not):\s*)*([A-Za-z_][A-Za-z0-9_]*)'+
@@ -698,4 +698,4 @@ class PathTranslation(ExpressionTranslation):
 
         return value
 
-PathTranslation = PathTranslation()
+path_translation = PathTranslation()

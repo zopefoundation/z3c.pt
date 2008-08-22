@@ -12,7 +12,7 @@ import genshi
 from StringIO import StringIO
 
 def pyexp(string):
-    return expressions.PythonTranslation.expression(string)
+    return expressions.python_translation.expression(string)
 
 def setup_stream():
     class symbols(translation.Node.symbols):
@@ -69,7 +69,7 @@ class MockTemplate(object):
         return macro.Macros(render)
 
 class MockElement(translation.Element, translation.VariableInterpolation):
-    translator = expressions.PythonTranslation
+    translator = expressions.python_translation
     
     def update(self):
         translation.VariableInterpolation.update(self)

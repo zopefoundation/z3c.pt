@@ -88,6 +88,30 @@ class TestUnicodeAttributeLiteral(unittest.TestCase, PlacelessSetup):
         c = unicode('\xc2\xa9', 'utf-8')
         self.assertEqual(norm(t.render(foo=c)), norm(expected))
 
+class TestZCMLActionsPickleable(unittest.TestCase, PlacelessSetup):
+    # see also
+    # http://groups.google.com/group/z3c_pt/browse_thread/thread/bd0cc94b5fd40ae0?hl=en
+    def setUp(self):
+        PlacelessSetup.setUp(self)
+
+    def tearDown(self):
+        PlacelessSetup.tearDown(self)
+            
+    def test_registry_actions_can_be_pickled_and_unpickled(self):
+        from z3c import pt as package
+        from zope.configuration import config
+        from zope.configuration import xmlconfig
+        context = config.ConfigurationMachine()
+        xmlconfig.registerCommonDirectives(context)
+        context.package = package
+        xmlconfig.include(context, 'configure.zcml', package)
+        context.execute_actions(clear=False)
+        actions = context.actions
+        import pickle
+        dumped = pickle.dumps(actions, -1)
+        new = pickle.loads(dumped)
+        self.assertEqual(len(actions), len(new))
+
 def norm(s):
     return s.replace(' ', '').replace('\n', '')
 

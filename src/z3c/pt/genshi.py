@@ -10,7 +10,7 @@ class GenshiElement(translation.Element, translation.VariableInterpolation):
     Implements the Genshi subset of the attribute template language.
     """
 
-    translator = expressions.PythonTranslation
+    translator = expressions.python_translation
     
     class node(translation.Node):
         @property
@@ -177,7 +177,7 @@ class XHTMLElement(GenshiElement):
     py_for = utils.attribute(
         utils.py_attr('for'), lambda p: p.definition)
     py_with = utils.attribute(utils.py_attr('with'),
-        lambda p: expressions.PythonTranslation.definitions)
+        lambda p: expressions.python_translation.definitions)
     py_choose = utils.attribute(
         utils.py_attr('choose'), lambda p: p.expression)
     py_when = utils.attribute(
@@ -206,7 +206,7 @@ class PyForElement(PyElement):
 
 class PyWithElement(PyElement):
     py_with = utils.attribute(
-        "vars", lambda p: expressions.PythonTranslation.definitions)
+        "vars", lambda p: expressions.python_translation.definitions)
 
 class PyDefElement(PyElement):
     py_def = utils.attribute("function", lambda p: p.method)
@@ -215,6 +215,7 @@ class PyMatchElement(PyElement):
     py_match = utils.attribute("path")
     
 class GenshiParser(etree.Parser):
+    """ The parser implementation for Genshi templates """
     element_mapping = {
         config.XHTML_NS: {None: XHTMLElement},
         config.META_NS: {None: XHTMLElement},

@@ -66,7 +66,7 @@ def initialize_stream():
     return (out, out.write)
 
 def initialize_traversal():
-    return expressions.PathTranslation.traverse
+    return expressions.path_translation.traverse
 
 class BufferIO(list):
     write = list.append

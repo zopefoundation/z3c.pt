@@ -9,7 +9,9 @@ import z3c.pt.generation
 
 class BaseTemplate(object):
     """ Constructs a template object.  Must be passed an input string
-    as ``body``. ``default_expression`` is the default expression
+    as ``body``. ``parser`` is the parser implementation
+    (``ZopeePageTemplateParser`` or ``GenshiParser`` as of this
+    writing). ``default_expression`` is the default expression
     namespace for any ``TALES`` expressions included in the template
     (typically either the string ``path`` or the string ``python``);
     ``python`` is the default if nothing is passed."""
