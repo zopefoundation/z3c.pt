@@ -138,7 +138,8 @@ class GenshiElement(translation.Element, translation.VariableInterpolation):
             name = stream.save()
             element.attrib[utils.py_attr('def')] = "%s(select)" % name
 
-            matches = self.getroottree().xpath(element.py_match, namespaces=nsmap)
+            matches = self.getroottree().getroot().xpath(
+                element.py_match, namespaces=nsmap)
             for match in matches:
                 # save reference to bound xpath-function
                 select = stream.save()
