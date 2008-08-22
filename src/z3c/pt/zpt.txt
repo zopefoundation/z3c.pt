@@ -297,6 +297,11 @@ metal:define-slot, metal:fill-slot
   ...     <span metal:fill-slot="name">earth!</span>
   ...   </div>
   ...   <div metal:use-macro="template.macros['greeting']">
+  ...     <div>
+  ...       <span metal:fill-slot="name">earth!</span>
+  ...     </div>
+  ...   </div>
+  ...   <div metal:use-macro="template.macros['greeting']">
   ...     <!-- display fallback greeting -->
   ...   </div>
   ...   <div metal:use-macro="template.macros['greeting']">
@@ -309,6 +314,11 @@ metal:define-slot, metal:fill-slot
   >>> template = MockTemplate(body, ZopePageTemplateParser)
   >>> print render_zpt(body, template=template)
   <div>
+  <BLANKLINE>
+      <div>
+      Hello, <b class="name">earth!</b>
+    </div>
+  <BLANKLINE>
   <BLANKLINE>
       <div>
       Hello, <b class="name">earth!</b>
