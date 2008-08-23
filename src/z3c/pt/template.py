@@ -5,14 +5,11 @@ import filecache
 import translation
 
 class BaseTemplate(object):
-    """ Constructs a template object.  Must be passed an input string
-    as ``body``. ``parser`` is the parser implementation
-    (``ZopeePageTemplateParser`` or ``GenshiParser`` as of this
-    writing). ``default_expression`` is the default expression
-    namespace for any ``TALES`` expressions included in the template
-    (typically either the string ``path`` or the string ``python``);
-    ``python`` is the default if nothing is passed."""
-
+    """Constructs a template object using the template language
+    defined by ``parser`` (``ZopePageTemplateParser`` or
+    ``GenshiParser`` as of this writing). Must be passed an input
+    string as ``body``."""
+    
     def __init__(self, body, parser):
         self.body = body
         self.parser = parser        
@@ -58,17 +55,13 @@ class BaseTemplate(object):
     __call__ = render
     
 class BaseTemplateFile(BaseTemplate):
-    """ Constructs a template object.  Must be passed an absolute (or
+    """Constructs a template object using the template language
+    defined by ``parser``. Must be passed an absolute (or
     current-working-directory-relative) filename as ``filename``. If
     ``auto_reload`` is true, each time the template is rendered, it
     will be recompiled if it has been changed since the last
-    rendering.  ``cachedir`` is a directory path in which generated
-    Python will be stored and cached if non-None.
-    ``default_expression`` is the default expression namespace for any
-    ``TALES`` expressions included in the template (typically either
-    the string ``path`` or the string ``python``); ``python`` is the
-    default if nothing is passed."""
-
+    rendering."""
+    
     def __init__(self, filename, parser, auto_reload=False):
         BaseTemplate.__init__(
             self, None, parser)
@@ -86,7 +79,7 @@ class BaseTemplateFile(BaseTemplate):
         # persist template registry on disk
         if config.DISK_CACHE:
             self.registry = filecache.TemplateCache(filename)
-        
+
     def _get_filename(self):
         return getattr(self, '_filename', None)
 
