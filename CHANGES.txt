@@ -90,11 +90,11 @@ Version 1.0dev
 - Preliminary support for using ``xml.etree`` as fallback for
   ``lxml.etree``. [malthe]
 
-- Fixed edge case bug where inserting both a numeric entity and a literal 
-  set of unicode bytes into the same document would cause a
-  UnicodeDecodeError. See also 
+- Fixed edge case bug where inserting both a numeric entity and a
+  literal set of unicode bytes into the same document would cause a
+  UnicodeDecodeError. See also
   http://groups.google.com/group/z3c_pt/browse_thread/thread/aea963d25a1778d0?hl=en
- [chrism]
+  [chrism]
 
 - Static attributes are now properly overriden by py:attr-attributes.
   [malthe]
