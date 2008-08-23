@@ -33,9 +33,10 @@ class TemplateCache(object):
             return
 
         try:
-            self.registry = pickle.load(f)
-        except EOFError:
-            pass
+            try:
+                self.registry = pickle.load(f)
+            except EOFError:
+                pass
         finally:
             f.close()
         
