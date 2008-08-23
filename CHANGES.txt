@@ -4,6 +4,10 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Use a global template registry for templates on the
+  file-system. This makes it inexpensive to have multiple template
+  class instances pointing to the same file. [malthe]
+
 - Reimplemented the disk cache to correctly restore all template
   data. This implementation keeps a cache in a pickled format in a
   file next to the original template. [malthe]

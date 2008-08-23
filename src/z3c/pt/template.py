@@ -62,6 +62,8 @@ class BaseTemplateFile(BaseTemplate):
     will be recompiled if it has been changed since the last
     rendering."""
     
+    global_registry = {}
+    
     def __init__(self, filename, parser, auto_reload=False):
         BaseTemplate.__init__(
             self, None, parser)
@@ -78,7 +80,8 @@ class BaseTemplateFile(BaseTemplate):
 
         # persist template registry on disk
         if config.DISK_CACHE:
-            self.registry = filecache.TemplateCache(filename)
+            self.registry = self.global_registry.setdefault(
+                filename, filecache.TemplateCache(filename))
 
     def _get_filename(self):
         return getattr(self, '_filename', None)
