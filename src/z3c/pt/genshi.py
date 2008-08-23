@@ -149,6 +149,9 @@ class GenshiElement(translation.Element, translation.VariableInterpolation):
                 expression = "%s(%s)" % (name, select)
                 match.attrib[utils.py_attr('replace')] = expression
 
+                # save select-variable as element attribute
+                match.attrib[utils.meta_attr('select')] = select
+
         # Step 3: Variable interpolation
         translation.VariableInterpolation.update(self)        
 

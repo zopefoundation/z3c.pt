@@ -1,64 +1,51 @@
 import os
-import marshal
-import py_compile
-import struct
+import config
+import cPickle as pickle
 
-from imp import get_magic
-from sha import sha
-from UserDict import UserDict
+class TemplateCache(object):
+    def __init__(self, filename):
+        self.filename = filename
+        self.registry = {}
+        self.load()
+        
+    def __getitem__(self, key):
+        return self.registry[key]
 
-MAGIC = get_magic()
+    def __setitem__(self, key, template):
+        self.registry[key] = template
+        self.save()
 
-def code_read(filename, timestamp):
-    code = None
-    if os.path.isfile(filename):
-        fd = open(filename, 'rb')
-        if fd.read(4) == MAGIC:
-            ctimestamp = struct.unpack('<I', fd.read(4))[0]
-            if ctimestamp == timestamp:
-                code = marshal.load(fd)
-        fd.close()
-    return code
-
-def code_write(code, filename, timestamp):
-    try:
-        fd = open(filename, 'wb')
+    def __len__(self):
+        return len(self.registry)
+    
+    def get(self, key, default=None):
+        return self.registry.get(key, default)
+    
+    @property
+    def module_filename(self):
+        return self.filename + os.extsep + config.CACHE_EXTENSION
+    
+    def load(self):
         try:
-            # Create a byte code file. See the py_compile module
-            fd.write('\0\0\0\0')
-            fd.write(struct.pack("<I", int(timestamp)))
-            marshal.dump(code, fd)
-            fd.flush()
-            fd.seek(0, 0)
-            fd.write(MAGIC)
+            module_filename = self.module_filename
+            f = open(module_filename, 'rb')
+        except IOError:
+            return
+
+        try:
+            self.registry = pickle.load(f)
+        except EOFError:
+            pass
         finally:
-            fd.close()
-        py_compile.set_creator_type(filename)
-    except (IOError, OSError):
-        pass
+            f.close()
+        
+    def save(self):
+        try:
+            f = open(self.module_filename, 'wb')
+        except IOError:
+            return
 
-class CachingDict(UserDict):
-
-    def __init__(self, cachedir, filename, mtime):
-        UserDict.__init__(self)
-        signature = sha(filename).hexdigest()
-        self.cachedir = os.path.join(cachedir, signature)
-        self.mtime = mtime
-
-    def load(self, pagetemplate):
-        if os.path.isdir(self.cachedir):
-            for cachefile in os.listdir(self.cachedir):
-                value = None
-                cachepath = os.path.join(self.cachedir, cachefile)
-                code = code_read(cachepath, self.mtime)
-                if code is not None:
-                    self[int(cachefile)] = pagetemplate.execute(code)
-                    pagetemplate._v_last_read = self.mtime
-
-    def store(self, params, code):
-        key = hash(''.join(params))
-        if not os.path.isdir(self.cachedir):
-            os.mkdir(self.cachedir)
-
-        cachefile = os.path.join(self.cachedir, str(key))
-        code_write(code, cachefile, self.mtime)
+        try:
+            pickle.dump(self.registry, f)
+        finally:
+            f.close()

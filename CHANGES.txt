@@ -4,6 +4,12 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Reimplemented the disk cache to correctly restore all template
+  data. This implementation keeps a cache in a pickled format in a
+  file next to the original template. [malthe]
+
+- Refactored compilation classes to better separate concerns. [malthe]
+
 - Genshi macros (py:def) are now available globally. [malthe]
 
 - A syntax error is now raised when an interpolation expression is not

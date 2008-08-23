@@ -791,9 +791,7 @@ class Write(object):
                 raise ImportError(
                     "ElementTree (required when XML validation is enabled).")
 
-            stream.write("import z3c.pt.etree")
-            stream.write("_ET = z3c.pt.etree.import_elementtree()")
-            write("_ET.fromstring('<div>%%s</div>' %% %(tmp)s)")
+            write("%(elementtree)s.fromstring('<div>%%s</div>' %% %(tmp)s)")
 
     def end(self, stream):
         if self.assign:
@@ -888,18 +886,16 @@ class Translate(object):
 
 class Method(object):
     """
-      >>> from z3c.pt.generation import CodeIO
-      >>> from z3c.pt.testing import pyexp
-      >>> from StringIO import StringIO
+    >>> from z3c.pt import testing
       
-      >>> _out = StringIO(); _write = _out.write; stream = CodeIO()
-      >>> method = Method('test', ('a', 'b', 'c'))
-      >>> method.begin(stream)
-      >>> stream.write('print a, b, c')
-      >>> method.end(stream)
-      >>> exec stream.getvalue()
-      >>> test(1, 2, 3)
-      1 2 3
+    >>> _out, _write, stream = testing.setup_stream()
+    >>> method = Method('test', ('a', 'b', 'c'))
+    >>> method.begin(stream)
+    >>> stream.write('print a, b, c')
+    >>> method.end(stream)
+    >>> exec stream.getvalue()
+    >>> test(1, 2, 3)
+    1 2 3
       
     """
 

@@ -1,41 +1,40 @@
 from zope.i18n import interpolate
-from zope.i18n import negotiate
 from zope.i18n import translate
 from zope.i18nmessageid import Message
 
-import expressions
 import utils
-
-import z3c.pt.generation
-from z3c.pt.config import DISABLE_I18N
+import etree
+import expressions
 
 template_wrapper = """\
-def render(%(args)s%(extra)s%(language)s=None):
-\tglobal %(generation)s
-
-\t%(out)s, %(write)s = generation.initialize_stream()
-\t%(attributes)s, %(repeat)s = generation.initialize_tal()
-\t%(domain)s, %(negotiate)s, %(translate)s = generation.initialize_i18n()
-\t%(marker)s = %(generation)s.initialize_helpers()
-\t%(path)s = %(generation)s.initialize_traversal()
+def render(%(init)s, %(args)s%(extra)s%(language)s=None):
+\t%(out)s, %(write)s = %(init)s.initialize_stream()
+\t%(attributes)s, %(repeat)s = %(init)s.initialize_tal()
+\t%(marker)s = %(init)s.initialize_helpers()
+\t%(path)s = %(init)s.initialize_traversal()
+\t%(translate)s = %(init)s.fast_translate
+\t%(elementtree)s = %(init)s.initialize_elementtree()
 \t%(scope)s = {}
 
-\t%(language)s = %(negotiate)s(%(context)s, %(language)s)
-%(code)s
+%(body)s
 \treturn %(out)s.getvalue()
 """
 
 macro_wrapper = """\
-def render(%(kwargs)s%(extra)s):
-\tglobal %(generation)s
-%(code)s
+def render(%(init)s, %(kwargs)s%(extra)s):
+%(body)s
 """
 
-def _fake_negotiate(context, target_language):
-    return target_language
-
-def _fake_translate(msgid, domain=None, mapping=None, context=None,
-                    target_language=None, default=None):
+def fast_translate(msgid, domain=None, mapping=None, context=None,
+                   target_language=None, default=None):
+    """This translation function does not attempt to negotiate a
+    language if ``None`` is passed."""
+    
+    if target_language is not None:
+        return translate(
+            msgid, domain=domain, mapping=mapping, context=context,
+            target_language=target_language, default=default)
+    
     if isinstance(msgid, Message):
         default = msgid.default
         mapping = msgid.mapping
@@ -43,17 +42,10 @@ def _fake_translate(msgid, domain=None, mapping=None, context=None,
     if default is None:
         default = unicode(msgid)
 
+    if not isinstance(default, (str, unicode)):
+        return default
+    
     return interpolate(default, mapping)
-
-def _negotiate(context, target_language):
-    if target_language is not None:
-        return target_language
-    return negotiate(context)
-
-def initialize_i18n():
-    if DISABLE_I18N:
-        return (None, _fake_negotiate, _fake_translate)
-    return (None, _negotiate, translate)
 
 def initialize_tal():
     return ({}, utils.repeatdict())
@@ -68,6 +60,12 @@ def initialize_stream():
 def initialize_traversal():
     return expressions.path_translation.traverse
 
+def initialize_elementtree():
+    try:
+        return etree.import_elementtree()
+    except ImportError:
+        return None
+    
 class BufferIO(list):
     write = list.append
 
@@ -75,17 +73,9 @@ class BufferIO(list):
         return ''.join(self)
 
 class CodeIO(BufferIO):
-    """A I/O stream class that provides facilities to generate Python code.
-
-    * Indentation is managed using ``indent`` and ``outdent``.
-
-    * Annotations can be assigned on a per-line basis using ``annotate``.
-
-    * Convenience methods for keeping track of temporary variables
-   
-    * Methods to process clauses (see ``begin`` and ``end``).
-    
-    """
+    """Stream buffer suitable for writing Python-code. This class is
+    used internally by the compiler to manage variable scopes, source
+    annotations and temporary variables."""
 
     t_prefix = '_tmp'
     v_prefix = '_var'
@@ -99,7 +89,6 @@ class CodeIO(BufferIO):
         self.scope = [set()]
         self.selectors = {}
         self.annotations = {}
-        
         self._variables = {}
         self.t_counter = 0
         self.l_counter = 0

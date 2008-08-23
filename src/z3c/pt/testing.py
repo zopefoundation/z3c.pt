@@ -24,36 +24,26 @@ def setup_stream():
     stream = generation.CodeIO(symbols)
     return out, write, stream
 
-def cook(generator, **kwargs):
-    source, _globals = generator()
-    _locals = {}
-    exec source in _globals, _locals
-    return _locals['render']
-
-def _render(generator, **kwargs):
-    cooked = cook(generator, **kwargs)
-    kwargs.update(generator.stream.selectors)
-    return cooked(**kwargs)
-
 def render_xhtml(body, **kwargs):
-    generator = translation.translate_xml(
-        body, MockParser, params=sorted(kwargs.keys()))
-    return _render(generator, **kwargs)
-
+    compiler = translation.Compiler(body, MockParser)
+    template = compiler(params=sorted(kwargs.keys()))
+    return template.render(**kwargs)    
+    
 def render_text(body, **kwargs):
-    generator = translation.translate_text(
-        body, MockParser, params=sorted(kwargs.keys()))
-    return _render(generator, **kwargs)
+    compiler = translation.Compiler.from_text(body, MockParser)
+    template = compiler(params=sorted(kwargs.keys()))
+    return template.render(**kwargs)    
 
 def render_zpt(body, **kwargs):
-    generator = translation.translate_xml(
-        body, zpt.ZopePageTemplateParser, params=sorted(kwargs.keys()))
-    return _render(generator, **kwargs)
+    compiler = translation.Compiler(body, zpt.ZopePageTemplateParser)
+    template = compiler(params=sorted(kwargs.keys()))
+    return template.render(**kwargs)    
 
 def render_genshi(body, **kwargs):
-    generator = translation.translate_xml(
-        body, genshi.GenshiParser, params=sorted(kwargs.keys()))
-    return _render(generator, **kwargs)
+    compiler = translation.Compiler(body, genshi.GenshiParser)
+    template = compiler(params=sorted(kwargs.keys()))
+    kwargs.update(template.selectors)
+    return template.render(**kwargs)    
 
 class MockTemplate(object):
     def __init__(self, body, parser):
@@ -63,9 +53,9 @@ class MockTemplate(object):
     @property
     def macros(self):
         def render(macro=None, **kwargs):
-            generator = translation.translate_xml(
-                self.body, self.parser, macro=macro, params=kwargs.keys())
-            return _render(generator, **kwargs)
+            compiler = translation.Compiler(self.body, self.parser)
+            template = compiler(macro=macro, params=kwargs.keys())
+            return template.render(**kwargs)
         return macro.Macros(render)
 
 class MockElement(translation.Element, translation.VariableInterpolation):

@@ -7,22 +7,21 @@ from StringIO import StringIO
 
 def import_elementtree():
     try:
-        import elementtree.ElementTree as ET
-    except ImportError:
+        import xml.etree.ElementTree as ET
+    except:
         try:
-            import cElementTree as ET
+            import elementtree.ElementTree as ET
         except ImportError:
-            import xml.etree.ElementTree as ET
-
+            import cElementTree as ET
+        
     return ET
 
 class Parser(object):
     element_mapping = {}
 
     @classmethod
-    def parse(self, body):
-        global parse
-        return parse(body, self.element_mapping)
+    def parse(cls, body):
+        return parse(body, cls.element_mapping)
         
 try:
     import lxml.etree
@@ -179,7 +178,8 @@ try:
 
 except ImportError:
     ET = import_elementtree()
-            
+    from pdis.xpath import XPath
+    
     class ElementBase(object, ET._ElementInterface):
         _parent = None
         
@@ -211,8 +211,9 @@ except ImportError:
         def tostring(self):
             return ET.tostring(self)
 
-        def xpath(self, expression, namespaces={}):
-            return []
+        def xpath(self, path, namespaces={}):
+            xpath = XPath(path, namespace_mapping=namespaces)
+            return xpath.evaluate(self)
             
         @property
         def nsmap(self):

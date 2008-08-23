@@ -8,10 +8,11 @@ sys.setdefaultencoding('utf-8')
 
 import zope.component.testing
 import zope.configuration.xmlconfig
-
 import zope.pagetemplate.pagetemplatefile
 import z3c.pt
-from z3c.pt import generation
+
+from z3c.pt import config
+from z3c.pt import filecache
 
 from lxml import etree
 
@@ -163,7 +164,7 @@ class BenchmarkTestCase(BaseTestCase):
     def testCompilation(self):
         table = self.table
 
-        t_z3c = timing(self.bigtable_python_z3c.cook, ['table'])
+        t_z3c = timing(self.bigtable_python_z3c.cook, params=('table',))
         t_zope = timing(self.bigtable_python_zope._cook)
 
         print "z3c.pt:            %.2f" % t_z3c
@@ -186,22 +187,24 @@ class FileBenchmarkTestCase(BaseTestCase):
         table = self.table
 
         z3cfile = z3c.pt.PageTemplateFile(
-            self._testfile('bigtable_python_z3c.pt'),
-            cachedir=self.cache)
-
+            self._testfile('bigtable_python_z3c.pt'))
+        z3cfile.registry = filecache.TemplateCache(z3cfile.filename)
+        z3cfile.cook_check(None, ())
+        assert len(z3cfile.registry) == 1
+        z3cfile.registry.save()
+    
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
             self._testfile('bigtable_python_zope.pt'))
 
-        t_cached_z3c = timing(z3cfile.registry.load, z3cfile)
-        t_cook_z3c = timing(z3cfile.cook, ['table'])
-
+        t_cached_z3c = timing(z3cfile.registry.load)
+        t_cook_z3c = timing(z3cfile.cook, params=('table',))
         t_zope = timing(zopefile._cook)
 
         print "z3c.pt cooking:    %.3f" % t_cook_z3c
-        print ""
+        print "--------------------------"
         print "z3c.pt cached:     %.3f" % t_cached_z3c
         print "zope.pagetemplate: %.3f" % t_zope
-        print "                   %.2fX" % (t_zope/t_cached_z3c)
+        print "ratio to zpt:      %.2fX" % (t_zope/t_cached_z3c)
 
     @benchmark(u"Big table (python) File")
     def testBigTablePythonFile(self):
@@ -278,11 +281,11 @@ class I18NBenchmarkTestCase(BaseTestCase):
         catalog = SimpleTranslationDomain('domain')
         zope.component.provideUtility(catalog, ITranslationDomain, 'domain')
         self.files = os.path.abspath(os.path.join(__file__, '..', 'input'))
-        self.disable = generation.DISABLE_I18N
+        self.disable = config.DISABLE_I18N
 
     def tearDown(self):
         BaseTestCase.tearDown(self)
-        generation.DISABLE_I18N = self.disable
+        config.DISABLE_I18N = self.disable
 
     def _testfile(self, name):
         return os.path.join(self.files, name)
@@ -299,8 +302,8 @@ class I18NBenchmarkTestCase(BaseTestCase):
 
         # In order to have a fair comparision, we need real zope.i18n handling
         zopefile.pt_getEngineContext = _pt_getEngineContext
-
-        t_z3c = timing(z3cfile, table=table, _context=self.env)
+        
+        t_z3c = timing(z3cfile, table=table, context=self.env)
         t_zope = timing(zopefile, table=table, env=self.env)
 
         print "z3c.pt:            %.2f" % t_z3c
@@ -320,7 +323,7 @@ class I18NBenchmarkTestCase(BaseTestCase):
         zopefile.pt_getEngineContext = _pt_getEngineContext
 
         # Let's disable i18n for this test
-        generation.DISABLE_I18N = True
+        config.DISABLE_I18N = True
 
         t_z3c = timing(z3cfile, table=table, _context=self.env)
         t_zope = timing(zopefile, table=table, env=self.env)
@@ -330,6 +333,8 @@ class I18NBenchmarkTestCase(BaseTestCase):
         print "                   %.2fX" % (t_zope/t_z3c)
 
 def test_suite():
+    config.DISK_CACHE = False
+    
     return unittest.TestSuite((
         unittest.makeSuite(BenchmarkTestCase),
         unittest.makeSuite(FileBenchmarkTestCase),

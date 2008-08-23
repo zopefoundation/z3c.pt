@@ -189,3 +189,22 @@ class ZopePageTemplateParser(etree.Parser):
         config.META_NS: {None: XHTMLElement},
         config.TAL_NS: {None: TALElement},
         config.METAL_NS: {None: METALElement}}
+
+    default_expression = 'python'
+
+    @classmethod
+    def parse(cls, body):
+        root, doctype = super(ZopePageTemplateParser, cls).parse(body)
+
+        # if a default expression is not set explicitly in the
+        # template, use the TAL-attribute ``default-expression``
+        # to set it
+        if utils.get_namespace(root) == config.TAL_NS:
+            tag = 'default-expression'
+        else:
+            tag = utils.tal_attr('default-expression')
+
+        if not root.attrib.get(tag):
+            root.attrib[tag] = cls.default_expression
+
+        return root, doctype

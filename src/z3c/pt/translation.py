@@ -3,6 +3,7 @@ from zope import component
 from StringIO import StringIO
 
 import generation
+import codegen
 import clauses
 import interfaces
 import expressions
@@ -11,7 +12,8 @@ import types
 import utils
 import config
 import etree
-
+import marshal
+    
 class Node(object):
     """Element translation class.
 
@@ -152,13 +154,13 @@ class Node(object):
 
                 if variable in attributes:
                     default = '"%s"' % attributes[variable]
-                    expression = _translate(value, default=default)
+                    expression = self.translate_expression(value, default=default)
                 else:
-                    expression = _translate(value)
+                    expression = self.translate_expression(value)
             else:
                 if variable in dynamic_attributes or variable in attributes:
                     text = '"%s"' % attributes[variable]
-                    expression = _translate(text)
+                    expression = self.translate_expression(text)
                 else:
                     raise ValueError("Must be either static or dynamic "
                                      "attribute when no message id "
@@ -176,7 +178,7 @@ class Node(object):
                 cdata=self.cdata is not None)
             if self.omit:
                 _.append(clauses.Condition(
-                    _not(self.omit), [tag], finalize=False))
+                    types.value("not (%s)" % self.omit), [tag], finalize=False))
             else:
                 _.append(tag)
 
@@ -210,7 +212,7 @@ class Node(object):
                 subclauses = []
                 subclauses.append(clauses.Define(
                     types.declaration((self.symbols.out, self.symbols.write)),
-                    types.template('%(generation)s.initialize_stream()')))
+                    types.template('%(init)s.initialize_stream()')))
                 subclauses.append(clauses.Visit(element.node))
                 subclauses.append(clauses.Assign(
                     types.template('%(out)s.getvalue()'), variable))
@@ -249,7 +251,7 @@ class Node(object):
                 subclauses = []
                 subclauses.append(clauses.Define(
                     types.declaration((self.symbols.out, self.symbols.write)),
-                    types.template('%(generation)s.initialize_stream()')))
+                    types.template('%(init)s.initialize_stream()')))
                 subclauses.append(clauses.Visit(element.node))
                 subclauses.append(clauses.Assign(
                     types.template('%(out)s.getvalue()'),
@@ -258,8 +260,9 @@ class Node(object):
                 _.append(clauses.Group(subclauses))
 
             _.append(clauses.Assign(
-                _translate(types.value(repr(msgid)), mapping=mapping,
-                           default=self.symbols.marker), self.symbols.result))
+                self.translate_expression(
+                types.value(repr(msgid)), mapping=mapping,
+                default=self.symbols.marker), self.symbols.result))
 
             # write translation to output if successful, otherwise
             # fallback to default rendition; 
@@ -312,6 +315,15 @@ class Node(object):
         msgid = msgid.replace('  ', ' ').replace('\n', '')
         
         return msgid
+
+    def translate_expression(self, value, mapping=None, default=None):
+        if default is not None and not isinstance(default, (str, unicode)):
+            import pdb; pdb.set_trace()
+        
+        format = "_translate(%s, domain=%%(domain)s, mapping=%s, context=%%(context)s, " \
+                 "target_language=%%(language)s, default=%s)"
+        return types.template(
+            format % (value, mapping, default))
 
 class Element(etree.ElementBase):
     """Template element class.
@@ -402,112 +414,165 @@ class VariableInterpolation:
                 else:
                     self.attrib[attributes] = expr
 
-def translate_xml(body, parser, *args, **kwargs):
-    root, doctype = parser.parse(body)
-    return translate_etree(root, doctype=doctype, *args, **kwargs)
-
-def translate_etree(root, macro=None, doctype=None,
-                    params=[], default_expression='python'):
-    if not isinstance(root, Element):
-        raise ValueError("Must define valid namespace for tag: '%s.'" % root.tag)
-
-    # skip to macro
-    if macro is not None:
-        elements = root.xpath(
-            'descendant-or-self::*[@metal:define-macro="%s"]' % macro,
-            namespaces={'metal': config.METAL_NS})
-
-        if not elements:
-            raise ValueError("Macro not found: %s." % macro)
-
-        root = elements[0]
-        del root.attrib[utils.metal_attr('define-macro')]
-        
-    # set default expression name
-    if utils.get_namespace(root) == config.TAL_NS:
-        tag = 'default-expression'
-    else:
-        tag = utils.tal_attr('default-expression')
-
-    if not root.attrib.get(tag):
-        root.attrib[tag] = default_expression
-
-    # set up code generation stream
-    if macro is not None:
-        wrapper = generation.macro_wrapper
-    else:
-        wrapper = generation.template_wrapper
-
-    # initialize code stream object
-    stream = generation.CodeIO(
-        root.node.symbols, indentation=1, indentation_string="\t")
-
-    # initialize variable scope
-    stream.scope.append(set(
-        (stream.symbols.out, stream.symbols.write, stream.symbols.scope) + \
-        tuple(params)))
-
-    # output doctype if any
-    if doctype and isinstance(doctype, (str, unicode)):
-        dt = (doctype +'\n').encode('utf-8')
-        doctype = clauses.Out(dt)
-        stream.scope.append(set())
-        stream.begin([doctype])
-        stream.end([doctype])
-        stream.scope.pop()
-
-    # start generation
-    root.start(stream)
-
-    extra = ''
-
-    # prepare args
-    args = ', '.join(params)
-    if args:
-        args += ', '
-
-    # prepare kwargs
-    kwargs = ', '.join("%s=None" % param for param in params)
-    if kwargs:
-        kwargs += ', '
-
-    # prepare selectors
-    for selector in stream.selectors:
-        extra += '%s=None, ' % selector
-
-    # we need to ensure we have _context for the i18n handling in
-    # the arguments. the default template implementations pass
-    # this in explicitly.
-    if stream.symbols.context not in params:
-        extra += '%s=None, ' % stream.symbols.context
-
-    code = stream.getvalue()
-
-    class generator(object):
-        @property
-        def stream(self):
-            return stream
-        
-        def __call__(self):
-            parameters = dict(
-                args=args, kwargs=kwargs, extra=extra, code=code)
-            parameters.update(stream.symbols.__dict__)
-
-            return wrapper % parameters, {stream.symbols.generation: generation}
-
-    return generator()
-
-def translate_text(body, parser, *args, **kwargs):
-    root, doctype = parser.parse("<html xmlns='%s'></html>" % config.XHTML_NS)
-    root.text = body
-    root.attrib[utils.meta_attr('omit-tag')] = ''
-    return translate_etree(root, doctype=doctype, *args, **kwargs)
+class Compiler(object):
+    """Template compiler."""
     
-def _translate(value, mapping=None, default=None):
-    format = "_translate(%s, domain=%%(domain)s, mapping=%s, context=%%(context)s, " \
-             "target_language=%%(language)s, default=%s)"
-    return types.template(
-        format % (value, mapping, default))
+    def __init__(self, body, parser):
+        self.root, self.doctype = parser.parse(body)
+        self.parser = parser
 
-def _not(value):
-    return types.value("not (%s)" % value)
+    @classmethod
+    def from_text(cls, body, parser):
+        compiler = Compiler(
+            "<html xmlns='%s'></html>" % config.XHTML_NS, parser)
+        compiler.root.text = body
+        compiler.root.attrib[utils.meta_attr('omit-tag')] = ""
+        return compiler
+
+    def __call__(self, macro=None, params=()):
+        if not isinstance(self.root, Element):
+            raise ValueError(
+                "Must define valid namespace for tag: '%s.'" % self.root.tag)
+
+        # if macro is non-trivial, start compilation at the element
+        # where the macro is defined
+        if macro is not None:
+            elements = self.root.xpath(
+                'descendant-or-self::*[@metal:define-macro="%s"]' % macro,
+                namespaces={'metal': config.METAL_NS})
+
+            if not elements:
+                raise ValueError("Macro not found: %s." % macro)
+
+            self.root = elements[0]
+            del self.root.attrib[utils.metal_attr('define-macro')]
+
+        # set up code generation stream
+        if macro is not None:
+            wrapper = generation.macro_wrapper
+        else:
+            wrapper = generation.template_wrapper
+
+        # initialize code stream object
+        stream = generation.CodeIO(
+            self.root.node.symbols, indentation=1, indentation_string="\t")
+
+        # initialize variable scope
+        stream.scope.append(set(
+            (stream.symbols.out, stream.symbols.write, stream.symbols.scope) + \
+            tuple(params)))
+
+        # output doctype if any
+        if self.doctype and isinstance(self.doctype, (str, unicode)):
+            doctype = (self.doctype +'\n').encode('utf-8')
+            out = clauses.Out(doctype)
+            stream.scope.append(set())
+            stream.begin([out])
+            stream.end([out])
+            stream.scope.pop()
+
+        # start generation
+        self.root.start(stream)
+
+        # prepare args
+        ignore = 'target_language',
+        args = ', '.join((param for param in params if param not in ignore))
+        if args:
+            args += ', '
+
+        # prepare kwargs
+        kwargs = ', '.join("%s=None" % param for param in params)
+        if kwargs:
+            kwargs += ', '
+
+        # prepare selectors
+        extra = ''
+        for selector in stream.selectors:
+            extra += '%s=None, ' % selector
+
+        # we need to ensure we have _context for the i18n handling in
+        # the arguments. the default template implementations pass
+        # this in explicitly.
+        if stream.symbols.context not in params:
+            extra += '%s=None, ' % stream.symbols.context
+
+        # wrap generated Python-code in function definition
+        body = stream.getvalue()
+        mapping = dict(
+            args=args, kwargs=kwargs, extra=extra, body=body)
+        mapping.update(stream.symbols.__dict__)
+        source = wrapper % mapping
+        
+        # compile code
+        suite = codegen.Suite(source)
+        _locals = {}
+        _globals = {}
+        exec suite.code in suite._globals, _locals
+
+        return ByteCodeTemplate(
+            _locals['render'], self.root, self.parser, stream)
+
+class ByteCodeTemplate(object):
+    """Template compiled to byte-code."""
+
+    def __init__(self, func, root, parser, stream):
+        self.func = func
+        self.root = root
+        self.parser = parser
+        self.stream = stream
+
+    def __reduce__(self):
+        reconstructor, (cls, base, state), kwargs = \
+                       GhostedByteCodeTemplate(self).__reduce__()
+        return reconstructor, (ByteCodeTemplate, base, state), kwargs
+
+    def __setstate__(self, state):
+        self.__dict__.update(GhostedByteCodeTemplate.rebuild(state))
+
+    def render(self, *args, **kwargs):
+        return self.func(generation, *args, **kwargs)
+    
+    @property
+    def source(self):
+        return self.stream.getvalue()
+    
+    @property
+    def selectors(self):
+        selectors = getattr(self, '_selectors', None)
+        if selectors is not None:
+            return selectors
+
+        self._selectors = selectors = {}
+        for element in self.root.xpath(
+            './/*[@meta:select]', namespaces={'meta': config.META_NS}):
+            name = element.attrib[utils.meta_attr('select')]
+            selectors[name] = element.xpath
+
+        return selectors
+
+class GhostedByteCodeTemplate(object):
+    suite = codegen.Suite("def render(): pass")
+    
+    def __init__(self, template):
+        self.code = marshal.dumps(template.func.func_code)
+        self.defaults = len(template.func.func_defaults or ())
+        self.parser = template.parser
+        self.xmldoc = template.root.tostring()
+        self.stream = template.stream
+
+    @classmethod
+    def rebuild(cls, state):
+        _locals = {}
+        exec cls.suite.code in cls.suite._globals, _locals
+        func = _locals['render']
+        func.func_defaults = ((None,)*state['defaults']) or None
+        func.func_code = marshal.loads(state['code'])
+        parser = state['parser']
+        root, doctype = state['parser'].parse(state['xmldoc'])
+        stream = state['stream']
+        return dict(
+            func=func,
+            parser=parser,
+            root=root,
+            stream=stream)
+            

@@ -1,17 +1,17 @@
-import template
+import pagetemplate
 import translation
 
-class TextTemplate(template.BaseTemplate):
-    __doc__ = template.BaseTemplate.__doc__ # for Sphinx autodoc
+class TextTemplate(pagetemplate.PageTemplate):
+    __doc__ = pagetemplate.PageTemplate.__doc__ # for Sphinx autodoc
     @property
-    def translate(self):
-        return translation.translate_text
+    def compiler(self):
+        return translation.Compiler.from_text(self.body, self.parser)
 
-class TextTemplateFile(template.BaseTemplateFile):
-    __doc__ = template.BaseTemplateFile.__doc__ # for Sphinx autodoc
+class TextTemplateFile(pagetemplate.PageTemplateFile):
+    __doc__ = pagetemplate.PageTemplateFile.__doc__ # for Sphinx autodoc
     @property
-    def translate(self):
-        return translation.translate_text
+    def compiler(self):
+        return translation.Compiler.from_text(self.body, self.parser)
 
 class ViewTextTemplate(property):
     def __init__(self, body):

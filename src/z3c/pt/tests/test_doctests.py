@@ -7,7 +7,7 @@ OPTIONFLAGS = (zope.testing.doctest.ELLIPSIS |
 import zope.component.testing
 import zope.configuration.xmlconfig
 
-import z3c.pt
+import z3c.pt.config
 
 def setUp(suite):
     zope.component.testing.setUp(suite)
@@ -18,6 +18,8 @@ def test_suite():
                   'i18n.txt', 'codegen.txt', 'translation.txt')
     testsuites = ('z3c.pt.translation', 'z3c.pt.clauses', 'z3c.pt.expressions')
 
+    z3c.pt.config.DISK_CACHE = False
+    
     return unittest.TestSuite(
         [zope.testing.doctest.DocTestSuite(
         doctest, optionflags=OPTIONFLAGS,
