@@ -47,6 +47,6 @@ class TemplateCache(object):
             return
 
         try:
-            pickle.dump(self.registry, f)
+            pickle.dump(self.registry, f, protocol=2)
         finally:
             f.close()
