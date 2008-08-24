@@ -334,9 +334,6 @@ class Node(object):
         return msgid
 
     def translate_expression(self, value, mapping=None, default=None):
-        if default is not None and not isinstance(default, (str, unicode)):
-            import pdb; pdb.set_trace()
-        
         format = "_translate(%s, domain=%%(domain)s, mapping=%s, context=%%(context)s, " \
                  "target_language=%%(language)s, default=%s)"
         return types.template(
