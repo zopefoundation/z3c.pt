@@ -22,6 +22,11 @@ def render(%(init)s, %(args)s%(extra)s%(language)s=None):
 
 macro_wrapper = """\
 def render(%(init)s, %(kwargs)s%(extra)s):
+\t%(attributes)s, %(repeat)s = %(init)s.initialize_tal()
+\t%(marker)s = %(init)s.initialize_helpers()
+\t%(path)s = %(init)s.initialize_traversal()
+\t%(translate)s = %(init)s.fast_translate
+\t%(elementtree)s = %(init)s.initialize_elementtree()
 %(body)s
 """
 
