@@ -5,6 +5,8 @@ import generation
 import template
 import config
 import zpt
+import sys
+import os
 
 def prepare_language_support(kwargs):
     target_language = kwargs.get('target_language')
@@ -46,6 +48,12 @@ class PageTemplateFile(template.BaseTemplateFile):
         prepare_language_support(kwargs)
 
 class ViewPageTemplate(property):
+    """Template class suitable for use with a Zope browser view; the
+    variables ``view``, ``context`` and ``request`` variables are
+    brought in to the local scope of the template automatically, while
+    keyword arguments are passed in through the ``options``
+    dictionary."""
+    
     def __init__(self, body, **kwargs):
         self.template = PageTemplate(body, **kwargs)
         property.__init__(self, self.render)
@@ -60,6 +68,26 @@ class ViewPageTemplate(property):
         return template
 
 class ViewPageTemplateFile(ViewPageTemplate):
+    """If ``filename`` is a relative path, the module path of the
+    class where the instance is used to get an absolute path."""
+    
     def __init__(self, filename, **kwargs):
+        if not os.path.isabs(filename):	       
+            for depth in (1, 2):	       
+                frame = sys._getframe(depth)	 
+                package_name = frame.f_globals['__name__']	 
+ 	 
+                if package_name != self.__module__:	 
+                    break	 
+ 	 
+            module = sys.modules[package_name]	 
+            try:	 
+                path = module.__path__[0]	 
+            except AttributeError:	 
+                path = module.__file__	 
+                path = path[:path.rfind(os.sep)]	 
+ 	 
+            filename = path + os.sep + filename
+        
         self.template = PageTemplateFile(filename)
         property.__init__(self, self.render)

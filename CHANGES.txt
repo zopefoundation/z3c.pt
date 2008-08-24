@@ -4,6 +4,10 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- The ``ViewPageTemplateFile`` class now uses the module path of the
+  calling class to get an absolute path to a relative filename passed
+  to the constructor. [malthe]
+
 - Added limited support for the XInclude ``include`` directive. The
   implemented subset corresponds to the Genshi implementation, except
   Match-templates, which are not made available to the calling
