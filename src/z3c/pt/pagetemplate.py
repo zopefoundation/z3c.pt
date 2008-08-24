@@ -17,7 +17,7 @@ def prepare_language_support(kwargs):
         return
     
     if not target_language:
-        context = kwargs.get('context')
+        context = kwargs.get(config.SYMBOLS.i18n_context)
         target_language = zope.i18n.negotiate(context)
 
         if target_language:
@@ -63,7 +63,6 @@ class ViewPageTemplate(property):
             return self.template.render(view=view,
                                         context=view.context,
                                         request=view.request,
-                                        _context=view.request,
                                         options=kwargs)
         return template
 

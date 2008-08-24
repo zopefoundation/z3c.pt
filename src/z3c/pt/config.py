@@ -48,7 +48,7 @@ class SYMBOLS(object):
     result = '_result'
     marker = '_marker'
     domain = '_domain'
-    context = '_context'
+    i18n_context = '_i18n_context'
     attributes = '_attributes'
     negotiate = '_negotiate'
     translate = '_translate'

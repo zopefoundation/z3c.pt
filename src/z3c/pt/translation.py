@@ -334,7 +334,7 @@ class Node(object):
         return msgid
 
     def translate_expression(self, value, mapping=None, default=None):
-        format = "_translate(%s, domain=%%(domain)s, mapping=%s, context=%%(context)s, " \
+        format = "_translate(%s, domain=%%(domain)s, mapping=%s, " \
                  "target_language=%%(language)s, default=%s)"
         return types.template(
             format % (value, mapping, default))
@@ -504,12 +504,6 @@ class Compiler(object):
         extra = ''
         for selector in stream.selectors:
             extra += '%s=None, ' % selector
-
-        # we need to ensure we have _context for the i18n handling in
-        # the arguments. the default template implementations pass
-        # this in explicitly.
-        if stream.symbols.context not in params:
-            extra += '%s=None, ' % stream.symbols.context
 
         # wrap generated Python-code in function definition
         body = stream.getvalue()

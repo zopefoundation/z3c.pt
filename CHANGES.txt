@@ -4,6 +4,9 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Language negotiation is left to the page template superclass, so we
+  don't need to pass in a translation context anymore. [malthe]
+
 - The ``ViewPageTemplateFile`` class now uses the module path of the
   calling class to get an absolute path to a relative filename passed
   to the constructor. [malthe]
