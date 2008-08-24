@@ -37,5 +37,5 @@ setup(name='z3c.pt',
       include_package_data=True,
       zip_safe=False,
       install_requires=install_requires,
-      extras_require={'lxml':['lxml']},
+      extras_require={'lxml':['lxml>=2.1.1']},
       )
