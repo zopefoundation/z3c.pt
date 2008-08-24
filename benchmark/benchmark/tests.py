@@ -36,17 +36,17 @@ def timing(func, *args, **kwargs):
 def bigtable_python_lxml(table=None):
     root = etree.Element("html")
     for r in table:
-        row = etree.Element("tr")
+        row = root.makeelement("tr")
         for c in r.values():
             d = c + 1
-            col = etree.Element("td")
-            span = etree.Element("span")
+            col = row.makeelement("td")
+            span = col.makeelement("span")
             span.attrib['class'] = 'column-%d' % d
             span.text = str(d)
             col.append(span)
             row.append(col)
         root.append(row)
-    return etree.tostring(root)
+    return etree.tostring(root, encoding='utf-8')
 
 class BaseTestCase(unittest.TestCase):
 
