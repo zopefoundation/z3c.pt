@@ -90,9 +90,6 @@ class Node(object):
         if macro is not None:
             _.append(clauses.Method(
                 macro.name, macro.args))
-            _.append(clauses.Assign(
-                types.value(macro.name), "%s['%s']" % \
-                (self.symbols.scope, macro.name)))
                 
         # tag tail (deferred)
         tail = self.element.tail
@@ -199,6 +196,26 @@ class Node(object):
                 _.append(clauses.Translate())
             _.append(clauses.Write(content))
 
+        # include
+        elif self.include:
+            # compute macro function arguments and create argument string
+            arguments = ", ".join(
+                ("%s=%s" % (arg, arg) for arg in \
+                 itertools.chain(*self.stream.scope)))
+
+            # XInclude's are similar to METAL macros, except the macro
+            # is always defined as the entire template.
+
+            # first we compute the filename expression and write it to
+            # an internal variable
+            _.append(clauses.Assign(self.include, self.symbols.include))
+
+            # call template
+            _.append(clauses.Write(
+                types.template(
+                "%%(xincludes)s.get(%%(include)s, %s).render(macro='', %s)" % \
+                (repr(self.format), arguments))))
+            
         # use macro
         elif self.use_macro:
             # for each fill-slot element, create a new output stream
@@ -436,7 +453,7 @@ class Compiler(object):
 
         # if macro is non-trivial, start compilation at the element
         # where the macro is defined
-        if macro is not None:
+        if macro:
             elements = self.root.xpath(
                 'descendant-or-self::*[@metal:define-macro="%s"]' % macro,
                 namespaces={'metal': config.METAL_NS})
@@ -447,7 +464,8 @@ class Compiler(object):
             self.root = elements[0]
             del self.root.attrib[utils.metal_attr('define-macro')]
 
-        # set up code generation stream
+        # choose function wrapper; note that if macro is the empty
+        # string, we'll still use the macro wrapper
         if macro is not None:
             wrapper = generation.macro_wrapper
         else:

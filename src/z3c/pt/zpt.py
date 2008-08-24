@@ -100,6 +100,9 @@ class ZopePageTemplateElement(
         @property
         def default_expression(self):
             return self.element.tal_default_expression
+
+        include = None
+        format = None
         
     node = property(node)
 

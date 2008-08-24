@@ -4,6 +4,11 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Added limited support for the XInclude ``include`` directive. The
+  implemented subset corresponds to the Genshi implementation, except
+  Match-templates, which are not made available to the calling
+  template. [malthe]
+
 - Use a global template registry for templates on the
   file-system. This makes it inexpensive to have multiple template
   class instances pointing to the same file. [malthe]

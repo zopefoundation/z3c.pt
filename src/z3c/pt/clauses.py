@@ -752,12 +752,17 @@ class Write(object):
         
     def begin(self, stream):
         temp = stream.save()
+        symbols = stream.symbols.as_dict()
+        value = self.value
+        
+        if isinstance(value, types.template):
+            value = types.value(value % symbols)
 
         def write(template):
-            stream.write(template % stream.symbols.as_dict())
+            stream.write(template % symbols)
             
-        if self.value:
-            expr = self.value
+        if value:
+            expr = value
         else:
             self.assign.begin(stream, temp)
             expr = temp
@@ -889,6 +894,7 @@ class Method(object):
     >>> from z3c.pt import testing
       
     >>> _out, _write, stream = testing.setup_stream()
+    >>> _scope = {}
     >>> method = Method('test', ('a', 'b', 'c'))
     >>> method.begin(stream)
     >>> stream.write('print a, b, c')
@@ -902,12 +908,15 @@ class Method(object):
     def __init__(self, name, args):
         self.name = name
         self.args = args
-        
+
     def begin(self, stream):
         stream.write('def %s(%s):' % (self.name, ", ".join(self.args)))
         stream.indent()
 
     def end(self, stream):
         stream.outdent()
-        
-    
+        assign = Assign(
+            types.value(self.name), "%s['%s']" % \
+            (stream.symbols.scope, self.name))
+        assign.begin(stream)
+        assign.end(stream)

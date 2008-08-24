@@ -200,6 +200,34 @@ metal:define-macro, metal:use-macro, metal:define-slot, metal:fill-slot
          I replace you.
     </div>
   </html>
+
+xi:include
+
+  >>> from z3c.pt.template import BaseTemplateFile
+  >>> template = BaseTemplateFile(path+"/xinclude1.pt", MockParser)
+  >>> print template()
+  <div>
+    <div>
+    <span>Hello, world!</span>
+    </div>
+  </div>
+
+:: XInclude in Genshi
+
+When using XInclude-statements in Genshi, macro-definitions are
+carried over from the included template. This is demonstrated below.
+
+  >>> template = BaseTemplateFile(path+"/xinclude3.pt", GenshiParser)
+  >>> print template()
+  <div>
+  <BLANKLINE>
+  <BLANKLINE>
+    <p class="greeting">
+      Hello, world!
+    </p>
+  <BLANKLINE>
+  </div>
+  
   
 Error handling
 --------------

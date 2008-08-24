@@ -417,6 +417,6 @@ py:match
     </ul>
   <BLANKLINE>
   </div>
-  
+
 .. _py:with specs: http://genshi.edgewall.org/wiki/Documentation/0.4.x/xml-templates.html#py-with
 

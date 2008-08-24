@@ -27,15 +27,18 @@ XHTML_NS = "http://www.w3.org/1999/xhtml"
 TAL_NS = "http://xml.zope.org/namespaces/tal"
 META_NS = "http://xml.zope.org/namespaces/meta"
 METAL_NS = "http://xml.zope.org/namespaces/metal"
+XI_NS = "http://www.w3.org/2001/XInclude"
 I18N_NS = "http://xml.zope.org/namespaces/i18n"
 PY_NS = "http://genshi.edgewall.org"
 NS_MAP = dict(py=PY_NS, tal=TAL_NS, metal=METAL_NS)
 
 # the symbols table below is used internally be the compiler
 class SYMBOLS(object):
+    # internal use only
     init = '_init'
     slot = '_slot'
     metal = '_metal'
+    include = '_include'
     macro = '_macro'
     scope = '_scope'
     out = '_out'
@@ -51,9 +54,12 @@ class SYMBOLS(object):
     translate = '_translate'
     elementtree = '_et'
     path = '_path'
+
+    # advertised symbols
     repeat = 'repeat'
     language = 'target_language'
-
+    xincludes = 'xincludes'
+    
     @classmethod
     def as_dict(cls):
         return dict((name, getattr(cls, name)) for name in dir(cls))

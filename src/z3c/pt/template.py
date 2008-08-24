@@ -8,14 +8,23 @@ class BaseTemplate(object):
     """Constructs a template object using the template language
     defined by ``parser`` (``ZopePageTemplateParser`` or
     ``GenshiParser`` as of this writing). Must be passed an input
-    string as ``body``."""
+    string as ``body``. The ``format`` parameter supports values 'xml'
+    and 'text'."""
+
+    compilers = {
+        'xml': translation.Compiler,
+        'text': translation.Compiler.from_text}
+
+    format = 'xml'
     
-    def __init__(self, body, parser):
+    def __init__(self, body, parser, format=None):
         self.body = body
         self.parser = parser        
         self.signature = hash(body)
         self.registry = {}
-        
+        if format is not None:
+            self.format = format
+            
     @property
     def translate(self):
         return NotImplementedError("Must be provided by subclass.")
@@ -26,7 +35,7 @@ class BaseTemplate(object):
 
     @property
     def compiler(self):
-        return translation.Compiler(self.body, self.parser)
+        return self.compilers[self.format](self.body, self.parser)
     
     def cook(self, **kwargs):
         return self.compiler(**kwargs)
@@ -64,9 +73,9 @@ class BaseTemplateFile(BaseTemplate):
     
     global_registry = {}
     
-    def __init__(self, filename, parser, auto_reload=False):
+    def __init__(self, filename, parser, format=None, auto_reload=False):
         BaseTemplate.__init__(
-            self, None, parser)
+            self, None, parser, format=format)
 
         self.auto_reload = auto_reload
         self.filename = filename = os.path.abspath(
@@ -83,6 +92,13 @@ class BaseTemplateFile(BaseTemplate):
             self.registry = self.global_registry.setdefault(
                 filename, filecache.TemplateCache(filename))
 
+        self.xincludes = XIncludes(
+            self.global_registry, os.path.dirname(filename), self.clone)
+        
+    def clone(self, filename, format=None):
+        cls = type(self)
+        return cls(filename, self.parser, format=format)
+        
     def _get_filename(self):
         return getattr(self, '_filename', None)
 
@@ -105,6 +121,9 @@ class BaseTemplateFile(BaseTemplate):
 
         return BaseTemplate.cook_check(self, *args)
 
+    def prepare(self, kwargs):
+        kwargs[config.SYMBOLS.xincludes] = self.xincludes
+
     def mtime(self):
         try:
             return os.path.getmtime(self.filename)
@@ -113,3 +132,22 @@ class BaseTemplateFile(BaseTemplate):
 
     def __repr__(self):
         return u"<%s %s>" % (self.__class__.__name__, self.filename)
+
+class XIncludes(object):
+    """Dynamic XInclude registry providing a ``get``-method that will
+    resolve a filename to a template instance. Format must be
+    explicitly provided."""
+    
+    def __init__(self, registry, relpath, factory):
+        self.registry = registry
+        self.relpath = relpath
+        self.factory = factory
+
+    def get(self, filename, format):
+        if not os.path.isabs(filename):
+            filename = os.path.join(self.relpath, filename)        
+        template = self.registry.get(filename)
+        if template is not None:
+            return template
+        return self.factory(filename, format=format)
+    

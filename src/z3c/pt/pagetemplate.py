@@ -30,6 +30,7 @@ class PageTemplate(template.BaseTemplate):
         super(PageTemplate, self).__init__(body, parser)
 
     def prepare(self, kwargs):
+        super(PageTemplate, self).prepare(kwargs)
         prepare_language_support(kwargs)
 
 class PageTemplateFile(template.BaseTemplateFile):
@@ -41,6 +42,7 @@ class PageTemplateFile(template.BaseTemplateFile):
         super(PageTemplateFile, self).__init__(filename, parser, **kwargs)
 
     def prepare(self, kwargs):
+        super(PageTemplateFile, self).prepare(kwargs)
         prepare_language_support(kwargs)
 
 class ViewPageTemplate(property):

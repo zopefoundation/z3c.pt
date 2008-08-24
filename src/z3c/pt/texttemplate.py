@@ -3,15 +3,11 @@ import translation
 
 class TextTemplate(pagetemplate.PageTemplate):
     __doc__ = pagetemplate.PageTemplate.__doc__ # for Sphinx autodoc
-    @property
-    def compiler(self):
-        return translation.Compiler.from_text(self.body, self.parser)
+    format = 'text'
 
 class TextTemplateFile(pagetemplate.PageTemplateFile):
     __doc__ = pagetemplate.PageTemplateFile.__doc__ # for Sphinx autodoc
-    @property
-    def compiler(self):
-        return translation.Compiler.from_text(self.body, self.parser)
+    format = 'text'
 
 class ViewTextTemplate(property):
     def __init__(self, body):

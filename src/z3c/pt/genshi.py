@@ -21,7 +21,9 @@ class GenshiElement(translation.Element, translation.VariableInterpolation):
                 return self.element.meta_omit or True
             if self.element.py_replace or self.element.meta_replace:
                 return True
-        
+            if self.element.xi_href:
+                return True
+            
         @property
         def define(self):
             return self.element.py_with
@@ -75,6 +77,14 @@ class GenshiElement(translation.Element, translation.VariableInterpolation):
         def cdata(self):
             return self.element.meta_cdata
 
+        @property
+        def include(self):
+            return self.element.xi_href
+
+        @property
+        def format(self):
+            return self.element.xi_parse
+        
     node = property(node)
 
     def update(self):
@@ -197,7 +207,9 @@ class XHTMLElement(GenshiElement):
         utils.py_attr('replace'), lambda p: p.output)
     py_strip = utils.attribute(
         utils.py_attr('strip'), lambda p: p.expression)
-
+    xi_href = None
+    xi_parse = None
+    
 class PyElement(XHTMLElement):
     py_strip = utils.attribute("strip", lambda p: p.expression, u"")
     
@@ -216,12 +228,18 @@ class PyDefElement(PyElement):
 
 class PyMatchElement(PyElement):
     py_match = utils.attribute("path")
-    
+
+class XiIncludeElement(XHTMLElement):
+    xi_href = utils.attribute(
+        "href", lambda p: expressions.StringTranslation(p).expression)
+    xi_parse = utils.attribute("parse", default="xml")
+
 class GenshiParser(etree.Parser):
     """ The parser implementation for Genshi templates """
     element_mapping = {
         config.XHTML_NS: {None: XHTMLElement},
         config.META_NS: {None: XHTMLElement},
+        config.XI_NS: {'include': XiIncludeElement},
         config.PY_NS: {'if': PyIfElement,
                        'for': PyForElement,
                        'def': PyDefElement,

@@ -79,7 +79,9 @@ class MockElement(translation.Element, translation.VariableInterpolation):
                 return self.element.meta_omit or True
             if self.content:
                 return True
-            
+            if self.include:
+                return True
+
         @property
         def content(self):
             return self.element.meta_replace
@@ -88,9 +90,22 @@ class MockElement(translation.Element, translation.VariableInterpolation):
         def cdata(self):
             return self.element.meta_cdata
 
+        @property
+        def include(self):
+            return self.element.xi_href
+
+        @property
+        def format(self):
+            return self.element.xi_parse
+
     node = property(node)
+
+    xi_href = utils.attribute(
+        "href", lambda p: expressions.StringTranslation(p).expression)
+    xi_parse = utils.attribute("parse", default="xml")
 
 class MockParser(etree.Parser):
     element_mapping = {
         config.XHTML_NS: {None: MockElement},
-        config.META_NS: {None: MockElement}}
+        config.META_NS: {None: MockElement},
+        config.XI_NS: {None: MockElement}}
