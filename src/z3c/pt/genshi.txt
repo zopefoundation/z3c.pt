@@ -7,7 +7,7 @@ py:if
 
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
+  ...      xmlns:py="http://genshi.edgewall.org/">
   ...   <div py:if="False">
   ...     <p>Bar</p>
   ...   </div>
@@ -34,7 +34,7 @@ py:choose, py:when, py:otherwise
 
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
+  ...      xmlns:py="http://genshi.edgewall.org/">
   ...   <div py:choose="">
   ...     <span py:when="0 == 1">0</span>
   ...     <span py:when="1 == 1">1</span>
@@ -79,7 +79,7 @@ py:for
 
   >>> print render_genshi("""\
   ... <ul xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
+  ...      xmlns:py="http://genshi.edgewall.org/">
   ...   <li py:for="item in range(3)">${item}</li>
   ...  <py:for each="item in range(3, 5)">
   ...    <li>${item}</li>
@@ -97,7 +97,7 @@ py:def
 
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
+  ...      xmlns:py="http://genshi.edgewall.org/">
   ...  <p py:def="greeting(name)" class="greeting">
   ...    Hello, ${name}!
   ...  </p>
@@ -135,7 +135,7 @@ py:with
      
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
+  ...      xmlns:py="http://genshi.edgewall.org/">
   ...   <span py:with="x=2; y=7; z=x+10">${x} ${y} ${z}</span>
   ...   <py:with vars="x=4; y=3; z=x+5">${x} ${y} ${z}</py:with>
   ...   <blockquote py:with="q=quote()">
@@ -155,7 +155,7 @@ py:attrs
   
   >>> print render_genshi("""\
   ... <ul xmlns="http://www.w3.org/1999/xhtml"
-  ...     xmlns:py="http://genshi.edgewall.org">
+  ...     xmlns:py="http://genshi.edgewall.org/">
   ...   <li class="expand" py:attrs="{'class': 'collapse'}">Bar</li>
   ...   <li class="expand" py:attrs="d">Bar</li>
   ... </ul>""", d=dict({'class': u'\u1234'}))
@@ -168,7 +168,7 @@ py:content, py:replace
 
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
+  ...      xmlns:py="http://genshi.edgewall.org/">
   ...   <span py:content="'Hello, world!'" />
   ...   <span py:replace="'Goodbye, world!'" />
   ... </div>""")
@@ -181,7 +181,7 @@ py:strip
 
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
+  ...      xmlns:py="http://genshi.edgewall.org/">
   ...    <span py:strip="True"><b>foo</b></span>
   ... </div>""")
   <div>
@@ -192,7 +192,7 @@ py:match
 
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
+  ...      xmlns:py="http://genshi.edgewall.org/">
   ...   <span py:match="xmlns:greeting">
   ...     Hello, ${select('@name')[0]}!
   ...   </span>
@@ -217,7 +217,7 @@ py:match
 
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
+  ...      xmlns:py="http://genshi.edgewall.org/">
   ...   <span>inter${'pol' + 'ati'}on</span>is ${int('test') | 'convenient'}!
   ...   <span>${'a'}${'b'}${'c'} ${'d'}</span>
   ...   <span py:with="hello='Hello'" class="${hello} World!" />
@@ -238,7 +238,7 @@ py:match
 
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
+  ...      xmlns:py="http://genshi.edgewall.org/">
   ...   <span py:with="y=7; z=x+10">$x $y $z</span>
   ... </div>""", x=42)
   <div>
@@ -330,7 +330,7 @@ py:match
 
   >>> print render_genshi("""\
   ... <script xmlns="http://www.w3.org/1999/xhtml"
-  ...         xmlns:py="http://genshi.edgewall.org"
+  ...         xmlns:py="http://genshi.edgewall.org/"
   ...         type="text/javascript">
   ...  var brands = [
   ...  <py:for each="brand in []">
@@ -350,7 +350,7 @@ py:match
   ...         dict(id=3, title="Three")]
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...       xmlns:py="http://genshi.edgewall.org">
+  ...       xmlns:py="http://genshi.edgewall.org/">
   ... <script type="text/javascript">
   ... var brands = [
   ...     <py:for each="brand in brands">
@@ -381,7 +381,7 @@ py:match
 
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...     xmlns:py="http://genshi.edgewall.org">
+  ...     xmlns:py="http://genshi.edgewall.org/">
   ...   <ul py:def="rendermenu(menu)" py:if="menu">
   ...     ${rendermenu([])}
   ...   </ul>
@@ -393,7 +393,7 @@ py:match
  
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...       xmlns:py="http://genshi.edgewall.org">
+  ...       xmlns:py="http://genshi.edgewall.org/">
   ...   <ul py:def="rendermenu(menu)">
   ...     <li py:for="entry in menu"
   ...         py:attrs="{'class' : entry['current'] and 'current' or None}">

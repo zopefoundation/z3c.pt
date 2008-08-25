@@ -120,7 +120,7 @@ py:match integration
   
   >>> print PageTemplate("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:py="http://genshi.edgewall.org">
+  ...      xmlns:py="http://genshi.edgewall.org/">
   ...   <py:match path="xmlns:greeting">Hello ${select('@name')[0]}!</py:match>
   ...   <greeting name="World" />
   ... </div>

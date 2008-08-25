@@ -1,5 +1,5 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:py="http://genshi.edgewall.org"
+     xmlns:py="http://genshi.edgewall.org/"
      py:strip="">
   <p py:def="greeting(name)" class="greeting">
     Hello, ${name}!

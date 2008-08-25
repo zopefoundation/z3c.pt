@@ -4,6 +4,8 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Corrected Genshi namespace (needs a trailing slash). [malthe]
+
 - Language negotiation is left to the page template superclass, so we
   don't need to pass in a translation context anymore. [malthe]
 
