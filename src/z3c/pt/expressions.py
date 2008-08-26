@@ -433,7 +433,7 @@ class ExpressionTranslation(object):
         >>> interpolate('${abc')
         Traceback (most recent call last):
           ...
-        SyntaxError: Interpolation expressions must of the form ${<expression>} (${abc)
+        SyntaxError: Interpolation expressions must be of the form ${<expression>} (${abc)
         
         """
 
@@ -452,7 +452,7 @@ class ExpressionTranslation(object):
 
         if m is None or (expression is None and variable is None):
             raise SyntaxError(
-                "Interpolation expressions must of the "
+                "Interpolation expressions must be of the "
                 "form ${<expression>} (%s)" % string)
 
         if expression and not m.group('expression'):
