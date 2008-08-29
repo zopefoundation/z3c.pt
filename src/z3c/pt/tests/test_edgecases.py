@@ -112,6 +112,72 @@ class TestZCMLActionsPickleable(unittest.TestCase, PlacelessSetup):
         new = pickle.loads(dumped)
         self.assertEqual(len(actions), len(new))
 
+class TestExplicitDoctypes(unittest.TestCase, PlacelessSetup):
+    def setUp(self):
+        PlacelessSetup.setUp(self)
+
+    def tearDown(self):
+        PlacelessSetup.tearDown(self)
+
+    def test_doctype_declared_in_constructor_adds_doctype(self):
+        import z3c.pt
+        from zope.configuration import xmlconfig
+        xmlconfig.file('configure.zcml', z3c.pt)
+        from z3c.pt.pagetemplate import PageTemplate
+        from z3c.pt import doctypes
+        body = """\
+        <html xmlns="http://www.w3.org/1999/xhtml">
+        </html>
+        """
+        expected = """\
+        <!DOCTYPE html PUBLIC"-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+        <html>
+        </html>"""
+        t = PageTemplate(body, doctype=doctypes.xhtml_strict)
+        self.assertEqual(norm(t.render()), norm(expected))
+
+    def test_doctype_declared_in_constructor_overrides_template_doctype(self):
+        import z3c.pt
+        from zope.configuration import xmlconfig
+        xmlconfig.file('configure.zcml', z3c.pt)
+        from z3c.pt.pagetemplate import PageTemplate
+        from z3c.pt import doctypes
+        body = """\
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        <html xmlns="http://www.w3.org/1999/xhtml">
+        </html>
+        """
+        expected = """\
+        <!DOCTYPE html PUBLIC"-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+        <html>
+        </html>"""
+        t = PageTemplate(body, doctype=doctypes.xhtml_strict)
+        self.assertEqual(norm(t.render()), norm(expected))
+
+    def test_doctype_assigned_to_instance_overrides_constructor_doctype(self):
+        import z3c.pt
+        from zope.configuration import xmlconfig
+        xmlconfig.file('configure.zcml', z3c.pt)
+        from z3c.pt.pagetemplate import PageTemplate
+        from z3c.pt import doctypes
+        body = """\
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        <html xmlns="http://www.w3.org/1999/xhtml">
+        </html>
+        """
+        expected = """\
+        <!DOCTYPE HTML PUBLIC"-//W3C//DTD HTML4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+        <html>
+        </html>"""
+        t = PageTemplate(body, doctype=doctypes.xhtml_strict)
+        t.doctype = doctypes.html
+        self.assertEqual(norm(t.render()), norm(expected))
+
 def norm(s):
     return s.replace(' ', '').replace('\n', '')
 

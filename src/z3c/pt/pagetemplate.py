@@ -1,7 +1,5 @@
 import zope.i18n
 
-import translation
-import generation
 import template
 import config
 import zpt
@@ -26,10 +24,10 @@ def prepare_language_support(kwargs):
 class PageTemplate(template.BaseTemplate):
     __doc__ = template.BaseTemplate.__doc__ # for Sphinx autodoc
 
-    def __init__(self, body, parser=None):
+    def __init__(self, body, parser=None, format=None, doctype=None):
         if parser is None:
             parser = zpt.ZopePageTemplateParser
-        super(PageTemplate, self).__init__(body, parser)
+        super(PageTemplate, self).__init__(body, parser, format, doctype)
 
     def prepare(self, kwargs):
         super(PageTemplate, self).prepare(kwargs)
@@ -38,10 +36,12 @@ class PageTemplate(template.BaseTemplate):
 class PageTemplateFile(template.BaseTemplateFile):
     __doc__ = template.BaseTemplateFile.__doc__ # for Sphinx autodoc
     
-    def __init__(self, filename, parser=None, **kwargs):
+    def __init__(self, filename, parser=None, format=None,
+                 doctype=None, **kwargs):
         if parser is None:
             parser = zpt.ZopePageTemplateParser
-        super(PageTemplateFile, self).__init__(filename, parser, **kwargs)
+        super(PageTemplateFile, self).__init__(filename, parser, format,
+                                               doctype, **kwargs)
 
     def prepare(self, kwargs):
         super(PageTemplateFile, self).prepare(kwargs)

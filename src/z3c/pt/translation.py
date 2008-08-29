@@ -1,12 +1,8 @@
-from zope import component
-
 from StringIO import StringIO
 
 import generation
 import codegen
 import clauses
-import interfaces
-import expressions
 import itertools
 import types
 import utils
@@ -431,14 +427,16 @@ class VariableInterpolation:
 class Compiler(object):
     """Template compiler."""
     
-    def __init__(self, body, parser):
-        self.root, self.doctype = parser.parse(body)
+    def __init__(self, body, parser, doctype=None):
+        self.root, parsed_doctype = parser.parse(body)
+        self.doctype = doctype or parsed_doctype
         self.parser = parser
 
     @classmethod
-    def from_text(cls, body, parser):
+    def from_text(cls, body, parser, doctype=None):
         compiler = Compiler(
-            "<html xmlns='%s'></html>" % config.XHTML_NS, parser)
+            "<html xmlns='%s'></html>" % config.XHTML_NS, parser,
+            doctype=doctype)
         compiler.root.text = body
         compiler.root.attrib[utils.meta_attr('omit-tag')] = ""
         return compiler

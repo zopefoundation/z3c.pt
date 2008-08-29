@@ -17,13 +17,14 @@ class BaseTemplate(object):
 
     format = 'xml'
     
-    def __init__(self, body, parser, format=None):
+    def __init__(self, body, parser, format=None, doctype=None):
         self.body = body
         self.parser = parser        
         self.signature = hash(body)
         self.registry = {}
         if format is not None:
             self.format = format
+        self.doctype = doctype
             
     @property
     def translate(self):
@@ -35,13 +36,13 @@ class BaseTemplate(object):
 
     @property
     def compiler(self):
-        return self.compilers[self.format](self.body, self.parser)
+        return self.compilers[self.format](self.body, self.parser, self.doctype)
     
     def cook(self, **kwargs):
         return self.compiler(**kwargs)
     
     def cook_check(self, macro, params):
-        key = self.signature, macro, params
+        key = self.signature, macro, params, self.doctype
         template = self.registry.get(key, None)
         if template is None:
             template = self.cook(macro=macro, params=params)
@@ -73,9 +74,10 @@ class BaseTemplateFile(BaseTemplate):
     
     global_registry = {}
     
-    def __init__(self, filename, parser, format=None, auto_reload=False):
+    def __init__(self, filename, parser, format=None,  doctype=None,
+                 auto_reload=False):
         BaseTemplate.__init__(
-            self, None, parser, format=format)
+            self, None, parser, format=format, doctype=doctype)
 
         self.auto_reload = auto_reload
         self.filename = filename = os.path.abspath(
@@ -97,7 +99,8 @@ class BaseTemplateFile(BaseTemplate):
         
     def clone(self, filename, format=None):
         cls = type(self)
-        return cls(filename, self.parser, format=format)
+        return cls(filename, self.parser, format=format,
+                   doctype=self.doctype, auto_reload=self.auto_reload)
         
     def _get_filename(self):
         return getattr(self, '_filename', None)
