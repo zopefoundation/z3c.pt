@@ -90,3 +90,7 @@ class ViewPageTemplateFile(ViewPageTemplate):
         
         self.template = PageTemplateFile(filename)
         property.__init__(self, self.render)
+
+    def __call__(self, view, **kwargs):
+        template = self.render(view)
+        return template(**kwargs)
