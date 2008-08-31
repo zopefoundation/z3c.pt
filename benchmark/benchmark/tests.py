@@ -302,8 +302,10 @@ class I18NBenchmarkTestCase(BaseTestCase):
 
         # In order to have a fair comparision, we need real zope.i18n handling
         zopefile.pt_getEngineContext = _pt_getEngineContext
+
+        assert config.SYMBOLS.i18n_context=='_i18n_context'
         
-        t_z3c = timing(z3cfile, table=table, context=self.env)
+        t_z3c = timing(z3cfile, table=table, _i18n_context=self.env)
         t_zope = timing(zopefile, table=table, env=self.env)
 
         print "z3c.pt:            %.2f" % t_z3c

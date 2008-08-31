@@ -10,10 +10,6 @@ template_wrapper = """\
 def render(%(init)s, %(args)s%(extra)s%(language)s=None):
 \t%(out)s, %(write)s = %(init)s.initialize_stream()
 \t%(attributes)s, %(repeat)s = %(init)s.initialize_tal()
-\t%(marker)s = %(init)s.initialize_helpers()
-\t%(path)s = %(init)s.initialize_traversal()
-\t%(translate)s = %(init)s.fast_translate
-\t%(elementtree)s = %(init)s.initialize_elementtree()
 \t%(scope)s = {}
 
 %(body)s
@@ -23,12 +19,11 @@ def render(%(init)s, %(args)s%(extra)s%(language)s=None):
 macro_wrapper = """\
 def render(%(init)s, %(kwargs)s%(extra)s):
 \t%(attributes)s, %(repeat)s = %(init)s.initialize_tal()
-\t%(marker)s = %(init)s.initialize_helpers()
-\t%(path)s = %(init)s.initialize_traversal()
-\t%(translate)s = %(init)s.fast_translate
-\t%(elementtree)s = %(init)s.initialize_elementtree()
 %(body)s
 """
+
+class marker(object):
+    pass
 
 def fast_translate(msgid, domain=None, mapping=None, context=None,
                    target_language=None, default=None):
@@ -55,22 +50,10 @@ def fast_translate(msgid, domain=None, mapping=None, context=None,
 def initialize_tal():
     return ({}, utils.repeatdict())
 
-def initialize_helpers():
-    return (object(), )
-
 def initialize_stream():
     out = BufferIO()
     return (out, out.write)
 
-def initialize_traversal():
-    return expressions.path_translation.traverse
-
-def initialize_elementtree():
-    try:
-        return etree.import_elementtree()
-    except ImportError:
-        return None
-    
 class BufferIO(list):
     write = list.append
 
@@ -88,6 +71,7 @@ class CodeIO(BufferIO):
     def __init__(self, symbols=None, indentation=0, indentation_string="\t"):
         BufferIO.__init__(self)
         self.symbols = symbols or object
+        self.symbol_mapping = {}
         self.indentation = indentation
         self.indentation_string = indentation_string
         self.queue = ''

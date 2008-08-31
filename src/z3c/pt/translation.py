@@ -280,6 +280,7 @@ class Node(object):
             # write translation to output if successful, otherwise
             # fallback to default rendition; 
             result = types.value(self.symbols.result)
+            result.symbol_mapping[self.symbols.marker] = generation.marker
             condition = types.template('%(result)s is not %(marker)s')
             _.append(clauses.Condition(condition,
                         [clauses.UnicodeWrite(result)]))
@@ -330,11 +331,17 @@ class Node(object):
         return msgid
 
     def translate_expression(self, value, mapping=None, default=None):
-        format = "_translate(%s, domain=%%(domain)s, mapping=%s, " \
+        format = "%%(translate)s(%s, domain=%%(domain)s, mapping=%s, " \
                  "target_language=%%(language)s, default=%s)"
-        return types.template(
+        template = types.template(
             format % (value, mapping, default))
 
+        # add translate-method to symbol mapping
+        translate = generation.fast_translate
+        template.symbol_mapping[config.SYMBOLS.translate] = translate
+
+        return template
+    
 class Element(etree.ElementBase):
     """Template element class.
 
@@ -486,6 +493,7 @@ class Compiler(object):
 
         # start generation
         self.root.start(stream)
+        body = stream.getvalue()
 
         # prepare args
         ignore = 'target_language',
@@ -504,20 +512,24 @@ class Compiler(object):
             extra += '%s=None, ' % selector
 
         # wrap generated Python-code in function definition
-        body = stream.getvalue()
         mapping = dict(
             args=args, kwargs=kwargs, extra=extra, body=body)
         mapping.update(stream.symbols.__dict__)
         source = wrapper % mapping
         
+        # set symbol mappings as globals
+        _globals = stream.symbol_mapping
+        
         # compile code
-        suite = codegen.Suite(source)
+        suite = codegen.Suite(source, globals=_globals)
+        suite._globals.update(_globals)
+        
+        # execute code
         _locals = {}
-        _globals = {}
         exec suite.code in suite._globals, _locals
-
-        return ByteCodeTemplate(
-            _locals['render'], self.root, self.parser, stream)
+        render = _locals['render']
+        
+        return ByteCodeTemplate(render, self.root, self.parser, stream)
 
 class ByteCodeTemplate(object):
     """Template compiled to byte-code."""

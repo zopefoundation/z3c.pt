@@ -195,6 +195,10 @@ class ZopePageTemplateParser(etree.Parser):
 
     default_expression = 'python'
 
+    def __init__(self, default_expression=None):
+        if default_expression is not None:
+            self.default_expression = default_expression
+
     @classmethod
     def parse(cls, body):
         root, doctype = super(ZopePageTemplateParser, cls).parse(body)

@@ -74,7 +74,7 @@ class ViewPageTemplateFile(ViewPageTemplate):
     """If ``filename`` is a relative path, the module path of the
     class where the instance is used to get an absolute path."""
     
-    def __init__(self, filename, **kwargs):
+    def __init__(self, filename, content_type=None, **kwargs):
         if not os.path.isabs(filename):	       
             for depth in (1, 2):	       
                 frame = sys._getframe(depth)	 

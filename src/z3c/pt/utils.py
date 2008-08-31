@@ -49,6 +49,10 @@ class scope(list):
     def __hash__(self):
         return self.hash
 
+class emptydict(dict):
+    def __setitem__(self, key, value):
+        raise TypeError("Read-only dictionary does not support assignment.")
+    
 class repeatitem(object):
     def __init__(self, iterator, length):
         self.length = length

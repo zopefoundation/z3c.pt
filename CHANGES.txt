@@ -4,6 +4,9 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Added ``symbol_mapping`` attribute to code streams such that
+  function dependencies can be registered at compile-time. [malthe]
+
 - Allow BaseTemplate-derived classes (PageTemplate, PageTemplateFile, 
   et. al) to accept a ``doctype`` argument, which will override the
   doctype supplied by the source of the template if specified. [chrism]

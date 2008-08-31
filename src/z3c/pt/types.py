@@ -1,11 +1,17 @@
+from utils import emptydict
+
 class expression:
-    pass
+    symbol_mapping = emptydict()
 
 class parts(tuple, expression):
     def __repr__(self):
         return 'parts'+tuple.__repr__(self)
 
-class value(str, expression):            
+class value(str, expression):
+    def __init__(self, *args):
+        super(value, self).__init__(*args)
+        self.symbol_mapping = {}
+
     def __repr__(self):
         return 'value(%s)' % str.__repr__(self)
 

@@ -87,7 +87,7 @@ class Assign(object):
     def __init__(self, parts, variable=None):
         if not isinstance(parts, types.parts):
             parts = types.parts((parts,))
-        
+
         self.parts = parts
         self.variable = variable
         
@@ -114,6 +114,9 @@ class Assign(object):
     def _assign(self, variable, value, stream):
         stream.annotate(value)
         symbols = stream.symbols.as_dict()
+
+        if value.symbol_mapping:
+            stream.symbol_mapping.update(value.symbol_mapping)
         
         if isinstance(value, types.template):
             value = types.value(value % symbols)
@@ -743,11 +746,7 @@ class Write(object):
     value = assign = None
     
     def __init__(self, value):
-        if isinstance(value, types.parts):
-            self.assign = Assign(value)
-        else:
-            self.value = value
-
+        self.assign = Assign(value)
         self.structure = not isinstance(value, types.escape)
         
     def begin(self, stream):
@@ -791,11 +790,12 @@ class Write(object):
         # validate XML if enabled
         if config.VALIDATION:
             try:
-                etree.import_elementtree()
+                _et = etree.import_elementtree()
             except ImportError:
                 raise ImportError(
                     "ElementTree (required when XML validation is enabled).")
 
+            stream.symbol_mapping[stream.symbols.elementtree] = _et
             write("%(elementtree)s.fromstring('<div>%%s</div>' %% %(tmp)s)")
 
     def end(self, stream):
