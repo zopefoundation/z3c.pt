@@ -92,7 +92,7 @@ class ViewPageTemplateFile(ViewPageTemplate):
  	 
             filename = path + os.sep + filename
         
-        self.template = PageTemplateFile(filename)
+        self.template = PageTemplateFile(filename, **kwargs)
         property.__init__(self, self.render)
 
     def __call__(self, view, **kwargs):
