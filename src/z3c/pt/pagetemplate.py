@@ -67,9 +67,9 @@ class ViewPageTemplate(property):
     
     def __init__(self, body, **kwargs):
         self.template = ZopePageTemplate(body, **kwargs)
-        property.__init__(self, self.render)
+        property.__init__(self, self.bind)
 
-    def render(self, view):
+    def bind(self, view):
         def template(**kwargs):
             return self.template.render(view=view,
                                         context=view.context,
@@ -100,8 +100,8 @@ class ViewPageTemplateFile(ViewPageTemplate):
             filename = path + os.sep + filename
 
         self.template = ZopePageTemplateFile(filename, **kwargs)
-        property.__init__(self, self.render)
+        property.__init__(self, self.bind)
 
     def __call__(self, view, **kwargs):
-        template = self.render(view)
+        template = self.bind(view)
         return template(**kwargs)
