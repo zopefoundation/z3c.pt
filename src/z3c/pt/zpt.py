@@ -179,7 +179,9 @@ class TALElement(ZopePageTemplateElement):
     
 class METALElement(ZopePageTemplateElement):
     """METAL namespace element."""
-    
+
+    tal_default_expression = utils.attribute(
+        utils.tal_attr('default-expression'))
     metal_define = utils.attribute('define-macro', lambda p: p.method)
     metal_use = utils.attribute('use-macro', lambda p: p.expression)
     metal_fillslot = utils.attribute('fill-slot')
