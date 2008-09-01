@@ -431,7 +431,7 @@ class Visit(object):
         self.node = node
         
     def begin(self, stream):
-        self.node.visit(skip_macro=False)
+        self.node.visit()
 
     def end(self, stream):
         pass
