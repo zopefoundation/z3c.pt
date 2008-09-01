@@ -202,7 +202,7 @@ class TestBadAttributeInterpolationWithTAL(unittest.TestCase, PlacelessSetup):
         expected = """\
         <div>
         <span>
-	<a class="notcurrent" href="?titlestartswith=A">A</a>
+	<a class="current" href="?titlestartswith=A">A</a>
         </span>
         <span>
 	<a class="notcurrent" href="?titlestartswith=B">B</a>
