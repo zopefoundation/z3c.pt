@@ -7,7 +7,7 @@ z3c.pt.pagetemplate.PageTemplate
 --------------------------------
 
   >>> from z3c.pt import PageTemplate
-  >>> from z3c.pt.testing import MockParser
+  >>> from z3c.pt.testing import mock_parser
   
   >>> print PageTemplate("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml">
@@ -124,7 +124,7 @@ py:match integration
   ...   <py:match path="xmlns:greeting">Hello ${select('@name')[0]}!</py:match>
   ...   <greeting name="World" />
   ... </div>
-  ... """, parser=GenshiParser)()
+  ... """, parser=GenshiParser())()
   <div>
     Hello World!
   <BLANKLINE>
@@ -204,7 +204,7 @@ metal:define-macro, metal:use-macro, metal:define-slot, metal:fill-slot
 xi:include
 
   >>> from z3c.pt.template import BaseTemplateFile
-  >>> template = BaseTemplateFile(path+"/xinclude1.pt", MockParser)
+  >>> template = BaseTemplateFile(path+"/xinclude1.pt", mock_parser)
   >>> print template()
   <div>
     <div>
@@ -217,7 +217,7 @@ xi:include
 When using XInclude-statements in Genshi, macro-definitions are
 carried over from the included template. This is demonstrated below.
 
-  >>> template = BaseTemplateFile(path+"/xinclude3.pt", GenshiParser)
+  >>> template = BaseTemplateFile(path+"/xinclude3.pt", GenshiParser())
   >>> print template()
   <div>
   <BLANKLINE>

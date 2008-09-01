@@ -274,7 +274,7 @@ metal:define-macro, metal:use-macro
   >>> from z3c.pt.testing import MockTemplate
   >>> from z3c.pt.zpt import ZopePageTemplateParser
 
-  >>> template = MockTemplate(body, ZopePageTemplateParser)
+  >>> template = MockTemplate(body, ZopePageTemplateParser())
   >>> print render_zpt(body, template=template)
   <div>
     <div>
@@ -311,7 +311,7 @@ metal:define-slot, metal:fill-slot
 
   >>> from z3c.pt.testing import MockTemplate
   
-  >>> template = MockTemplate(body, ZopePageTemplateParser)
+  >>> template = MockTemplate(body, ZopePageTemplateParser())
   >>> print render_zpt(body, template=template)
   <div>
   <BLANKLINE>
