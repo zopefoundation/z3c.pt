@@ -504,30 +504,11 @@ class Tag(object):
             isinstance(value, types.expression),
             self.attributes.items())
 
-        if self.expression:
-            self.expression.begin(stream, stream.symbols.tmp)
-
-        names = ", ".join([repr(a) for a, e in static]+[repr(a) for a, v in dynamic])
-        
-        if self.expression:
-            for attribute, expression in static:
-                stream.write("if '%s' not in %s:" % (attribute, stream.symbols.tmp))
-                stream.indent()
-                stream.write(
-                    "%s(' %s=\"%s\"')" % (
-                    stream.symbols.write, attribute, escape(expression, '"')))
-                stream.outdent()
-        else:
-            for attribute, expression in static:
-                if isinstance(expression, unicode):
-                    expression = expression.encode('utf-8')
-                stream.out(
-                    ' %s="%s"' % (attribute, escape(expression, '"')))
-
         temp = stream.save()
         temp2 = stream.save()
-
+        
         if self.expression:
+            self.expression.begin(stream, stream.symbols.tmp)
             stream.write("for %s, %s in %s.items():" % \
                          (temp, temp2, stream.symbols.tmp))            
             stream.indent()
@@ -554,7 +535,7 @@ class Tag(object):
                          (stream.symbols.write, temp, temp2))
             stream.outdent()
             stream.outdent()
-            
+
         for attribute, value in dynamic:
             assign = Assign(value)
             assign.begin(stream, temp)
@@ -583,6 +564,21 @@ class Tag(object):
         stream.restore()
         stream.restore()
         
+        if self.expression:
+            for attribute, expression in static:
+                stream.write("if '%s' not in %s:" % (attribute, stream.symbols.tmp))
+                stream.indent()
+                stream.write(
+                    "%s(' %s=\"%s\"')" % (
+                    stream.symbols.write, attribute, escape(expression, '"')))
+                stream.outdent()
+        else:
+            for attribute, expression in static:
+                if isinstance(expression, unicode):
+                    expression = expression.encode('utf-8')
+                stream.out(
+                    ' %s="%s"' % (attribute, escape(expression, '"')))
+
         if self.selfclosing:
             stream.out(" />")
         else:
