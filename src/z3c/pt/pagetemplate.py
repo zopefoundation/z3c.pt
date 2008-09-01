@@ -24,7 +24,7 @@ def prepare_language_support(kwargs):
 class PageTemplate(template.BaseTemplate):
     __doc__ = template.BaseTemplate.__doc__ # for Sphinx autodoc
 
-    default_parser = zpt.ZopePageTemplateParser
+    default_parser = zpt.ZopePageTemplateParser()
     
     def __init__(self, body, parser=None, format=None, doctype=None):
         if parser is None:
@@ -38,7 +38,7 @@ class PageTemplate(template.BaseTemplate):
 class PageTemplateFile(template.BaseTemplateFile):
     __doc__ = template.BaseTemplateFile.__doc__ # for Sphinx autodoc
 
-    default_parser = zpt.ZopePageTemplateParser
+    default_parser = zpt.ZopePageTemplateParser()
     
     def __init__(self, filename, parser=None, format=None,
                  doctype=None, **kwargs):
@@ -51,15 +51,22 @@ class PageTemplateFile(template.BaseTemplateFile):
         super(PageTemplateFile, self).prepare(kwargs)
         prepare_language_support(kwargs)
 
+class ZopePageTemplate(PageTemplate):
+    default_parser = zpt.ZopePageTemplateParser(default_expression='path')
+
+class ZopePageTemplateFile(PageTemplateFile):
+    default_parser = zpt.ZopePageTemplateParser(default_expression='path')
+
 class ViewPageTemplate(property):
     """Template class suitable for use with a Zope browser view; the
     variables ``view``, ``context`` and ``request`` variables are
     brought in to the local scope of the template automatically, while
     keyword arguments are passed in through the ``options``
-    dictionary."""
+    dictionary. Note that the default expression type for this class
+    is 'path' (standard Zope traversal)."""
     
     def __init__(self, body, **kwargs):
-        self.template = PageTemplate(body, **kwargs)
+        self.template = ZopePageTemplate(body, **kwargs)
         property.__init__(self, self.render)
 
     def render(self, view):
@@ -91,8 +98,8 @@ class ViewPageTemplateFile(ViewPageTemplate):
                 path = path[:path.rfind(os.sep)]	 
  	 
             filename = path + os.sep + filename
-        
-        self.template = PageTemplateFile(filename, **kwargs)
+
+        self.template = ZopePageTemplateFile(filename, **kwargs)
         property.__init__(self, self.render)
 
     def __call__(self, view, **kwargs):

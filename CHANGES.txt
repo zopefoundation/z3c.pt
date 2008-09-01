@@ -6,6 +6,9 @@ Version 1.0dev
 
   Backwards incompatibilities
 
+- The ``ViewPageTemplateFile`` class now uses 'path' as the default
+  expression type. [malthe]
+  
 - The compiler now expects an instantiated parser instance. [malthe]
 
   Features
