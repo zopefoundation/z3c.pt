@@ -180,12 +180,22 @@ class TALElement(ZopePageTemplateElement):
 class METALElement(ZopePageTemplateElement):
     """METAL namespace element."""
 
-    tal_default_expression = utils.attribute(
-        utils.tal_attr('default-expression'))
+    tal_define = None
+    tal_condition = None
+    tal_replace = None
+    tal_content = None
+    tal_repeat = None
+    tal_attributes = None
+    tal_omit = None
+    tal_default_expression = None
+    tal_cdata = None
     metal_define = utils.attribute('define-macro', lambda p: p.method)
     metal_use = utils.attribute('use-macro', lambda p: p.expression)
     metal_fillslot = utils.attribute('fill-slot')
     metal_defineslot = utils.attribute('define-slot')
+    i18n_domain = None
+    i18n_translate = None
+    i18n_attributes = None
 
 class ZopePageTemplateParser(etree.Parser):
     """ The parser implementation for ZPT """
