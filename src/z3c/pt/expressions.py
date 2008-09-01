@@ -447,9 +447,19 @@ class ExpressionTranslation(object):
         
         if expression:
             left = m.start()+len(m.group('prefix'))
-            exp = self.search(string[left+1:])
-            right = left+2+len(exp)
-            m = self.re_interpolation.search(string[:right])
+            match = string[left+1:]
+
+            while match:
+                try:
+                    exp = self.expression(match)
+                    break
+                except SyntaxError:
+                    match = match[:-1]
+            else:
+                raise
+
+            string = string[:left+1+len(match)]+'}'
+            return self.re_interpolation.search(string)
 
         if m is None or (expression is None and variable is None):
             raise SyntaxError(

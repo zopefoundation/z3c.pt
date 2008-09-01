@@ -135,6 +135,9 @@ Version 1.0dev
 
   Bugfixes
 
+- Support try-except operator ('|') when 'python' is the default
+  expression type. [malthe]
+  
 - METAL macros should render in the template where they're
   defined. [malthe]
   
