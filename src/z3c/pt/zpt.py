@@ -44,7 +44,7 @@ class ZopePageTemplateElement(
 
         @property
         def skip(self):
-            return self.content or self.define_macro or \
+            return self.content or \
                    self.use_macro or self.translate is not None
 
         dict_attributes = None
