@@ -4,14 +4,14 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+  Features
+
 - Added ``symbol_mapping`` attribute to code streams such that
   function dependencies can be registered at compile-time. [malthe]
 
 - Allow BaseTemplate-derived classes (PageTemplate, PageTemplateFile, 
   et. al) to accept a ``doctype`` argument, which will override the
   doctype supplied by the source of the template if specified. [chrism]
-
-- Corrected Genshi namespace (needs a trailing slash). [malthe]
 
 - Language negotiation is left to the page template superclass, so we
   don't need to pass in a translation context anymore. [malthe]
@@ -49,11 +49,6 @@ Version 1.0dev
 - Remove ``safe_render`` implementation detail.  It hid information
   in tracebacks. [chrism]
 
-- Fixed a few more UnicodeDecodeErrors (test contributed by Wiggy).
-  In particular, never upcast to unicode during transformation, and
-  utf-8 encode Unicode attribute keys and values in Assign expressions
-  (e.g. py:attrs). [chrism]
-
 - Implemented TAL global defines. [malthe]
 
 - Added support for variables with global scope. [malthe]
@@ -61,10 +56,6 @@ Version 1.0dev
 - Curly braces may now be omitted in an expression interpolation if
   the expression is just a variable name; this complies with the
   Genshi syntax. [malthe]
-
-- Fixed off-by-one bug in interpolation routine. [malthe]
-
-- The repeat-clause should not output tail with every iteration. [malthe]
 
 - UTF-8 encode Unicode attribute literals. [chrism]
 
@@ -82,12 +73,6 @@ Version 1.0dev
 - Add test-nolxml and py-nolxml parts to buildout so the package's
   tests can be run without lxml.  [chrism]  
 
-- CDATA sections are now correctly handled when using the
-  ElementTree-parser. [malthe]
-
-- Fixed bug in path-expressions where string instances would be
-  (attempted) called. [malthe]
-
 - No longer require default namespace. [malthe]
 
 - Changed source code debug mode files to be named <filename>.py instead of
@@ -97,31 +82,16 @@ Version 1.0dev
   ``xml.etree`` module and the standalone ``ElementTree``
   package. [malthe]
 
-- CDATA sections are now correctly preserved when using expression
-  interpolation. [malthe]
-
 - Expression results are now validated for XML correctness when the
   compiler is running in debug-mode. [malthe]
-
-- Preserve CDATA sections. [malthe]
-
-- The Genshi interpolation operator ${} should not have its result
-  escaped when used in the text or tail regions. [malthe]
 
 - Preliminary support for using ``xml.etree`` as fallback for
   ``lxml.etree``. [malthe]
 
-- Fixed edge case bug where inserting both a numeric entity and a
-  literal set of unicode bytes into the same document would cause a
-  UnicodeDecodeError. See also
-  http://groups.google.com/group/z3c_pt/browse_thread/thread/aea963d25a1778d0?hl=en
-  [chrism]
-
-- Static attributes are now properly overriden by py:attr-attributes.
-  [malthe]
-  
 - String-expressions may now contain semi-colons using a double
   semi-colon literal (;;). [malthe]
+
+- Preserve CDATA sections. [malthe]
 
 - Get rid of package-relative magic in constructor of BaseTemplateFile
   in favor of just requiring an absolute path or a path relative
@@ -147,6 +117,40 @@ Version 1.0dev
   source template as "literals", which will be rendered into the
   output unchanged. [chrism]
 
+  Bugfixes
+  
+- Corrected Genshi namespace (needs a trailing slash). [malthe]
+
+- Fixed a few more UnicodeDecodeErrors (test contributed by Wiggy).
+  In particular, never upcast to unicode during transformation, and
+  utf-8 encode Unicode attribute keys and values in Assign expressions
+  (e.g. py:attrs). [chrism]
+
+- Fixed off-by-one bug in interpolation routine. [malthe]
+
+- The repeat-clause should not output tail with every iteration. [malthe]
+
+- CDATA sections are now correctly handled when using the
+  ElementTree-parser. [malthe]
+
+- Fixed bug in path-expressions where string instances would be
+  (attempted) called. [malthe]
+
+- CDATA sections are now correctly preserved when using expression
+  interpolation. [malthe]
+
+- The Genshi interpolation operator ${} should not have its result
+  escaped when used in the text or tail regions. [malthe]
+
+- Fixed edge case bug where inserting both a numeric entity and a
+  literal set of unicode bytes into the same document would cause a
+  UnicodeDecodeError. See also
+  http://groups.google.com/group/z3c_pt/browse_thread/thread/aea963d25a1778d0?hl=en
+  [chrism]
+
+- Static attributes are now properly overriden by py:attr-attributes.
+  [malthe]
+  
 Version 0.9 - August 7, 2008
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
