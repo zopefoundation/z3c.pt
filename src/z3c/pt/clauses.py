@@ -877,17 +877,6 @@ class Out(object):
         if self.defer:
             stream.out(self.string)
 
-class Translate(object):
-    """
-    The translate clause works retrospectively.
-    """
-
-    def begin(self, stream):
-        raise
-
-    def end(self, stream):
-        raise
-
 class Method(object):
     """
     >>> from z3c.pt import testing
