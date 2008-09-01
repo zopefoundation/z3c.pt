@@ -47,11 +47,8 @@ class Node(object):
             for element in self.element:
                 element.node.visit()
                     
-    def visit(self, skip_macro=True):
+    def visit(self):
         assert self.stream is not None, "Must use ``start`` method."
-
-        if skip_macro and (self.define_macro):
-            return
 
         for element in self.element:
             if not isinstance(element, Element):

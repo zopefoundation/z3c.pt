@@ -6,6 +6,8 @@ Version 1.0dev
 
   Backwards incompatibilities
 
+- Template output is now always converted to unicode. [malthe]
+  
 - The ``ViewPageTemplateFile`` class now uses 'path' as the default
   expression type. [malthe]
   
@@ -132,6 +134,9 @@ Version 1.0dev
   output unchanged. [chrism]
 
   Bugfixes
+
+- METAL macros should render in the template where they're
+  defined. [malthe]
   
 - Avoid printing a line-break when we repeat over a single item
   only. [malthe]

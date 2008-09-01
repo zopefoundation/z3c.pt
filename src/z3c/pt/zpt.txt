@@ -264,7 +264,7 @@ metal:define-macro, metal:use-macro
   ...      xmlns:tal="http://xml.zope.org/namespaces/tal"
   ...      xmlns:metal="http://xml.zope.org/namespaces/metal">
   ...   <div class="greeting" metal:define-macro="greeting">
-  ...     Hello, ${name}!
+  ...     Hello, ${name|string:earth}!
   ...   </div>
   ...   <div tal:define="name 'world'">
   ...     <div metal:use-macro="template.macros['greeting']" />
@@ -277,10 +277,14 @@ metal:define-macro, metal:use-macro
   >>> template = MockTemplate(body, ZopePageTemplateParser())
   >>> print render_zpt(body, template=template)
   <div>
+    <div class="greeting">
+      Hello, earth!
+    </div>
     <div>
       <div class="greeting">
-        Hello, world!
-      </div>
+      Hello, world!
+    </div>
+  <BLANKLINE>
     </div>  
   </div>
 
@@ -314,6 +318,9 @@ metal:define-slot, metal:fill-slot
   >>> template = MockTemplate(body, ZopePageTemplateParser())
   >>> print render_zpt(body, template=template)
   <div>
+    <div>
+      Hello, <b class="name">stranger!</b>
+    </div>
   <BLANKLINE>
       <div>
       Hello, <b class="name">earth!</b>
