@@ -17,11 +17,10 @@ def import_elementtree():
     return ET
 
 class Parser(object):
-    element_mapping = {}
+    element_mapping = utils.emptydict()
 
-    @classmethod
-    def parse(cls, body):
-        return parse(body, cls.element_mapping)
+    def parse(self, body):
+        return parse(body, self.element_mapping)
         
 try:
     import lxml.etree

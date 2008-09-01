@@ -25,22 +25,22 @@ def setup_stream():
     return out, write, stream
 
 def render_xhtml(body, **kwargs):
-    compiler = translation.Compiler(body, MockParser)
+    compiler = translation.Compiler(body, mock_parser)
     template = compiler(params=sorted(kwargs.keys()))
     return template.render(**kwargs)    
     
 def render_text(body, **kwargs):
-    compiler = translation.Compiler.from_text(body, MockParser)
+    compiler = translation.Compiler.from_text(body, mock_parser)
     template = compiler(params=sorted(kwargs.keys()))
     return template.render(**kwargs)    
 
 def render_zpt(body, **kwargs):
-    compiler = translation.Compiler(body, zpt.ZopePageTemplateParser)
+    compiler = translation.Compiler(body, zpt.ZopePageTemplateParser())
     template = compiler(params=sorted(kwargs.keys()))
     return template.render(**kwargs)    
 
 def render_genshi(body, **kwargs):
-    compiler = translation.Compiler(body, genshi.GenshiParser)
+    compiler = translation.Compiler(body, genshi.GenshiParser())
     template = compiler(params=sorted(kwargs.keys()))
     kwargs.update(template.selectors)
     return template.render(**kwargs)    
@@ -109,3 +109,5 @@ class MockParser(etree.Parser):
         config.XHTML_NS: {None: MockElement},
         config.META_NS: {None: MockElement},
         config.XI_NS: {None: MockElement}}
+
+mock_parser = MockParser()

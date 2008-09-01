@@ -199,9 +199,8 @@ class ZopePageTemplateParser(etree.Parser):
         if default_expression is not None:
             self.default_expression = default_expression
 
-    @classmethod
-    def parse(cls, body):
-        root, doctype = super(ZopePageTemplateParser, cls).parse(body)
+    def parse(self, body):
+        root, doctype = super(ZopePageTemplateParser, self).parse(body)
 
         # if a default expression is not set explicitly in the
         # template, use the TAL-attribute ``default-expression``
@@ -212,6 +211,6 @@ class ZopePageTemplateParser(etree.Parser):
             tag = utils.tal_attr('default-expression')
 
         if not root.attrib.get(tag):
-            root.attrib[tag] = cls.default_expression
+            root.attrib[tag] = self.default_expression
 
         return root, doctype
