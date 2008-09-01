@@ -1,6 +1,9 @@
+from zope import interface
+
 import sys
-import logging
 import config
+import logging
+import interfaces
 
 from UserDict import UserDict
 
@@ -56,6 +59,8 @@ class emptydict(dict):
         raise TypeError("Read-only dictionary does not support assignment.")
     
 class repeatitem(object):
+    interface.implements(interfaces.ITALESIterator)
+    
     def __init__(self, iterator, length):
         self.length = length
         self.iterator = iterator

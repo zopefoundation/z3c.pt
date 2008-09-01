@@ -13,6 +13,10 @@ Version 1.0dev
 
   Features
 
+- Added security configuration for the TALES iterator (repeat
+  dictionary). This is made conditional on the availability of the
+  application security framework. [malthe]
+
 - Dynamic attributes are now ordered as they appear in the
   template. [malthe]
   
