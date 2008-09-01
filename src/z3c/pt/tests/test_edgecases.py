@@ -178,6 +178,42 @@ class TestExplicitDoctypes(unittest.TestCase, PlacelessSetup):
         t.doctype = doctypes.html
         self.assertEqual(norm(t.render()), norm(expected))
 
+class TestBadAttributeInterpolationWithTAL(unittest.TestCase, PlacelessSetup):
+    def test_snippet(self):
+        body = """\
+        <div xmlns:tal="http://xml.zope.org/namespaces/tal"
+             xmlns="http://www.w3.org/1999/xhtml">
+        <span tal:repeat="ltr letters">
+	<a class="${ltr.iscurrent}" href="${ltr.href}">${ltr.letter}</a>
+        </span>
+        </div>
+        """
+        import z3c.pt
+        from zope.configuration import xmlconfig
+        xmlconfig.file('configure.zcml', z3c.pt)
+        from z3c.pt.pagetemplate import PageTemplate
+        letters = [
+            {'letter':'A', 'href':'?titlestartswith=A',
+             'iscurrent':'current'},
+            {'letter':'B', 'href':'?titlestartswith=B',
+             'iscurrent':'notcurrent'},
+            ]
+        t = PageTemplate(body)
+        expected = """\
+        <div>
+        <span>
+	<a class="notcurrent" href="?titlestartswith=A">A</a>
+        </span>
+        <span>
+	<a class="notcurrent" href="?titlestartswith=B">B</a>
+        </span>
+        </div>"""
+
+        output = t.render(letters=letters)
+        
+        self.assertEqual(norm(output), norm(expected))
+        
+
 def norm(s):
     return s.replace(' ', '').replace('\n', '')
 
