@@ -31,7 +31,7 @@ tal:define, tal:attributes, tal:contents
   ...   <span tal:content="None" />
   ... </div>""")
     <div>
-      <span id="test" style="hij" class="defabc">abcghi</span>
+      <span id="test" class="defabc" style="hij">abcghi</span>
       Hello World!
       Hello World!
       <span></span>

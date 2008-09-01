@@ -13,6 +13,9 @@ Version 1.0dev
 
   Features
 
+- Dynamic attributes are now ordered as they appear in the
+  template. [malthe]
+  
 - Added ``symbol_mapping`` attribute to code streams such that
   function dependencies can be registered at compile-time. [malthe]
 

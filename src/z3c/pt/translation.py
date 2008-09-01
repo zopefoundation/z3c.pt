@@ -120,25 +120,27 @@ class Node(object):
         dynamic = content or self.translate is not None
 
         # static attributes are at the bottom of the food chain
-        attributes = self.static_attributes
+        attributes = utils.odict()
+        attributes.update(self.static_attributes)
 
         # dynamic attributes
-        attrs = self.dynamic_attributes or ()
-        dynamic_attributes = tuple(attrs)
-
-        for variables, expression in attrs:
+        dynamic_attrs = self.dynamic_attributes or ()
+        dynamic_attr_names = []
+        
+        for variables, expression in dynamic_attrs:
             if len(variables) != 1:
                 raise ValueError("Tuple definitions in assignment clause "
                                      "is not supported.")
 
             variable = variables[0]
             attributes[variable] = expression
+            dynamic_attr_names.append(variable)
 
         # translated attributes
         translated_attributes = self.translated_attributes or ()
         for variable, msgid in translated_attributes:
             if msgid:
-                if variable in dynamic_attributes:
+                if variable in dynamic_attr_names:
                     raise ValueError(
                         "Message id not allowed in conjunction with "
                         "a dynamic attribute.")
@@ -151,7 +153,7 @@ class Node(object):
                 else:
                     expression = self.translate_expression(value)
             else:
-                if variable in dynamic_attributes or variable in attributes:
+                if variable in dynamic_attr_names or variable in attributes:
                     text = '"%s"' % attributes[variable]
                     expression = self.translate_expression(text)
                 else:

@@ -221,7 +221,7 @@ Not passing a language:
   >>> template = PageTemplate(body)
   >>> print template.render()
   <div>
-    <span longdesc="A not so short description." title="Simple Title">
+    <span title="Simple Title" longdesc="A not so short description.">
       Default
     </span>
   </div>
@@ -230,8 +230,8 @@ Passing German:
 
   >>> print template.render(target_language='de')
   <div>
-    <span longdesc="Mock translation of 'desc_short'."
-          title="Mock translation of 'title_simple'.">
+    <span title="Mock translation of 'title_simple'."
+          longdesc="Mock translation of 'desc_short'.">
       Default
     </span>
   </div>
