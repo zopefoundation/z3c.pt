@@ -190,8 +190,7 @@ class Node(object):
 
                 _.append(clauses.Assign(content, self.symbols.tmp))
                 content = self.translate_expression(
-                    types.value(self.symbols.tmp), default=
-                    repr(text.replace("'", "\'")))
+                    types.value(self.symbols.tmp))
                 
             _.append(clauses.Write(content))
 

@@ -263,9 +263,7 @@ Not passing a language:
     <span title="Title">
       Default, "default", 'default'
     </span>
-    <span>
-      Default, "default", 'default'
-    </span>
+    <span>tid</span>
   </div>
 
 Passing German:
