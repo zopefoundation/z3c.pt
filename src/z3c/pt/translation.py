@@ -187,8 +187,12 @@ class Node(object):
                 if msgid:
                     raise ValueError(
                         "Can't use message id with dynamic content translation.")
+
+                _.append(clauses.Assign(content, self.symbols.tmp))
+                content = self.translate_expression(
+                    types.value(self.symbols.tmp), default=
+                    repr(text.replace("'", "\'")))
                 
-                _.append(clauses.Translate())
             _.append(clauses.Write(content))
 
         # include
@@ -527,7 +531,7 @@ class Compiler(object):
         _locals = {}
         exec suite.code in suite._globals, _locals
         render = _locals['render']
-        
+
         return ByteCodeTemplate(render, self.root, self.parser, stream)
 
 class ByteCodeTemplate(object):

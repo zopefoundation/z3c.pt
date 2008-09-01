@@ -15,6 +15,8 @@ Version 1.0dev
 
   Features
 
+- Added support for translation of tag body. [malthe]
+
 - Added security configuration for the TALES iterator (repeat
   dictionary). This is made conditional on the availability of the
   application security framework. [malthe]

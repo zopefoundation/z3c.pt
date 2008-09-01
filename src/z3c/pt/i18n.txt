@@ -243,10 +243,15 @@ A simple example to start with.
   
   >>> body = """\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:i18n="http://xml.zope.org/namespaces/i18n">
+  ...      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
   ...   <span i18n:domain="test" i18n:translate="tid"
   ...         title="Title" i18n:attributes="title aid">
-  ...     Default
+  ...     Default, "default", 'default'
+  ...   </span>
+  ...   <span i18n:domain="test" i18n:translate=""
+  ...         tal:content="string:tid">
+  ...     Default, "default", 'default'
   ...   </span>
   ... </div>"""
 
@@ -256,7 +261,10 @@ Not passing a language:
   >>> print template.render()
   <div>
     <span title="Title">
-      Default
+      Default, "default", 'default'
+    </span>
+    <span>
+      Default, "default", 'default'
     </span>
   </div>
 
@@ -265,4 +273,5 @@ Passing German:
   >>> print template.render(target_language='de')
   <div>
     <span title="Mock translation of 'aid'.">Mock translation of 'tid'.</span>
+    <span>Mock translation of 'tid'.</span>
   </div>
