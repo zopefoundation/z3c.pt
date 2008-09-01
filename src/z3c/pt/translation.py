@@ -3,6 +3,7 @@ from StringIO import StringIO
 import generation
 import codegen
 import clauses
+import doctypes
 import itertools
 import types
 import utils
@@ -438,7 +439,10 @@ class Compiler(object):
     
     def __init__(self, body, parser, doctype=None):
         self.root, parsed_doctype = parser.parse(body)
-        self.doctype = doctype or parsed_doctype
+        if doctype is doctypes.no_doctype:
+            self.doctype = None
+        else:
+            self.doctype = doctype or parsed_doctype
         self.parser = parser
 
     @classmethod

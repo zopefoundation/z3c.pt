@@ -178,6 +178,24 @@ class TestExplicitDoctypes(unittest.TestCase, PlacelessSetup):
         t.doctype = doctypes.html
         self.assertEqual(norm(t.render()), norm(expected))
 
+    def test_no_doctype_overrides_parsed_doctype(self):
+        import z3c.pt
+        from zope.configuration import xmlconfig
+        xmlconfig.file('configure.zcml', z3c.pt)
+        from z3c.pt.pagetemplate import PageTemplate
+        from z3c.pt import doctypes
+        body = """\
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        <html xmlns="http://www.w3.org/1999/xhtml">
+        </html>
+        """
+        expected = """\
+        <html>
+        </html>"""
+        t = PageTemplate(body, doctype=doctypes.no_doctype)
+        self.assertEqual(norm(t.render()), norm(expected))
+
 class TestBadAttributeInterpolationWithTAL(unittest.TestCase, PlacelessSetup):
     def test_snippet(self):
         body = """\
