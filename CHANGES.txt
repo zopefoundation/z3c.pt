@@ -6,6 +6,9 @@ Version 1.0dev
 
   Backwards incompatibilities
 
+- Avoid printing a line-break when we repeat over a single item
+  only. [malthe]
+  
 - The ``ViewPageTemplateFile`` class now uses 'path' as the default
   expression type. [malthe]
   

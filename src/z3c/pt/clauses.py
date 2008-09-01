@@ -662,13 +662,12 @@ class Repeat(object):
         variable = self.variable
 
         if self.repeatdict:
-            iterator = stream.save()
-
-            # assign iterator
-            self.assign.begin(stream, iterator)
-
             # initialize variable scope
             self.define.begin(stream)
+
+            # assign iterator
+            iterator = stream.save()
+            self.assign.begin(stream, iterator)
 
             # initialize iterator
             stream.write("%s = repeat.insert('%s', %s)" % (
@@ -677,9 +676,9 @@ class Repeat(object):
             # loop
             stream.write("try:")
             stream.indent()
+            stream.write("%s = %s.next()" % (variable, iterator))
             stream.write("while True:")
             stream.indent()
-            stream.write("%s = %s.next()" % (variable, iterator))
         else:
             stream.write("for %s in %s:" % (variable, self.expression))
             stream.indent()
@@ -687,6 +686,11 @@ class Repeat(object):
     def end(self, stream):
         # cook before leaving loop
         stream.cook()
+
+        if self.repeatdict:
+            iterator = stream.restore()
+            stream.write("%s = %s.next()" % (self.variable, iterator))
+            
         stream.out('\n')
         stream.outdent()
         
@@ -699,7 +703,6 @@ class Repeat(object):
 
             self.define.end(stream)
             self.assign.end(stream)
-            stream.restore()
 
 class Write(object):
     """
