@@ -618,11 +618,14 @@ class StringTranslation(ExpressionTranslation):
 
         >>> unescape(';; string:Hello World')
         '; string:Hello World'
+
+        >>> unescape('string:Hello World;')
+        'string:Hello World;'
         
         """
         
         i = string.rfind(';')
-        if i < 0:
+        if i < 0 or i == len(string) - 1:
             return string
         
         j = string.rfind(';'+';')
