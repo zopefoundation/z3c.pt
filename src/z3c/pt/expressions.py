@@ -446,19 +446,20 @@ class ExpressionTranslation(object):
         variable = m.group('variable')
         
         if expression:
-            left = m.start()+len(m.group('prefix'))
-            match = string[left+1:]
+            left = m.start()+len(m.group('prefix'))+1
+            right = string.find('}')
 
-            while match:
+            while right != -1:
+                match = string[left:right]
                 try:
                     exp = self.expression(match)
                     break
                 except SyntaxError:
-                    match = match[:-1]
+                    right = string.find('}', right)
             else:
                 raise
 
-            string = string[:left+1+len(match)]+'}'
+            string = string[:right+1]
             return self.re_interpolation.search(string)
 
         if m is None or (expression is None and variable is None):
@@ -604,10 +605,31 @@ class StringTranslation(ExpressionTranslation):
         return super(StringTranslation, self).definitions(string)
 
     def _unescape(self, string):
+        """
+        >>> unescape = StringTranslation(python_translation)._unescape
+        
+        >>> unescape('string:Hello World')
+        'string:Hello World'
+        
+        >>> unescape('; string:Hello World')
+        Traceback (most recent call last):
+         ...
+        SyntaxError: Semi-colons in string-expressions must be escaped.
+
+        >>> unescape(';; string:Hello World')
+        '; string:Hello World'
+        
+        """
+        
         i = string.rfind(';')
-        if i > 0 and i != string.rfind(';'+';') + 1:
+        if i < 0:
+            return string
+        
+        j = string.rfind(';'+';')
+        if j < 0 or i != j + 1:
             raise SyntaxError(
                 "Semi-colons in string-expressions must be escaped.")
+        
         return string.replace(';;', ';')
 
 class PathTranslation(ExpressionTranslation):

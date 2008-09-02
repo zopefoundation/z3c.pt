@@ -141,6 +141,9 @@ Version 1.0dev
 
   Bugfixes
 
+- Fixed interpolation bug where multiple attributes with interpolation
+  expressions would result in corrupted output. [malthe]
+
 - Support try-except operator ('|') when 'python' is the default
   expression type. [malthe]
   
