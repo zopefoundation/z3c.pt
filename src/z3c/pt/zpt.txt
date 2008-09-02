@@ -23,15 +23,16 @@ tal:define, tal:attributes, tal:contents
   ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
   ...   <span id="test"
   ...         class="dummy"
+  ...         onclick=""
   ...         tal:define="a 'abc'"
-  ...         tal:attributes="class 'def' + a; style 'hij'"
+  ...         tal:attributes="class 'def' + a; style 'hij'; onClick 'alert();'"
   ...         tal:content="a + 'ghi'" />
   ...   <span tal:replace="'Hello World!'">Hello Universe!</span>
   ...   <span tal:replace="'Hello World!'"><b>Hello Universe!</b></span>
   ...   <span tal:content="None" />
   ... </div>""")
     <div>
-      <span class="defabc" style="hij" id="test">abcghi</span>
+      <span class="defabc" style="hij" onClick="alert();" id="test">abcghi</span>
       Hello World!
       Hello World!
       <span></span>
