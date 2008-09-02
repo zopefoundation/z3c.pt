@@ -721,12 +721,8 @@ def path_traverse(base, request, call, *path_items):
         next = getattr(base, name, _marker)
         if next is not _marker:
             _callable = callable(next)
-
-            if _callable:
-                base = next()
-            else:
-                base = next
-                continue
+            base = next
+            continue
         else:
             # special-case dicts for performance reasons        
             if getattr(base, '__class__', None) == dict:
