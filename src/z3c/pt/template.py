@@ -66,7 +66,8 @@ class BaseTemplate(object):
         self.prepare(kwargs)
         template = self.cook_check(macro, tuple(kwargs))
         kwargs.update(template.selectors)
-        return template.render(**kwargs)
+        result = template.render(**kwargs) or ""
+        return result.decode('utf-8')
 
     def __repr__(self):
         return u"<%s %d>" % (self.__class__.__name__, id(self))
