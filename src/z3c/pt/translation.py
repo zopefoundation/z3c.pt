@@ -451,7 +451,7 @@ class Compiler(object):
             
         self.root, parsed_doctype = parser.parse(body)
 
-        if explicit_doctype not in (None, doctypes.no_doctype):
+        if explicit_doctype is not None:
             self.doctype = explicit_doctype
         elif parsed_doctype and not no_doctype_declaration:
             self.doctype = parsed_doctype
