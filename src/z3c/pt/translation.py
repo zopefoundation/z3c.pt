@@ -10,7 +10,8 @@ import utils
 import config
 import etree
 import marshal
-    
+import htmlentitydefs
+
 class Node(object):
     """Element translation class.
 
@@ -447,8 +448,15 @@ class Compiler(object):
         # the document source
         no_doctype_declaration = '<!DOCTYPE' not in body
         if implicit_doctype and no_doctype_declaration:
+            # munge entities into declaration
+            entities = "".join((
+                '<!ENTITY %s "&#%s;">' % (name, text) for (name, text) in \
+                htmlentitydefs.name2codepoint.items()))
+            implicit_doctype = implicit_doctype[:-1] + '  [ %s ]>' % entities
+
+            # prepend to body
             body = implicit_doctype + "\n" + body
-            
+
         self.root, parsed_doctype = parser.parse(body)
 
         if explicit_doctype is not None:

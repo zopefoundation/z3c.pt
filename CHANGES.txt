@@ -15,6 +15,8 @@ Version 1.0dev
 
   Features
 
+- Allow standard HTML entities. [malthe]
+  
 - Added compiler option to specify an implicit doctype; this is
   currently used by the template classes to let the loose XHTML
   doctype be the default. [malthe]
