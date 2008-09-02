@@ -186,7 +186,7 @@ class METALElement(ZopePageTemplateElement):
     tal_content = None
     tal_repeat = None
     tal_attributes = None
-    tal_omit = None
+    tal_omit = True
     tal_default_expression = None
     tal_cdata = None
     metal_define = utils.attribute('define-macro', lambda p: p.method)
