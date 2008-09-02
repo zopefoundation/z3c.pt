@@ -274,7 +274,7 @@ py:match
   ...   <img alt="${alt}" />
   ... </div>""", alt=unicode("La Pe\xc3\xb1a", 'utf-8'))
   <div>
-    <img alt="La Peña" />
+    <img alt="La Pe&ntilde;a" />
     <img alt="La Peña" />
   </div>
 
