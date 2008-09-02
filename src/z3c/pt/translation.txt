@@ -61,8 +61,7 @@ XHTML
 Literals
 --------
 
-:: Named entities output literally (note doctype is required to prevent
-   lxml from raising a XMLSyntaxError :-( )
+:: Named entities output literally
 
   >>> print render_xhtml("""\
   ... <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
@@ -75,7 +74,8 @@ Literals
       Hello &nbsp; World!
     </html>
 
-:: Or without doctype.
+:: Although not XML-compliant, named entities are accepted even
+   without a document type declaration.
     
   >>> print render_xhtml("""\
   ... <html xmlns="http://www.w3.org/1999/xhtml">
