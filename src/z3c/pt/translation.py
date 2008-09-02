@@ -428,7 +428,7 @@ class VariableInterpolation:
                 del self.attrib[name]
 
                 attributes = utils.meta_attr('attributes')
-                expr = '%s string: %s' % (name, value)
+                expr = '%s string:%s' % (name, value)
                 if attributes in self.attrib:
                     self.attrib[attributes] += '; %s' % expr
                 else:
