@@ -476,13 +476,7 @@ class Tag(object):
 
     def __init__(self, tag, attributes=None,
                  selfclosing=False, expression=None, cdata=False):
-        i = tag.find('}')
-
-        if i != -1:
-            self.tag = tag[i+1:]
-        else:
-            self.tag = tag
-
+        self.tag = tag.split('}')[-1]
         self.selfclosing = selfclosing
         self.attributes = attributes or {}
         self.expression = expression and Assign(expression)
