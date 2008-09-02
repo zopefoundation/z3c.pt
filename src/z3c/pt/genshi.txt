@@ -222,17 +222,18 @@ py:match
   ...   <span>${'a'}${'b'}${'c'} ${'d'}</span>
   ...   <span py:with="hello='Hello'" class="${hello} World!" />
   ...   <span class="my-${'class'} item${'Last'}" />
+  ...   <a href="${ltr.href}" class="${ltr.iscurrent}">${ltr.letter}</a>
   ...   <span style="position: ${'abs'}olute"
   ...         class="my-${int('test') | 'class'} item${'Last'}" />
-  ... </div>""")
+  ... </div>""", ltr={'letter': 'A', 'href': '?title=A', 'iscurrent': 'current'})
     <div>
       <span>interpolation</span>is convenient!
       <span>abc d</span>
       <span class="Hello World!" />
       <span class="my-class itemLast" />
+      <a href="?title=A" class="current">A</a>
       <span style="position: absolute" class="my-class itemLast" />
     </div>
-
 
 :: Simple variable names do not need { .. }. From `py:with specs`_.
 
@@ -276,7 +277,6 @@ py:match
     <img alt="La Peña" />
     <img alt="La Peña" />
   </div>
-
 
 :: Variables containing quotes
   >>> print render_genshi("""\
