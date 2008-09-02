@@ -499,6 +499,9 @@ class Tag(object):
             not isinstance(value, types.expression),
             self.attributes.items())
 
+        # sort static attribute alphabetically by name
+        static.sort(key=lambda (name, value): name)
+
         dynamic = filter(
             lambda (attribute, value): \
             isinstance(value, types.expression),
