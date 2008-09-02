@@ -4,6 +4,8 @@ import sys
 import config
 import logging
 import interfaces
+import htmlentitydefs
+import re, string
 
 from UserDict import UserDict
 
@@ -44,6 +46,30 @@ def attribute(ns, factory=None, default=None):
     def set(self, value):
         self.attrib[ns] = value
     return property(get, set)
+
+def escape(string, quote=None):
+    if not isinstance(string, unicode):
+        encoding = 'utf-8'
+        string = string.decode(encoding)
+    else:
+        encoding = None
+
+    table = htmlentitydefs.codepoint2name
+    def get(char):
+        key = ord(char)
+        if key in table:
+            return '&%s;' % table[key]
+        return char
+    
+    string = "".join(map(get, string))
+
+    if quote is not None:
+        string = string.replace(quote, '\\'+quote)
+
+    if encoding:
+        string = string.encode(encoding)
+        
+    return string
 
 class scope(list):
     def __init__(self, *args):
