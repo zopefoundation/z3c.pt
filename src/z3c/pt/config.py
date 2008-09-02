@@ -9,7 +9,9 @@ DEBUG_MODE = os.environ.get(DEBUG_MODE_KEY, 'false')
 DEBUG_MODE = DEBUG_MODE.lower() in TRUEVALS
 
 # disable disk-cache to prevent the compiler from caching on disk
-DISK_CACHE = not DEBUG_MODE
+DISK_CACHE_KEY = 'Z3C_PT_CACHE'
+DISK_CACHE = os.environ.get(DISK_CACHE_KEY, 'true')
+DISK_CACHE = DISK_CACHE.lower() in TRUEVALS
 CACHE_EXTENSION = "cache"
 
 # when validation is enabled, dynamically inserted content is
