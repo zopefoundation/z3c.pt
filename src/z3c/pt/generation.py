@@ -11,6 +11,7 @@ def render(%(init)s, %(args)s%(extra)s%(language)s=None):
 \t%(out)s, %(write)s = %(init)s.initialize_stream()
 \t%(attributes)s, %(repeat)s = %(init)s.initialize_tal()
 \t%(scope)s = {}
+\t%(domain)s = None
 
 %(body)s
 \treturn %(out)s.getvalue()
@@ -19,6 +20,7 @@ def render(%(init)s, %(args)s%(extra)s%(language)s=None):
 macro_wrapper = """\
 def render(%(init)s, %(kwargs)s%(extra)s):
 \t%(attributes)s, %(repeat)s = %(init)s.initialize_tal()
+\t%(domain)s = None
 %(body)s
 """
 
