@@ -161,9 +161,15 @@ class odict(UserDict):
         self._keys.remove(key)
 
     def __setitem__(self, key, item):
+        """Case insensitive set item."""
+        
         UserDict.__setitem__(self, key, item)
-        if key in self._keys:
-            self._keys.remove(key)
+        keys = tuple(key.lower() for key in self._keys)
+        _key = key.lower()
+        if _key in keys:
+            for k in self._keys:
+                if k.lower() == _key:
+                    self._keys.remove(k)
         self._keys.append(key)
 
     def clear(self):
