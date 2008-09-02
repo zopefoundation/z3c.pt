@@ -76,7 +76,6 @@ try:
 
             if self.text in ("", None):
                 return self.text
-
             
             elements = tuple(self)
             del self[:]
@@ -87,8 +86,9 @@ try:
             for attr, value in self.items():
                 element.attrib[attr] = value
 
-            html = lxml.etree.tostring(element)                
-            text = xml[len(html)-1:-len(element.tag[element.tag.rfind('}'):])-2]
+            html = lxml.etree.tostring(element)
+            tag = len(element.tag.split('}')[-1])+3
+            text = xml[len(html)-tag:-tag]
 
             return text
 
