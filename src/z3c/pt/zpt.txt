@@ -32,7 +32,7 @@ tal:define, tal:attributes, tal:contents
   ...   <span tal:content="None" />
   ... </div>""")
     <div>
-      <span class="defabc" style="hij" onClick="alert();" id="test">abcghi</span>
+      <span class="defabc" style="hij" onclick="alert();" id="test">abcghi</span>
       Hello World!
       Hello World!
       <span></span>
