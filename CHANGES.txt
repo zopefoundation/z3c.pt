@@ -15,6 +15,8 @@ Version 1.0dev
 
   Features
 
+- XML namespace attribute is now always printed for root tag. [malthe]
+  
 - Allow standard HTML entities. [malthe]
   
 - Added compiler option to specify an implicit doctype; this is

@@ -14,7 +14,7 @@ XHTML
   ... <div xmlns="http://www.w3.org/1999/xhtml">
   ...   Hello World!
   ... </div>""")
-    <div>
+    <div xmlns="http://www.w3.org/1999/xhtml">
       Hello World!
     </div>
 
@@ -38,7 +38,7 @@ XHTML
   ...   La Peña
   ...   <img alt="La Peña" />
   ... </div>""")
-    <div>
+    <div xmlns="http://www.w3.org/1999/xhtml">
       La Peña
       <img alt="La Pe&ntilde;a" />
     </div>
@@ -51,7 +51,7 @@ XHTML
   ...   /* ]]> */
   ...   <span>Not protected</span> <![CDATA[ This is protected ]]>
   ... </div>""")
-    <div>
+    <div xmlns="http://www.w3.org/1999/xhtml">
       /* <![CDATA[ */
       This is protected
       /* ]]> */
@@ -70,7 +70,7 @@ Literals
   ...   Hello &nbsp; World!
   ... </html>""")
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-    <html>
+    <html xmlns="http://www.w3.org/1999/xhtml">
       Hello &nbsp; World!
     </html>
 
@@ -84,7 +84,7 @@ Literals
   ...   >&rarr;</a>
   ...   <span class="&rarr;" />
   ... </html>""")
-    <html>
+    <html xmlns="http://www.w3.org/1999/xhtml">
       Hello &nbsp; World!
       <a href="localhost" title="Singing &amp; Dancing">&rarr;</a>
       <span class="&rarr;" />
@@ -97,7 +97,7 @@ Literals
   ...   <?xml-stylesheet href="classic.xsl" type="text/xml"?>
   ...   Hello World!
   ... </html>""")
-    <html>
+    <html xmlns="http://www.w3.org/1999/xhtml">
       <?xml-stylesheet href="classic.xsl" type="text/xml"?>
       Hello World!
     </html>
@@ -108,7 +108,7 @@ Literals
   ... <html xmlns="http://www.w3.org/1999/xhtml">
   ...   <!-- hello world -->
   ... </html>""")
-    <html>
+    <html xmlns="http://www.w3.org/1999/xhtml">
       <!-- hello world -->
     </html>
   

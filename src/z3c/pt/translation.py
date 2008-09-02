@@ -238,6 +238,9 @@ class Node(object):
             _.append(clauses.Assign(self.use_macro, self.symbols.metal))
 
             # compute macro function arguments and create argument string
+            if 'xmlns' in self.element.attrib:
+                kwargs.append(('include_ns_attribute', repr(True)))
+                
             arguments = ", ".join(
                 tuple("%s=%s" % (arg, arg) for arg in \
                       itertools.chain(*self.stream.scope))+
@@ -493,6 +496,11 @@ class Compiler(object):
             self.root = elements[0]
             del self.root.attrib[utils.metal_attr('define-macro')]
 
+        if macro is None or 'include_ns_attribute' in params:
+            # add namespace attribute
+            namespace = self.root.tag.split('}')[0][1:]
+            self.root.attrib['xmlns'] = namespace
+        
         # choose function wrapper; note that if macro is the empty
         # string, we'll still use the macro wrapper
         if macro is not None:

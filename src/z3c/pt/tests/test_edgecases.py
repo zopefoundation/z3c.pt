@@ -27,7 +27,7 @@ class TestNumericEntityPlusUnicodeParameterInsertedLiterally(unittest.TestCase,
         expected = u"""\
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-        <html>
+        <html xmlns="http://www.w3.org/1999/xhtml">
         foo \xa9
         </html>"""
         t = PageTemplate(body)
@@ -55,7 +55,7 @@ class TestUnicodeAttributeLiteral(unittest.TestCase, PlacelessSetup):
         expected = u"""\
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-        <html>
+        <html xmlns="http://www.w3.org/1999/xhtml">
         <div id="\xa9"/>
         </html>"""
         t = PageTemplate(body)
@@ -80,7 +80,7 @@ class TestUnicodeAttributeLiteral(unittest.TestCase, PlacelessSetup):
         expected = u"""\
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-        <html>
+        <html xmlns="http://www.w3.org/1999/xhtml">
         <title>\xa9</title>
         <div label="\xa9" id="\xa9"/>
         </html>"""
@@ -132,7 +132,7 @@ class TestExplicitDoctypes(unittest.TestCase, PlacelessSetup):
         expected = u"""\
         <!DOCTYPE html PUBLIC"-//W3C//DTD XHTML 1.0 Strict//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-        <html>
+        <html xmlns="http://www.w3.org/1999/xhtml">
         </html>"""
         t = PageTemplate(body, doctype=doctypes.xhtml_strict)
         self.assertEqual(norm(t.render()), norm(expected))
@@ -152,7 +152,7 @@ class TestExplicitDoctypes(unittest.TestCase, PlacelessSetup):
         expected = u"""\
         <!DOCTYPE html PUBLIC"-//W3C//DTD XHTML 1.0 Strict//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-        <html>
+        <html xmlns="http://www.w3.org/1999/xhtml">
         </html>"""
         t = PageTemplate(body, doctype=doctypes.xhtml_strict)
         self.assertEqual(norm(t.render()), norm(expected))
@@ -172,7 +172,7 @@ class TestExplicitDoctypes(unittest.TestCase, PlacelessSetup):
         expected = u"""\
         <!DOCTYPE HTML PUBLIC"-//W3C//DTD HTML4.01 Transitional//EN"
         "http://www.w3.org/TR/html4/loose.dtd">
-        <html>
+        <html xmlns="http://www.w3.org/1999/xhtml">
         </html>"""
         t = PageTemplate(body, doctype=doctypes.html)
         t.doctype = doctypes.html
@@ -191,7 +191,7 @@ class TestExplicitDoctypes(unittest.TestCase, PlacelessSetup):
         </html>
         """
         expected = u"""\
-        <html>
+        <html xmlns="http://www.w3.org/1999/xhtml">
         </html>"""
         t = PageTemplate(body, doctype=doctypes.no_doctype)
         self.assertEqual(norm(t.render()), norm(expected))

@@ -13,7 +13,7 @@ z3c.pt.pagetemplate.PageTemplate
   ... <div xmlns="http://www.w3.org/1999/xhtml">
   ...   Hello World!
   ... </div>""")()
-  <div>
+  <div xmlns="http://www.w3.org/1999/xhtml">
     Hello World!
   </div>
 
@@ -25,7 +25,7 @@ z3c.pt.pagetemplate.PageTemplateFile
   >>> path = tests.__path__[0]
   >>> t = PageTemplateFile(path+'/helloworld.pt')
   >>> print t()
-  <div>
+  <div xmlns="http://www.w3.org/1999/xhtml">
     Hello World!
   </div>
 
@@ -47,7 +47,7 @@ z3c.pt.pagetemplate.ViewPageTemplate
   >>> view = ViewPageTemplateView()
     
   >>> print view(test=u'test')
-  <div>
+  <div xmlns="http://www.w3.org/1999/xhtml">
     <span>&lt;ViewPageTemplateView object at ...&gt;</span>
     <span>context</span>
     <span>request</span>
@@ -67,7 +67,7 @@ z3c.pt.pagetemplate.ViewPageTemplateFile
   >>> view = ViewPageTemplateView()
 
   >>> print view(test=u'test')
-  <div>
+  <div xmlns="http://www.w3.org/1999/xhtml">
     <span>&lt;ViewPageTemplateView object at ...&gt;</span>
     <span>context</span>
     <span>request</span>
@@ -125,7 +125,7 @@ py:match integration
   ...   <greeting name="World" />
   ... </div>
   ... """, parser=GenshiParser())()
-  <div>
+  <div xmlns="http://www.w3.org/1999/xhtml">
     Hello World!
   <BLANKLINE>
   </div>
@@ -157,7 +157,7 @@ metal:define-macro, metal:use-macro
   ... </div>""")
 
   >>> print template2(template1=template1)
-  <div>
+  <div xmlns="http://www.w3.org/1999/xhtml">
     <div>
       <div>
       Hello, world!
@@ -195,7 +195,7 @@ metal:define-macro, metal:use-macro, metal:define-slot, metal:fill-slot
   ... </div>""")
 
   >>> print content(main=main)
-  <html>
+  <html xmlns="http://www.w3.org/1999/xhtml">
     <div>
          I replace you.
     </div>
@@ -206,7 +206,7 @@ xi:include
   >>> from z3c.pt.template import BaseTemplateFile
   >>> template = BaseTemplateFile(path+"/xinclude1.pt", mock_parser)
   >>> print template()
-  <div>
+  <div xmlns="http://www.w3.org/1999/xhtml">
     <div>
     <span>Hello, world!</span>
     </div>
@@ -219,7 +219,7 @@ carried over from the included template. This is demonstrated below.
 
   >>> template = BaseTemplateFile(path+"/xinclude3.pt", GenshiParser())
   >>> print template()
-  <div>
+  <div xmlns="http://www.w3.org/1999/xhtml">
   <BLANKLINE>
   <BLANKLINE>
     <p class="greeting">
