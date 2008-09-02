@@ -1,6 +1,7 @@
 import translation
 import generation
 import expressions
+import doctypes
 import macro
 import etree
 import config
@@ -25,22 +26,26 @@ def setup_stream():
     return out, write, stream
 
 def render_xhtml(body, **kwargs):
-    compiler = translation.Compiler(body, mock_parser)
+    compiler = translation.Compiler(
+        body, mock_parser, implicit_doctype=doctypes.xhtml)
     template = compiler(params=sorted(kwargs.keys()))
     return template.render(**kwargs)    
     
 def render_text(body, **kwargs):
-    compiler = translation.Compiler.from_text(body, mock_parser)
+    compiler = translation.Compiler.from_text(
+        body, mock_parser, implicit_doctype=doctypes.xhtml)
     template = compiler(params=sorted(kwargs.keys()))
     return template.render(**kwargs)    
 
 def render_zpt(body, **kwargs):
-    compiler = translation.Compiler(body, zpt.ZopePageTemplateParser())
+    compiler = translation.Compiler(
+        body, zpt.ZopePageTemplateParser(), implicit_doctype=doctypes.xhtml)
     template = compiler(params=sorted(kwargs.keys()))
     return template.render(**kwargs)    
 
 def render_genshi(body, **kwargs):
-    compiler = translation.Compiler(body, genshi.GenshiParser())
+    compiler = translation.Compiler(
+        body, genshi.GenshiParser(), implicit_doctype=doctypes.xhtml)
     template = compiler(params=sorted(kwargs.keys()))
     kwargs.update(template.selectors)
     return template.render(**kwargs)    

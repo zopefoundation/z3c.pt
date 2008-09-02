@@ -435,21 +435,34 @@ class VariableInterpolation:
                     self.attrib[attributes] = expr
 
 class Compiler(object):
-    """Template compiler."""
+    """Template compiler. ``implicit_doctype`` will be used as the
+    document type if the template does not define one
+    itself. ``explicit_doctype`` may be used to explicitly set a
+    doctype regardless of what the template defines."""
+
+    doctype = None
     
-    def __init__(self, body, parser, doctype=None):
+    def __init__(self, body, parser, implicit_doctype=None, explicit_doctype=None):
+        # if no doctype is defined, prepend the implicit doctype to
+        # the document source
+        no_doctype_declaration = '<!DOCTYPE' not in body
+        if implicit_doctype and no_doctype_declaration:
+            body = implicit_doctype + "\n" + body
+            
         self.root, parsed_doctype = parser.parse(body)
-        if doctype is doctypes.no_doctype:
-            self.doctype = None
-        else:
-            self.doctype = doctype or parsed_doctype
+
+        if explicit_doctype not in (None, doctypes.no_doctype):
+            self.doctype = explicit_doctype
+        elif parsed_doctype and not no_doctype_declaration:
+            self.doctype = parsed_doctype
+            
         self.parser = parser
 
     @classmethod
-    def from_text(cls, body, parser, doctype=None):
+    def from_text(cls, body, parser, implicit_doctype=None, explicit_doctype=None):
         compiler = Compiler(
             "<html xmlns='%s'></html>" % config.XHTML_NS, parser,
-            doctype=doctype)
+            implicit_doctype, explicit_doctype)
         compiler.root.text = body
         compiler.root.attrib[utils.meta_attr('omit-tag')] = ""
         return compiler

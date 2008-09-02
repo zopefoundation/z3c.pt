@@ -75,6 +75,16 @@ Literals
       Hello &nbsp; World!
     </html>
 
+:: Or without doctype.
+    
+  >>> print render_xhtml("""\
+  ... <html xmlns="http://www.w3.org/1999/xhtml">
+  ...   Hello &nbsp; World!
+  ... </html>""")
+    <html>
+      Hello &nbsp; World!
+    </html>
+
 :: Processing instructions output literally
 
   >>> print render_xhtml("""\
@@ -144,7 +154,7 @@ Bad XML
   >>> render_xhtml(body)
   Traceback (most recent call last):
     ...
-  XMLSyntaxError: Couldn't find end of Start Tag div line 1, line 1, column 11
+  XMLSyntaxError: Couldn't find end of Start Tag div...
 
 Missing namespace definition:
     We expect the engine to raise an exception*
@@ -158,4 +168,4 @@ Missing namespace definition:
   >>> print render_xhtml(body)
   Traceback (most recent call last):
     ...
-  XMLSyntaxError: Namespace prefix tal for content on div is not defined, line 1, column 23
+  XMLSyntaxError: Namespace prefix tal for content on div is not defined...
