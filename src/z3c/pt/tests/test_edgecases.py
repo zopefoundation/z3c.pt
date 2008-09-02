@@ -17,18 +17,18 @@ class TestNumericEntityPlusUnicodeParameterInsertedLiterally(unittest.TestCase,
         from zope.configuration import xmlconfig
         xmlconfig.file('configure.zcml', z3c.pt)
         from z3c.pt.pagetemplate import PageTemplate
-        body = """\
+        body = u"""\
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml">
         ${foo} &#169;
         </html>
         """
-        expected = """\
+        expected = u"""\
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html>
-        foo \xc2\xa9
+        foo \xa9
         </html>"""
         t = PageTemplate(body)
         self.assertEqual(norm(t.render(foo=u'foo')), norm(expected))
@@ -45,18 +45,18 @@ class TestUnicodeAttributeLiteral(unittest.TestCase, PlacelessSetup):
         from zope.configuration import xmlconfig
         xmlconfig.file('configure.zcml', z3c.pt)
         from z3c.pt.pagetemplate import PageTemplate
-        body = """\
+        body = u"""\
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml">
         <div id="${foo}"/>
         </html>
         """
-        expected = """\
+        expected = u"""\
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html>
-        <div id="\xc2\xa9"/>
+        <div id="\xa9"/>
         </html>"""
         t = PageTemplate(body)
         c = unicode('\xc2\xa9', 'utf-8')
@@ -68,21 +68,21 @@ class TestUnicodeAttributeLiteral(unittest.TestCase, PlacelessSetup):
         from zope.configuration import xmlconfig
         xmlconfig.file('configure.zcml', z3c.pt)
         from z3c.pt.pagetemplate import PageTemplate
-        body = """\
+        body = u"""\
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml"
         xmlns:py="http://genshi.edgewall.org/">
-        <title>\xc2\xa9</title>
+        <title>\xa9</title>
         <div id="${foo}" py:attrs="dict(label=foo)"/>
         </html>
         """
-        expected = """\
+        expected = u"""\
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html>
-        <title>\xc2\xa9</title>
-        <div label="\xc2\xa9" id="\xc2\xa9"/>
+        <title>\xa9</title>
+        <div label="\xa9" id="\xa9"/>
         </html>"""
         t = PageTemplate(body, parser=GenshiParser())
         c = unicode('\xc2\xa9', 'utf-8')
@@ -125,11 +125,11 @@ class TestExplicitDoctypes(unittest.TestCase, PlacelessSetup):
         xmlconfig.file('configure.zcml', z3c.pt)
         from z3c.pt.pagetemplate import PageTemplate
         from z3c.pt import doctypes
-        body = """\
+        body = u"""\
         <html xmlns="http://www.w3.org/1999/xhtml">
         </html>
         """
-        expected = """\
+        expected = u"""\
         <!DOCTYPE html PUBLIC"-//W3C//DTD XHTML 1.0 Strict//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
         <html>
@@ -143,13 +143,13 @@ class TestExplicitDoctypes(unittest.TestCase, PlacelessSetup):
         xmlconfig.file('configure.zcml', z3c.pt)
         from z3c.pt.pagetemplate import PageTemplate
         from z3c.pt import doctypes
-        body = """\
+        body = u"""\
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml">
         </html>
         """
-        expected = """\
+        expected = u"""\
         <!DOCTYPE html PUBLIC"-//W3C//DTD XHTML 1.0 Strict//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
         <html>
@@ -163,18 +163,18 @@ class TestExplicitDoctypes(unittest.TestCase, PlacelessSetup):
         xmlconfig.file('configure.zcml', z3c.pt)
         from z3c.pt.pagetemplate import PageTemplate
         from z3c.pt import doctypes
-        body = """\
+        body = u"""\
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml">
         </html>
         """
-        expected = """\
+        expected = u"""\
         <!DOCTYPE HTML PUBLIC"-//W3C//DTD HTML4.01 Transitional//EN"
         "http://www.w3.org/TR/html4/loose.dtd">
         <html>
         </html>"""
-        t = PageTemplate(body, doctype=doctypes.xhtml_strict)
+        t = PageTemplate(body, doctype=doctypes.html)
         t.doctype = doctypes.html
         self.assertEqual(norm(t.render()), norm(expected))
 
@@ -184,13 +184,13 @@ class TestExplicitDoctypes(unittest.TestCase, PlacelessSetup):
         xmlconfig.file('configure.zcml', z3c.pt)
         from z3c.pt.pagetemplate import PageTemplate
         from z3c.pt import doctypes
-        body = """\
+        body = u"""\
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml">
         </html>
         """
-        expected = """\
+        expected = u"""\
         <html>
         </html>"""
         t = PageTemplate(body, doctype=doctypes.no_doctype)
@@ -198,11 +198,11 @@ class TestExplicitDoctypes(unittest.TestCase, PlacelessSetup):
 
 class TestBadAttributeInterpolationWithTAL(unittest.TestCase, PlacelessSetup):
     def test_snippet(self):
-        body = """\
+        body = u"""\
         <div xmlns:tal="http://xml.zope.org/namespaces/tal"
              xmlns="http://www.w3.org/1999/xhtml">
         <span tal:repeat="ltr letters">
-	<a class="${ltr.iscurrent}" href="${ltr.href}">${ltr.letter}</a>
+	<a href="${ltr.href}" class="${ltr.iscurrent}">${ltr.letter}</a>
         </span>
         </div>
         """
@@ -217,20 +217,19 @@ class TestBadAttributeInterpolationWithTAL(unittest.TestCase, PlacelessSetup):
              'iscurrent':'notcurrent'},
             ]
         t = PageTemplate(body)
-        expected = """\
+        expected = u"""\
         <div>
         <span>
-	<a class="current" href="?titlestartswith=A">A</a>
+	<a href="?titlestartswith=A" class="current">A</a>
         </span>
         <span>
-	<a class="notcurrent" href="?titlestartswith=B">B</a>
+	<a href="?titlestartswith=B" class="notcurrent">B</a>
         </span>
         </div>"""
 
         output = t.render(letters=letters)
         
-        self.assertEqual(norm(output), norm(expected))
-        
+        self.assertEqual(norm(output), norm(expected))        
 
 def norm(s):
     return s.replace(' ', '').replace('\n', '')
