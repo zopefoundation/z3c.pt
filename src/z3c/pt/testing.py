@@ -105,6 +105,10 @@ class MockElement(translation.Element, translation.VariableInterpolation):
 
     node = property(node)
 
+    xi_href = None
+    xi_parse = None
+    
+class MockXiElement(MockElement):
     xi_href = utils.attribute(
         "href", lambda p: expressions.StringTranslation(p).expression)
     xi_parse = utils.attribute("parse", default="xml")
@@ -113,6 +117,6 @@ class MockParser(etree.Parser):
     element_mapping = {
         config.XHTML_NS: {None: MockElement},
         config.META_NS: {None: MockElement},
-        config.XI_NS: {None: MockElement}}
+        config.XI_NS: {None: MockXiElement}}
 
 mock_parser = MockParser()
