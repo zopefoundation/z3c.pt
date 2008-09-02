@@ -16,7 +16,7 @@ _marker = object()
 class ExpressionTranslation(object):
     zope.interface.implements(interfaces.IExpressionTranslation)
 
-    re_pragma = re.compile(r'^\s*(?P<pragma>[a-z]+):\s*')
+    re_pragma = re.compile(r'^\s*(?P<pragma>[a-z]+):')
     re_interpolation = re.compile(r'(?P<prefix>[^\\]\$|^\$)({((?P<expression>.*)})?|(?P<variable>[A-Za-z][A-Za-z0-9_]*))')
     re_method = re.compile(r'^(?P<name>[A-Za-z0-9_]+)'
                            '(\((?P<args>[A-Za-z0-9_]+\s*(,\s*[A-Za-z0-9_]+)*)\))?')
@@ -386,7 +386,7 @@ class ExpressionTranslation(object):
             if j == -1:
                 j = len(string)
 
-            expr = string[i:j].lstrip()
+            expr = string[i:j]
 
             try:
                 translator.validate(expr)
@@ -421,6 +421,9 @@ class ExpressionTranslation(object):
         >>> interpolate = MockExpressionTranslation().interpolate
         
         >>> interpolate('${abc}').group('expression')
+        'abc'
+
+        >>> interpolate(' ${abc}').group('expression')
         'abc'
 
         >>> interpolate('abc${def}').group('expression')
@@ -500,13 +503,13 @@ class PythonTranslation(ExpressionTranslation):
         """We use the ``parser`` module to determine if
         an expression is a valid python expression."""
         
-        parser.expr(string.encode('utf-8'))
+        parser.expr(string.encode('utf-8').strip())
 
     def translate(self, string):
         if isinstance(string, unicode):
             string = string.encode('utf-8')
 
-        return types.value(string)
+        return types.value(string.strip())
 
 python_translation = PythonTranslation()
 
@@ -542,6 +545,9 @@ class StringTranslation(ExpressionTranslation):
         >>> split("${abc}")
         (value('abc'),)
 
+        >>> split(" ${abc}")
+        (' ', value('abc'))
+
         >>> split("abc${def}")
         ('abc', value('def'))
 
@@ -555,7 +561,7 @@ class StringTranslation(ExpressionTranslation):
         ('abc', value('def'), 'ghi', value('jkl'))
 
         >>> split("abc${def | ghi}")
-        ('abc', parts(value('def '), value('ghi')))
+        ('abc', parts(value('def '), value(' ghi')))
 
         >>> print split("abc${La Pe\xc3\xb1a}")
         ('abc', value('La Pe\\xc3\\xb1a'))
@@ -566,11 +572,12 @@ class StringTranslation(ExpressionTranslation):
         if m is None:
             return (self._unescape(string),)
 
+        prefix = m.group('prefix')
         parts = []
         
-        start = m.start()
+        start = m.start() + len(prefix) - 1
         if start > 0:
-            text = string[:m.start()+1]
+            text = string[:start]
             parts.append(self._unescape(text))
 
         expression = m.group('expression')
@@ -643,7 +650,7 @@ class PathTranslation(ExpressionTranslation):
 
 
     def validate(self, string):
-        if not self.path_regex.match(string):
+        if not self.path_regex.match(string.strip()):
             raise SyntaxError("Not a valid path-expression.")
 
     def translate(self, string):
@@ -681,7 +688,7 @@ class PathTranslation(ExpressionTranslation):
             else:
                 raise ValueError("Invalid pragma: %s" % pragma)
 
-        parts = string.split('/')
+        parts = string.strip().split('/')
 
         # map 'nothing' to 'None'
         parts = map(lambda part: part == 'nothing' and 'None' or part, parts)

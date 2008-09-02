@@ -143,6 +143,8 @@ Version 1.0dev
 
   Bugfixes
 
+- Preserve whitespace in string translation expressions. [malthe]
+  
 - Fixed interpolation bug where multiple attributes with interpolation
   expressions would result in corrupted output. [malthe]
 
