@@ -3,7 +3,7 @@ from cgi import escape
 from z3c.pt import types
 from z3c.pt import config
 from z3c.pt import etree
-from z3c.pt.utils import unicode_required_flag
+from z3c.pt import utils
 
 class Assign(object):
     """
@@ -512,7 +512,7 @@ class Tag(object):
             stream.write("for %s, %s in %s.items():" % \
                          (temp, temp2, stream.symbols.tmp))            
             stream.indent()
-            if unicode_required_flag:
+            if utils.unicode_required_flag:
                 stream.write(
                     "if isinstance(%s, unicode) or isinstance(%s, unicode):" % (temp, temp2))
                 stream.indent()
@@ -540,7 +540,7 @@ class Tag(object):
             assign = Assign(value)
             assign.begin(stream, temp)
             
-            if unicode_required_flag:
+            if utils.unicode_required_flag:
                 stream.write("if isinstance(%s, unicode):" % temp)
                 stream.indent()
                 stream.write("%s(' %s=\"')" % (stream.symbols.write, attribute))
@@ -570,14 +570,14 @@ class Tag(object):
                 stream.indent()
                 stream.write(
                     "%s(' %s=\"%s\"')" % (
-                    stream.symbols.write, attribute, escape(expression, '"')))
+                    stream.symbols.write, attribute, utils.escape(expression, '"')))
                 stream.outdent()
         else:
             for attribute, expression in static:
                 if isinstance(expression, unicode):
                     expression = expression.encode('utf-8')
                 stream.out(
-                    ' %s="%s"' % (attribute, escape(expression, '"')))
+                    ' %s="%s"' % (attribute, utils.escape(expression, '"')))
 
         if self.selfclosing:
             stream.out(" />")
@@ -768,7 +768,7 @@ class Write(object):
         stream.write("%s = %s" % (stream.symbols.tmp, expr))
         write("if %(tmp)s is not None:")
         stream.indent()
-        if unicode_required_flag:
+        if utils.unicode_required_flag:
             write("if isinstance(%(tmp)s, unicode):")
             stream.indent()
             write("%(tmp)s = %(tmp)s.encode('utf-8')")
