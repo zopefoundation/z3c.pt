@@ -394,7 +394,8 @@ class ExpressionTranslation(object):
                 if j < len(string):
                     continue
 
-                raise e
+                # re-raise with traceback
+                translator.validate(expr)
 
             value = translator.translate(expr)
             parts.append(value)
