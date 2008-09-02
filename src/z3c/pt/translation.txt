@@ -40,7 +40,7 @@ XHTML
   ... </div>""")
     <div>
       La Peña
-      <img alt="La Peña" />
+      <img alt="La Pe&ntilde;a" />
     </div>
 
 :: CDATA blocks
@@ -80,9 +80,14 @@ Literals
   >>> print render_xhtml("""\
   ... <html xmlns="http://www.w3.org/1999/xhtml">
   ...   Hello &nbsp; World!
+  ...   <a href="localhost" title="Singing &amp; Dancing"
+  ...   >&rarr;</a>
+  ...   <span class="&rarr;" />
   ... </html>""")
     <html>
       Hello &nbsp; World!
+      <a href="localhost" title="Singing &amp; Dancing">&rarr;</a>
+      <span class="&rarr;" />
     </html>
 
 :: Processing instructions output literally
