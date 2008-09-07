@@ -15,6 +15,15 @@ Version 1.0dev
 
   Features
 
+- Added support for omitting rendering of HTML "toggle" attributes
+  (option's ``selected`` and input's ``checked``) within dynamic
+  attribute assignment.  If the value of the expression in the
+  assignment evaluates equal to boolean False, the attribute will not
+  be rendered.  If the value of the expression in the assignment
+  evaluates equal to boolean True, the attribute will be rendered and
+  the value of the attribute will be the value returned by the
+  expression. [chrism]
+
 - XML namespace attribute is now always printed for root tag. [malthe]
   
 - Allow standard HTML entities. [malthe]
@@ -144,6 +153,18 @@ Version 1.0dev
   output unchanged. [chrism]
 
   Bugfixes
+
+- Attribute assignments with an expression value that started with the
+  characters ``in`` (e.g. ``info.somename``) would be rendered to the
+  generated Python without the ``in`` prefix (as
+  e.g. ``fo.somename``). [chrism]
+
+- When filling METAL slots (possibly with a specific version of
+  libxml2, I am using 2.6.32) it was possible to cause the translator
+  to attempt to add a stringtype to a NoneType (on a line that reads
+  ``variable = self.symbols.slot+element.node.fill_slot`` because an
+  XPath expression looking for fill-slot nodes did not work
+  properly). [chrism]
 
 - Preserve whitespace in string translation expressions. [malthe]
   
