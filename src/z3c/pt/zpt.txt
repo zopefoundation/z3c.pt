@@ -38,6 +38,23 @@ tal:define, tal:attributes, tal:contents
       <span></span>
     </div>
 
+tal:attributes 'checked' and 'selected' toggles
+
+  >>> print render_zpt("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   <option tal:attributes="selected True"/>
+  ...   <option tal:attributes="selected False"/>
+  ...   <input tal:attributes="checked True"/>
+  ...   <input tal:attributes="checked False"/>
+  ... </div>""")
+    <div xmlns="http://www.w3.org/1999/xhtml">
+       <option selected="True" />
+       <option />
+       <input checked="True" />
+       <input />
+    </div>
+
 tal:repeat
     
   >>> print render_zpt("""\

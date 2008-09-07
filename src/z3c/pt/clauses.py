@@ -1,5 +1,3 @@
-from cgi import escape
-
 from z3c.pt import types
 from z3c.pt import config
 from z3c.pt import etree
@@ -117,7 +115,7 @@ class Assign(object):
 
         if value.symbol_mapping:
             stream.symbol_mapping.update(value.symbol_mapping)
-        
+
         if isinstance(value, types.template):
             value = types.value(value % symbols)
         if isinstance(value, types.value):
@@ -536,26 +534,50 @@ class Tag(object):
         for attribute, value in dynamic:
             assign = Assign(value)
             assign.begin(stream, temp)
+
+            # XXX 'toggle' attributes are attributes whose mere
+            # presence signifies to the consumer that something should
+            # happen regardless of the attribute's value ('checked' on
+            # input tags and 'selected' on option tags); an
+            # HTML-specific misfeature. Determining whether an
+            # attribute is a toggle attribute really should be
+            # conditioned on the tag being in the xhtml namespace (in
+            # case we're rendering something other than HTML) and not
+            # just rely on tag and attribute names (chrism), but let's
+            # go ahead make the 99.999% case work.
             
+            toggle = ( (self.tag == 'option' and attribute == 'selected') or
+                       (self.tag == 'input' and attribute == 'checked') )
+
             if utils.unicode_required_flag:
                 stream.write("if isinstance(%s, unicode):" % temp)
                 stream.indent()
+                if toggle:
+                    stream.write('if %s:' % temp)
+                    stream.indent()
                 stream.write("%s(' %s=\"')" % (stream.symbols.write, attribute))
                 stream.write("%s = %s.encode('utf-8')" % (stream.symbols.tmp, temp))
                 stream.escape(stream.symbols.tmp)
                 stream.write("%s(%s)" % (stream.symbols.write, stream.symbols.tmp))
                 stream.write("%s('\"')" % stream.symbols.write)
                 stream.outdent()
+                if toggle:
+                    stream.outdent()
                 stream.write("elif %s is not None:" % temp)
             else:
                 stream.write("if %s is not None:" % temp)
             stream.indent()
+            if toggle:
+                stream.write('if %s:' % temp)
+                stream.indent()
             stream.write("%s(' %s=\"')" % (stream.symbols.write, attribute))
             stream.write("%s = str(%s)" % (stream.symbols.tmp, temp))
             stream.escape(stream.symbols.tmp)
             stream.write("%s(%s)" % (stream.symbols.write, stream.symbols.tmp))
             stream.write("%s('\"')" % stream.symbols.write)
             stream.outdent()
+            if toggle:
+                stream.outdent()
             assign.end(stream)
 
         stream.restore()

@@ -223,6 +223,15 @@ class Node(object):
             kwargs = []
             for element in self.element.xpath(
                 './/*[@metal:fill-slot]', namespaces={'metal': config.METAL_NS}):
+                if element.node.fill_slot is None:
+                    # XXX this should not be necessary, but the above
+                    # xpath expression finds non-"metal:fill-slot"
+                    # nodes somehow on my system; this is perhaps due
+                    # to a bug in the libxml2 version I'm using; we
+                    # work around it by just skipping the element.
+                    # (chrism)
+                    continue
+
                 variable = self.symbols.slot+element.node.fill_slot
                 kwargs.append((variable, variable))
                 

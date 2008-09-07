@@ -259,8 +259,8 @@ class ExpressionTranslation(object):
                 raise ValueError("Invalid variable definition (%s)." % string)
             elif token.startswith('='):
                 i += 1
-            elif token.startswith('in'):
-                i += 2
+            elif token.startswith('in '):
+                i += 3
 
             try:
                 expr = self.expression(string[i:])
