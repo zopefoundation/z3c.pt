@@ -6,6 +6,8 @@ Version 1.0dev
 
   Backwards incompatibilities
 
+- The default path traverser no longer proxies objects. [malthe]
+  
 - Template output is now always converted to unicode. [malthe]
   
 - The ``ViewPageTemplateFile`` class now uses 'path' as the default

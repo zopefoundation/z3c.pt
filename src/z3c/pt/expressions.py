@@ -1,7 +1,5 @@
 import zope.interface
 import zope.component
-import zope.security
-import zope.security.proxy
 import zope.traversing.adapters
 
 import parser
@@ -643,11 +641,50 @@ class StringTranslation(ExpressionTranslation):
         
         return string.replace(';;', ';')
 
+class ZopeTraverser(object):
+    def __init__(self, proxify=None):
+        if proxify is None:
+            self.proxify = lambda x: x
+        else:
+            self.proxify = proxify
+
+    def __call__(self, base, request, call, *path_items):
+        """See ``zope.app.pagetemplate.engine``."""
+
+        _callable = getattr(base, '__call__', _marker) is not _marker
+
+        for i in range(len(path_items)):
+            name = path_items[i]
+
+            next = getattr(base, name, _marker)
+            if next is not _marker:
+                _callable = getattr(next, '__call__', _marker) is not _marker
+                base = next
+                continue
+            else:
+                # special-case dicts for performance reasons        
+                if getattr(base, '__class__', None) == dict:
+                    base = base[name]
+                else:
+                    base = zope.traversing.adapters.traversePathElement(
+                        base, name, path_items[i+1:], request=request)
+
+            _callable = getattr(base, '__call__', _marker) is not _marker
+
+            if not isinstance(base, (basestring, tuple, list)):
+                base = self.proxify(base)
+
+        if call and _callable:
+            base = base()
+
+        return base
+
 class PathTranslation(ExpressionTranslation):
     path_regex = re.compile(
         r'^((nocall|not):\s*)*([A-Za-z_][A-Za-z0-9_]*)'+
         r'(/[A-Za-z_@-][A-Za-z0-9_@-\\.]*)*$')
 
+    path_traverse = ZopeTraverser()
 
     def validate(self, string):
         if not self.path_regex.match(string.strip()):
@@ -706,39 +743,8 @@ class PathTranslation(ExpressionTranslation):
         if negate:
             value = types.value('not(%s)' % value)
 
-        value.symbol_mapping[config.SYMBOLS.path] = path_traverse
+        value.symbol_mapping[config.SYMBOLS.path] = self.path_traverse
 
         return value
-
-def path_traverse(base, request, call, *path_items):
-    """See ``zope.app.pagetemplate.engine``."""
-
-    _callable = callable(base)
-
-    for i in range(len(path_items)):
-        name = path_items[i]
-
-        next = getattr(base, name, _marker)
-        if next is not _marker:
-            _callable = callable(next)
-            base = next
-            continue
-        else:
-            # special-case dicts for performance reasons        
-            if getattr(base, '__class__', None) == dict:
-                base = base[name]
-            else:
-                base = zope.traversing.adapters.traversePathElement(
-                    base, name, path_items[i+1:], request=request)
-
-        _callable = callable(base)
-
-        if not isinstance(base, (basestring, tuple, list)):
-            base = zope.security.proxy.ProxyFactory(base)
-
-    if call and _callable:
-        base = base()
-
-    return base
 
 path_translation = PathTranslation()

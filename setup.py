@@ -8,7 +8,6 @@ install_requires = [
     'zope.component',
     'zope.i18n >= 3.5',
     'zope.traversing',
-    'zope.security',
     ]
 
 if sys.version_info[:3] < (2,5,0):
