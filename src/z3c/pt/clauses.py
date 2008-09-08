@@ -813,8 +813,8 @@ class Write(object):
                 raise ImportError(
                     "ElementTree (required when XML validation is enabled).")
 
-            stream.symbol_mapping[stream.symbols.elementtree] = _et
-            write("%(elementtree)s.fromstring('<div>%%s</div>' %% %(tmp)s)")
+            stream.symbol_mapping[stream.symbols.validate] = etree.validate
+            write("%(validate)s(%(tmp)s)")
 
     def end(self, stream):
         if self.assign:

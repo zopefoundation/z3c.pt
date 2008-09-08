@@ -15,6 +15,9 @@ Version 1.0dev
 
   Features
 
+- Custom validation error is now raised if inserted string does not
+  validate (when debug mode is enabled). [malthe]
+
 - Added support for omitting rendering of HTML "toggle" attributes
   (option's ``selected`` and input's ``checked``) within dynamic
   attribute assignment.  If the value of the expression in the

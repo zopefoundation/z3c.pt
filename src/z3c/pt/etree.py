@@ -3,8 +3,15 @@ import config
 import utils
 import cgi
 import copy
+import xml.parsers.expat
 from StringIO import StringIO
 
+class ValidationError(ValueError):
+    def __str__(self):
+        value, = self.args
+        return "Insertion of %s is not allowed." % \
+               repr(value)
+        
 def import_elementtree():
     try:
         import xml.etree.ElementTree as ET
@@ -16,6 +23,12 @@ def import_elementtree():
         
     return ET
 
+def validate(string):
+    try:
+        import_elementtree().fromstring("<div>%s</div>" % string)
+    except xml.parsers.expat.ExpatError:
+        raise ValidationError(string)
+        
 class Parser(object):
     element_mapping = utils.emptydict()
 

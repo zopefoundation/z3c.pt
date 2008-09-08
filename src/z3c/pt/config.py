@@ -54,7 +54,7 @@ class SYMBOLS(object):
     attributes = '_attributes'
     negotiate = '_negotiate'
     translate = '_translate'
-    elementtree = '_et'
+    validate = '_validate'
     path = '_path'
 
     # advertised symbols
