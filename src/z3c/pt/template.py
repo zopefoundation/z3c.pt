@@ -129,6 +129,17 @@ class BaseTemplateFile(BaseTemplate):
         self.signature = hash(body)
         self._v_last_read = self.mtime()
 
+    def cook(self, **kwargs):
+        template = self.compiler(**kwargs)
+
+        if config.DEBUG_MODE:
+            filename = "%s.py" % self.filename
+            f = open(filename, 'w')
+            f.write(template.source)
+            f.close()
+
+        return template
+
     def cook_check(self, *args):
         if self.auto_reload and self._v_last_read != self.mtime():
             self.read()
