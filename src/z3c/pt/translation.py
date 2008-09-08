@@ -454,6 +454,7 @@ class Compiler(object):
     doctype regardless of what the template defines."""
 
     doctype = None
+    implicit_doctype = None
     
     def __init__(self, body, parser, implicit_doctype=None, explicit_doctype=None):
         # if no doctype is defined, prepend the implicit doctype to
@@ -468,7 +469,8 @@ class Compiler(object):
 
             # prepend to body
             body = implicit_doctype + "\n" + body
-
+            self.implicit_doctype = implicit_doctype
+        
         self.root, parsed_doctype = parser.parse(body)
 
         if explicit_doctype is not None:
@@ -573,16 +575,19 @@ class Compiler(object):
         exec suite.code in suite._globals, _locals
         render = _locals['render']
 
-        return ByteCodeTemplate(render, self.root, self.parser, stream)
+        # remove namespace declaration
+        if 'xmlns' in self.root.attrib:
+            del self.root.attrib['xmlns']
+        
+        return ByteCodeTemplate(render, stream, self)
 
 class ByteCodeTemplate(object):
     """Template compiled to byte-code."""
 
-    def __init__(self, func, root, parser, stream):
+    def __init__(self, func, stream, compiler):
         self.func = func
-        self.root = root
-        self.parser = parser
         self.stream = stream
+        self.compiler = compiler
 
     def __reduce__(self):
         reconstructor, (cls, base, state), kwargs = \
@@ -606,7 +611,7 @@ class ByteCodeTemplate(object):
             return selectors
 
         self._selectors = selectors = {}
-        for element in self.root.xpath(
+        for element in self.compiler.root.xpath(
             './/*[@meta:select]', namespaces={'meta': config.META_NS}):
             name = element.attrib[utils.meta_attr('select')]
             selectors[name] = element.xpath
@@ -619,10 +624,16 @@ class GhostedByteCodeTemplate(object):
     def __init__(self, template):
         self.code = marshal.dumps(template.func.func_code)
         self.defaults = len(template.func.func_defaults or ())
-        self.parser = template.parser
-        self.xmldoc = template.root.tostring()
         self.stream = template.stream
 
+        compiler = template.compiler
+        xmldoc = compiler.root.tostring()        
+        if compiler.implicit_doctype is not None:
+            xmldoc = compiler.implicit_doctype + "\n" + xmldoc
+            
+        self.parser = compiler.parser
+        self.xmldoc = xmldoc
+        
     @classmethod
     def rebuild(cls, state):
         _locals = {}

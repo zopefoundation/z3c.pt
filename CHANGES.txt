@@ -154,6 +154,11 @@ Version 1.0dev
 
   Bugfixes
 
+- Implicit doctype is correctly reestablished from cache. [malthe]
+
+- Remove namespace declaration on root tag to work around syntax error
+  raised when parsing an XML tree loaded from the file cache. [malthe]
+
 - Attribute assignments with an expression value that started with the
   characters ``in`` (e.g. ``info.somename``) would be rendered to the
   generated Python without the ``in`` prefix (as
