@@ -454,7 +454,6 @@ class Compiler(object):
     doctype regardless of what the template defines."""
 
     doctype = None
-    implicit_doctype = None
     
     def __init__(self, body, parser, implicit_doctype=None, explicit_doctype=None):
         # if no doctype is defined, prepend the implicit doctype to
@@ -469,8 +468,8 @@ class Compiler(object):
 
             # prepend to body
             body = implicit_doctype + "\n" + body
-            self.implicit_doctype = implicit_doctype
-        
+            
+        self.xmldoc = body
         self.root, parsed_doctype = parser.parse(body)
 
         if explicit_doctype is not None:
@@ -579,16 +578,19 @@ class Compiler(object):
         if 'xmlns' in self.root.attrib:
             del self.root.attrib['xmlns']
         
-        return ByteCodeTemplate(render, stream, self)
+        return ByteCodeTemplate(
+            render, stream, self.xmldoc, self.parser, self.root)
 
 class ByteCodeTemplate(object):
     """Template compiled to byte-code."""
 
-    def __init__(self, func, stream, compiler):
+    def __init__(self, func, stream, xmldoc, parser, tree):
         self.func = func
         self.stream = stream
-        self.compiler = compiler
-
+        self.xmldoc = xmldoc
+        self.parser = parser
+        self.tree = tree
+        
     def __reduce__(self):
         reconstructor, (cls, base, state), kwargs = \
                        GhostedByteCodeTemplate(self).__reduce__()
@@ -597,13 +599,17 @@ class ByteCodeTemplate(object):
     def __setstate__(self, state):
         self.__dict__.update(GhostedByteCodeTemplate.rebuild(state))
 
+    def __repr__(self):
+        return '<%s parser="%s">' % \
+               (type(self).__name__, str(type(self.parser)).split("'")[1])
+
     def render(self, *args, **kwargs):
         return self.func(generation, *args, **kwargs)
-    
+
     @property
     def source(self):
         return self.stream.getvalue()
-    
+
     @property
     def selectors(self):
         selectors = getattr(self, '_selectors', None)
@@ -611,7 +617,7 @@ class ByteCodeTemplate(object):
             return selectors
 
         self._selectors = selectors = {}
-        for element in self.compiler.root.xpath(
+        for element in self.tree.xpath(
             './/*[@meta:select]', namespaces={'meta': config.META_NS}):
             name = element.attrib[utils.meta_attr('select')]
             selectors[name] = element.xpath
@@ -625,14 +631,8 @@ class GhostedByteCodeTemplate(object):
         self.code = marshal.dumps(template.func.func_code)
         self.defaults = len(template.func.func_defaults or ())
         self.stream = template.stream
-
-        compiler = template.compiler
-        xmldoc = compiler.root.tostring()        
-        if compiler.implicit_doctype is not None:
-            xmldoc = compiler.implicit_doctype + "\n" + xmldoc
-            
-        self.parser = compiler.parser
-        self.xmldoc = xmldoc
+        self.xmldoc = template.xmldoc
+        self.parser = template.parser
         
     @classmethod
     def rebuild(cls, state):
@@ -641,12 +641,17 @@ class GhostedByteCodeTemplate(object):
         func = _locals['render']
         func.func_defaults = ((None,)*state['defaults']) or None
         func.func_code = marshal.loads(state['code'])
-        parser = state['parser']
-        root, doctype = state['parser'].parse(state['xmldoc'])
+
         stream = state['stream']
+        xmldoc = state['xmldoc']
+        parser = state['parser']
+        tree, doctype = parser.parse(xmldoc)
+        
         return dict(
             func=func,
+            stream=stream,
+            xmldoc=xmldoc,
             parser=parser,
-            root=root,
-            stream=stream)
+            tree=tree)
+
             

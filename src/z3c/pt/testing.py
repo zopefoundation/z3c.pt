@@ -25,10 +25,13 @@ def setup_stream():
     stream = generation.CodeIO(symbols)
     return out, write, stream
 
-def render_xhtml(body, **kwargs):
+def compile_xhtml(body, **kwargs):
     compiler = translation.Compiler(
         body, mock_parser, implicit_doctype=doctypes.xhtml)
-    template = compiler(params=sorted(kwargs.keys()))
+    return compiler(params=sorted(kwargs.keys()))
+
+def render_xhtml(body, **kwargs):
+    template = compile_xhtml(body, **kwargs)
     return template.render(**kwargs)    
     
 def render_text(body, **kwargs):

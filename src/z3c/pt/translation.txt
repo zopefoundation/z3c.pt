@@ -137,6 +137,34 @@ A javascript document that prints out HTML:
   >>> print render_text(js)
   print '<div class="description">Hello World!</div>';
 
+Ghosted templates
+-----------------
+
+To facilitate disk-caching, template instances can be pickled.
+
+  >>> from z3c.pt.testing import compile_xhtml
+  >>> template = compile_xhtml("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml">
+  ...   Hello World!
+  ... </div>""")
+
+  >>> from pickle import dumps, loads
+  >>> pickle = dumps(template)
+  >>> template = loads(pickle)
+
+Check that we're getting a template object back.
+  
+  >>> template
+  <ByteCodeTemplate parser="z3c.pt.testing.MockParser">
+
+Let's try and render the template.
+ 
+  >>> print template.render()
+  <div xmlns="http://www.w3.org/1999/xhtml">
+    Hello World!
+  </div>
+
+  
 Error handling
 --------------
 
