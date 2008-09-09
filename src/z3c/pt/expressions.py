@@ -8,6 +8,7 @@ import re
 import interfaces
 import types
 import config
+import utils
 
 _marker = object()
 
@@ -644,7 +645,7 @@ class StringTranslation(ExpressionTranslation):
 class ZopeTraverser(object):
     def __init__(self, proxify=None):
         if proxify is None:
-            self.proxify = lambda x: x
+            self.proxify = utils.identity
         else:
             self.proxify = proxify
 

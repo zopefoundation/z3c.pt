@@ -71,6 +71,9 @@ def escape(string, quote=None):
         
     return string
 
+def identity(x):
+    return x
+
 class scope(list):
     def __init__(self, *args):
         global s_counter
