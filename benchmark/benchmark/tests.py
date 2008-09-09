@@ -13,6 +13,7 @@ import z3c.pt
 
 from z3c.pt import config
 from z3c.pt import filecache
+from z3c.pt import pagetemplate
 
 from lxml import etree
 
@@ -62,7 +63,7 @@ class BaseTestCase(unittest.TestCase):
 
 class BenchmarkTestCase(BaseTestCase):
 
-    helloworld_z3c = z3c.pt.PageTemplate("""\
+    helloworld_z3c = pagetemplate.PageTemplate("""\
     <div xmlns="http://www.w3.org/1999/xhtml">
     Hello World!
     </div>""")
@@ -73,7 +74,7 @@ class BenchmarkTestCase(BaseTestCase):
     Hello World!
     </div>""", 'text/xhtml')
     
-    bigtable_python_z3c = z3c.pt.PageTemplate("""\
+    bigtable_python_z3c = pagetemplate.PageTemplate("""\
     <table xmlns="http://www.w3.org/1999/xhtml"
     xmlns:tal="http://xml.zope.org/namespaces/tal">
     <tr tal:repeat="row table">
@@ -85,7 +86,7 @@ class BenchmarkTestCase(BaseTestCase):
     </tr>
     </table>""")
 
-    bigtable_path_z3c = z3c.pt.PageTemplate("""\
+    bigtable_path_z3c = pagetemplate.PageTemplate("""\
     <table xmlns="http://www.w3.org/1999/xhtml"
     xmlns:tal="http://xml.zope.org/namespaces/tal"
     tal:default-expression="path">
@@ -186,7 +187,7 @@ class FileBenchmarkTestCase(BaseTestCase):
     def testCache(self):
         table = self.table
 
-        z3cfile = z3c.pt.PageTemplateFile(
+        z3cfile = pagetemplate.PageTemplateFile(
             self._testfile('bigtable_python_z3c.pt'))
         z3cfile.registry = filecache.TemplateCache(z3cfile.filename)
         z3cfile.registry.purge()
@@ -211,7 +212,7 @@ class FileBenchmarkTestCase(BaseTestCase):
     def testBigTablePythonFile(self):
         table = self.table
 
-        z3cfile = z3c.pt.PageTemplateFile(
+        z3cfile = pagetemplate.PageTemplateFile(
             self._testfile('bigtable_python_z3c.pt'))
 
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
@@ -228,7 +229,7 @@ class FileBenchmarkTestCase(BaseTestCase):
     def testBigTablePathFile(self):
         table = self.table
 
-        z3cfile = z3c.pt.PageTemplateFile(
+        z3cfile = pagetemplate.PageTemplateFile(
             self._testfile('bigtable_path_z3c.pt'))
 
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
@@ -295,7 +296,7 @@ class I18NBenchmarkTestCase(BaseTestCase):
     def testI18N(self):
         table = self.table
 
-        z3cfile = z3c.pt.PageTemplateFile(
+        z3cfile = pagetemplate.PageTemplateFile(
             self._testfile('bigtable_i18n_z3c.pt'))
 
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
@@ -317,7 +318,7 @@ class I18NBenchmarkTestCase(BaseTestCase):
     def testDisabledI18N(self):
         table = self.table
 
-        z3cfile = z3c.pt.PageTemplateFile(
+        z3cfile = pagetemplate.PageTemplateFile(
             self._testfile('bigtable_i18n_z3c.pt'))
 
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
