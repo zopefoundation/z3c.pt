@@ -308,7 +308,7 @@ py:match
   ... </div>""", message="Hello, <em>World!")
   Traceback (most recent call last):
    ...
-  ExpatError: ...
+  ValidationError: Insertion of 'Hello, <em>World!' is not allowed.
   
   >>> config.VALIDATION = False
   
