@@ -17,6 +17,9 @@ Version 1.0dev
 
   Features
 
+- Added reduce and restore operation to the compilation and rendering
+  flow in the test examples to verify integrity. [malthe]
+
 - The ZPT parser now supports prefixed native attributes,
   e.g. <tal:foo tal:bar="" />. [malthe]
   

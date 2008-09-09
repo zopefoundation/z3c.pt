@@ -11,6 +11,13 @@ import zpt
 import genshi
 
 from StringIO import StringIO
+from cPickle import dumps, loads
+
+class TestCompiler(translation.Compiler):
+    def __call__(self, *args, **kwargs):
+        template = translation.Compiler.__call__(self, *args, **kwargs)
+        template = loads(dumps(template))
+        return template
 
 def pyexp(string):
     return expressions.python_translation.expression(string)
@@ -26,7 +33,7 @@ def setup_stream():
     return out, write, stream
 
 def compile_xhtml(body, **kwargs):
-    compiler = translation.Compiler(
+    compiler = TestCompiler(
         body, mock_parser, implicit_doctype=doctypes.xhtml)
     return compiler(params=sorted(kwargs.keys()))
 
@@ -35,19 +42,19 @@ def render_xhtml(body, **kwargs):
     return template.render(**kwargs)    
     
 def render_text(body, **kwargs):
-    compiler = translation.Compiler.from_text(
+    compiler = TestCompiler.from_text(
         body, mock_parser, implicit_doctype=doctypes.xhtml)
     template = compiler(params=sorted(kwargs.keys()))
     return template.render(**kwargs)    
 
 def render_zpt(body, **kwargs):
-    compiler = translation.Compiler(
+    compiler = TestCompiler(
         body, zpt.ZopePageTemplateParser(), implicit_doctype=doctypes.xhtml)
     template = compiler(params=sorted(kwargs.keys()))
     return template.render(**kwargs)    
 
 def render_genshi(body, **kwargs):
-    compiler = translation.Compiler(
+    compiler = TestCompiler(
         body, genshi.GenshiParser(), implicit_doctype=doctypes.xhtml)
     template = compiler(params=sorted(kwargs.keys()))
     kwargs.update(template.selectors)
@@ -61,7 +68,7 @@ class MockTemplate(object):
     @property
     def macros(self):
         def render(macro=None, **kwargs):
-            compiler = translation.Compiler(self.body, self.parser)
+            compiler = TestCompiler(self.body, self.parser)
             template = compiler(macro=macro, params=kwargs.keys())
             return template.render(**kwargs)
         return macro.Macros(render)
