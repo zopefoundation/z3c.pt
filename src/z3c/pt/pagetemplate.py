@@ -74,6 +74,7 @@ class ViewPageTemplate(property):
             return self.template.render(view=view,
                                         context=view.context,
                                         request=view.request,
+                                        template=self.template,
                                         options=kwargs)
         return template
 
