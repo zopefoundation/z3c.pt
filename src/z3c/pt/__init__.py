@@ -1,9 +1,6 @@
-from pagetemplate import PageTemplate
-from pagetemplate import PageTemplateFile
-from pagetemplate import ViewPageTemplate
-from pagetemplate import ViewPageTemplateFile
-
-from texttemplate import TextTemplate
-from texttemplate import TextTemplateFile
-from texttemplate import ViewTextTemplate
-from texttemplate import ViewTextTemplateFile
+# See http://peak.telecommunity.com/DevCenter/setuptools#namespace-packages
+try:
+    __import__('pkg_resources').declare_namespace(__name__)
+except ImportError:
+    from pkgutil import extend_path
+    __path__ = extend_path(__path__, __name__)

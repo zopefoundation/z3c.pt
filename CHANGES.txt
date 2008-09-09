@@ -17,6 +17,8 @@ Version 1.0dev
 
   Features
 
+- Made ``z3c.pt`` a namespace package. [malthe]
+  
 - Added reduce and restore operation to the compilation and rendering
   flow in the test examples to verify integrity. [malthe]
 

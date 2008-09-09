@@ -6,7 +6,7 @@ This section demonstrates the high-level template classes.
 z3c.pt.pagetemplate.PageTemplate
 --------------------------------
 
-  >>> from z3c.pt import PageTemplate
+  >>> from z3c.pt.pagetemplate import PageTemplate
   >>> from z3c.pt.testing import mock_parser
   
   >>> print PageTemplate("""\
@@ -20,7 +20,7 @@ z3c.pt.pagetemplate.PageTemplate
 z3c.pt.pagetemplate.PageTemplateFile
 ------------------------------------
 
-  >>> from z3c.pt import PageTemplateFile
+  >>> from z3c.pt.pagetemplate import PageTemplateFile
   >>> from z3c.pt import tests
   >>> path = tests.__path__[0]
   >>> t = PageTemplateFile(path+'/helloworld.pt')
@@ -36,7 +36,7 @@ z3c.pt.pagetemplate.PageTemplateFile
 z3c.pt.pagetemplate.ViewPageTemplate
 ------------------------------------
 
-  >>> from z3c.pt import ViewPageTemplate
+  >>> from z3c.pt.pagetemplate import ViewPageTemplate
   
   >>> class ViewPageTemplateView(object):
   ...     __call__ = ViewPageTemplate(
@@ -57,7 +57,7 @@ z3c.pt.pagetemplate.ViewPageTemplate
 z3c.pt.pagetemplate.ViewPageTemplateFile
 ----------------------------------------
 
-  >>> from z3c.pt import ViewPageTemplateFile
+  >>> from z3c.pt.pagetemplate import ViewPageTemplateFile
   
   >>> class ViewPageTemplateView(object):
   ...     __call__ = ViewPageTemplateFile(path+'/view.pt')
@@ -77,7 +77,7 @@ z3c.pt.pagetemplate.ViewPageTemplateFile
 z3c.pt.texttemplate.ViewTextTemplate
 ------------------------------------
 
-  >>> from z3c.pt import ViewTextTemplate
+  >>> from z3c.pt.texttemplate import ViewTextTemplate
   
   >>> class ViewTextTemplateView(object):
   ...     __call__ = ViewTextTemplate(open(path+'/view.css').read())
@@ -94,7 +94,7 @@ z3c.pt.texttemplate.ViewTextTemplate
 z3c.pt.texttemplate.ViewTextTemplateFile
 ----------------------------------------
 
-  >>> from z3c.pt import ViewTextTemplateFile
+  >>> from z3c.pt.texttemplate import ViewTextTemplateFile
   
   >>> class ViewTextTemplateView(object):
   ...     __call__ = ViewTextTemplateFile(path+'/view.css')
@@ -238,7 +238,6 @@ the template source that caused the exception.
 
 Exception while evaluating expression:
 
-  >>> from z3c.pt import PageTemplate
   >>> PageTemplate("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
@@ -250,7 +249,6 @@ Exception while evaluating expression:
 
 Exception while evaluating definition:
 
-  >>> from z3c.pt import PageTemplate
   >>> PageTemplate("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
@@ -262,7 +260,6 @@ Exception while evaluating definition:
 
 Exception while evaluating interpolation:
 
-  >>> from z3c.pt import PageTemplate
   >>> PageTemplate("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
