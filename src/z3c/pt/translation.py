@@ -528,6 +528,7 @@ class Compiler(object):
     doctype regardless of what the template defines."""
 
     doctype = None
+    implicit_doctype = ""
     
     def __init__(self, body, parser, implicit_doctype=None, explicit_doctype=None):
         # if no doctype is defined, prepend the implicit doctype to
@@ -541,9 +542,9 @@ class Compiler(object):
             implicit_doctype = implicit_doctype[:-1] + '  [ %s ]>' % entities
 
             # prepend to body
+            self.implicit_doctype = implicit_doctype
             body = implicit_doctype + "\n" + body
             
-        self.xmldoc = body
         self.root, parsed_doctype = parser.parse(body)
 
         if explicit_doctype is not None:
@@ -614,6 +615,10 @@ class Compiler(object):
         self.root.start(stream)
         body = stream.getvalue()
 
+        # remove namespace declaration
+        if 'xmlns' in self.root.attrib:
+            del self.root.attrib['xmlns']
+        
         # prepare args
         ignore = 'target_language',
         args = ', '.join((param for param in params if param not in ignore))
@@ -635,36 +640,34 @@ class Compiler(object):
             args=args, kwargs=kwargs, extra=extra, body=body)
         mapping.update(stream.symbols.__dict__)
         source = wrapper % mapping
-        
-        # set symbol mappings as globals
-        _globals = stream.symbol_mapping
-        
-        # compile code
-        suite = codegen.Suite(source, globals=_globals)
-        suite._globals.update(_globals)
-        
-        # execute code
-        _locals = {}
-        exec suite.code in suite._globals, _locals
-        render = _locals['render']
 
-        # remove namespace declaration
-        if 'xmlns' in self.root.attrib:
-            del self.root.attrib['xmlns']
-        
+        # serialize document
+        xmldoc = self.implicit_doctype + "\n" + self.root.tostring()
+
         return ByteCodeTemplate(
-            render, stream, self.xmldoc, self.parser, self.root)
+            source, stream.symbol_mapping,
+            xmldoc, self.parser, self.root)
 
 class ByteCodeTemplate(object):
     """Template compiled to byte-code."""
 
-    def __init__(self, func, stream, xmldoc, parser, tree):
-        self.func = func
-        self.stream = stream
+    def __init__(self, source, symbols, xmldoc, parser, tree):
+        # compile code
+        suite = codegen.Suite(source, globals=symbols)
+        suite._globals.update(symbols)
+        
+        # execute code
+        _locals = {}
+        exec suite.code in suite._globals, _locals
+
+        # keep state
+        self.func = _locals['render']
+        self.source = source
+        self.symbols = symbols
         self.xmldoc = xmldoc
         self.parser = parser
         self.tree = tree
-        
+            
     def __reduce__(self):
         reconstructor, (cls, base, state), kwargs = \
                        GhostedByteCodeTemplate(self).__reduce__()
@@ -679,10 +682,6 @@ class ByteCodeTemplate(object):
 
     def render(self, *args, **kwargs):
         return self.func(generation, *args, **kwargs)
-
-    @property
-    def source(self):
-        return self.stream.getvalue()
 
     @property
     def selectors(self):
@@ -704,26 +703,29 @@ class GhostedByteCodeTemplate(object):
     def __init__(self, template):
         self.code = marshal.dumps(template.func.func_code)
         self.defaults = len(template.func.func_defaults or ())
-        self.stream = template.stream
+        self.symbols = template.symbols
         self.xmldoc = template.xmldoc
         self.parser = template.parser
         
     @classmethod
     def rebuild(cls, state):
+        symbols = state['symbols']
+        xmldoc = state['xmldoc']
+        parser = state['parser']
+        tree, doctype = parser.parse(xmldoc)        
+
         _locals = {}
-        exec cls.suite.code in cls.suite._globals, _locals
+        _globals = symbols.copy()
+        _globals.update(cls.suite._globals)
+        exec cls.suite.code in _globals, _locals
+        
         func = _locals['render']
         func.func_defaults = ((None,)*state['defaults']) or None
         func.func_code = marshal.loads(state['code'])
 
-        stream = state['stream']
-        xmldoc = state['xmldoc']
-        parser = state['parser']
-        tree, doctype = parser.parse(xmldoc)
-        
         return dict(
             func=func,
-            stream=stream,
+            symbols=symbols,
             xmldoc=xmldoc,
             parser=parser,
             tree=tree)

@@ -167,6 +167,9 @@ Version 1.0dev
 
   Bugfixes
 
+- Fixed an issue related to correct restoring of ghosted template
+  objects. [malthe]
+
 - Implicit doctype is correctly reestablished from cache. [malthe]
 
 - Remove namespace declaration on root tag to work around syntax error
