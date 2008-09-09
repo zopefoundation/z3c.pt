@@ -277,9 +277,9 @@ class Node(object):
                 tuple("%s=%s" % (arg, arg) for arg in \
                       itertools.chain(*self.stream.scope))+
                 tuple("%s=%s" % kwarg for kwarg in kwargs))
-                
+
             _.append(clauses.Write(
-                types.value("%s(%s)" % (self.symbols.metal, arguments))))
+                types.value("%s.render(%s)" % (self.symbols.metal, arguments))))
 
         # translate body
         elif self.translate is not None:
