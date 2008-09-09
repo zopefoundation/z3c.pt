@@ -248,8 +248,10 @@ class Define(object):
     >>> a
     1
     """
+
+    assign = None
     
-    def __init__(self, declaration, expression, dictionary=None):
+    def __init__(self, declaration, expression=None, dictionary=None):
         if not isinstance(declaration, types.declaration):
             declaration = types.declaration((declaration,))
 
@@ -260,8 +262,10 @@ class Define(object):
 
         if dictionary is not None:
            variable = "%s['%s'] = %s" % (dictionary, variable, variable)
+
+        if expression is not None:
+            self.assign = Assign(expression, variable)
             
-        self.assign = Assign(expression, variable)        
         self.declaration = declaration
         self.dictionary = dictionary
         
@@ -288,11 +292,13 @@ class Define(object):
                             stream.write('%s = %s' % (temp, var))
 
                     stream.scope[-1].add(var)
-                   
-        self.assign.begin(stream)
+
+        if self.assign is not None:
+            self.assign.begin(stream)
 
     def end(self, stream):
-        self.assign.end(stream)
+        if self.assign is not None:
+            self.assign.end(stream)
 
         if not self.declaration.global_scope:
             # restore the variables that were previously in scope
@@ -673,7 +679,7 @@ class Repeat(object):
     def __init__(self, v, e, scope=(), repeatdict=True):
         self.variable = v
         self.expression = e
-        self.define = Define(v, types.value("None"))
+        self.define = Define(v)
         self.assign = Assign(e)
         self.repeatdict = repeatdict
 
@@ -695,6 +701,7 @@ class Repeat(object):
             # loop
             stream.write("try:")
             stream.indent()
+            stream.write("%s = None" % variable)
             stream.write("%s = %s.next()" % (variable, iterator))
             stream.write("while True:")
             stream.indent()

@@ -169,6 +169,9 @@ Version 1.0dev
 
   Bugfixes
 
+- Fixed bug where a repeat-clause would reset the repeat variable
+  before evaluating the expression. [malthe]
+  
 - Fixed an issue related to correct restoring of ghosted template
   objects. [malthe]
 
