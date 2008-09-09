@@ -50,3 +50,7 @@ class TemplateCache(object):
             pickle.dump(self.registry, f, protocol=2)
         finally:
             f.close()
+
+    def purge(self):
+        self.registry = {}
+        self.save()

@@ -189,6 +189,7 @@ class FileBenchmarkTestCase(BaseTestCase):
         z3cfile = z3c.pt.PageTemplateFile(
             self._testfile('bigtable_python_z3c.pt'))
         z3cfile.registry = filecache.TemplateCache(z3cfile.filename)
+        z3cfile.registry.purge()
         z3cfile.cook_check(None, ())
         assert len(z3cfile.registry) == 1
         z3cfile.registry.save()
