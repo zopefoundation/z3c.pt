@@ -10,8 +10,6 @@ class GenshiElement(translation.Element, translation.VariableInterpolation):
     Implements the Genshi subset of the attribute template language.
     """
 
-    translator = expressions.python_translation
-    
     class node(translation.Node):
         @property
         def omit(self):
@@ -53,25 +51,14 @@ class GenshiElement(translation.Element, translation.VariableInterpolation):
         def dynamic_attributes(self):
             return self.element.meta_attributes
         
-        translated_attributes = None
-        
         @property
         def static_attributes(self):
             return utils.get_attributes_from_namespace(
                 self.element, config.XHTML_NS)
 
-        translate = None
-        translation_name = None
-        translation_domain = None
-
         @property
         def macro(self):
             return self.element.py_def
-
-        use_macro = None
-        define_macro = None
-        define_slot = None
-        fill_slot = None
 
         @property
         def cdata(self):
@@ -209,7 +196,10 @@ class XHTMLElement(GenshiElement):
         utils.py_attr('strip'), lambda p: p.expression)
     xi_href = None
     xi_parse = None
-    
+
+class MetaElement(XHTMLElement, translation.MetaElement):
+    pass
+
 class PyElement(XHTMLElement):
     py_strip = utils.attribute("strip", lambda p: p.expression, u"")
     
@@ -238,7 +228,7 @@ class GenshiParser(etree.Parser):
     """ The parser implementation for Genshi templates """
     element_mapping = {
         config.XHTML_NS: {None: XHTMLElement},
-        config.META_NS: {None: XHTMLElement},
+        config.META_NS: {None: MetaElement},
         config.XI_NS: {'include': XiIncludeElement},
         config.PY_NS: {'if': PyIfElement,
                        'for': PyForElement,

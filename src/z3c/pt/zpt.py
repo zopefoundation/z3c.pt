@@ -7,7 +7,8 @@ import config
 import etree
 
 class ZopePageTemplateElement(
-    translation.Element, translation.VariableInterpolation):
+    translation.Element, translation.VariableInterpolation,
+    translation.NativeAttributePrefixSupport):
     """Zope Page Template element.
 
     Implements the ZPT subset of the attribute template language.
@@ -47,8 +48,6 @@ class ZopePageTemplateElement(
             return self.content or \
                    self.use_macro or self.translate is not None
 
-        dict_attributes = None
-
         @property
         def dynamic_attributes(self):
             return (self.element.tal_attributes or ()) + \
@@ -75,8 +74,6 @@ class ZopePageTemplateElement(
         def translation_domain(self):
             return self.element.i18n_domain
 
-        macro = None
-        
         @property
         def use_macro(self):
             return self.element.metal_use
@@ -101,9 +98,6 @@ class ZopePageTemplateElement(
         def default_expression(self):
             return self.element.tal_default_expression
 
-        include = None
-        format = None
-        
     node = property(node)
 
     @property
@@ -117,6 +111,7 @@ class ZopePageTemplateElement(
             interfaces.IExpressionTranslation, name=self.node.default_expression)
 
     def update(self):
+        translation.NativeAttributePrefixSupport.update(self)    
         translation.VariableInterpolation.update(self)        
 
 class XHTMLElement(ZopePageTemplateElement):
@@ -154,6 +149,9 @@ class XHTMLElement(ZopePageTemplateElement):
         utils.i18n_attr('domain'))
     i18n_name = utils.attribute(
         utils.i18n_attr('name'))
+
+class MetaElement(XHTMLElement, translation.MetaElement):
+    pass
 
 class TALElement(ZopePageTemplateElement):
     """TAL namespace element."""
@@ -201,7 +199,7 @@ class ZopePageTemplateParser(etree.Parser):
     """ The parser implementation for ZPT """
     element_mapping = {
         config.XHTML_NS: {None: XHTMLElement},
-        config.META_NS: {None: XHTMLElement},
+        config.META_NS: {None: MetaElement},
         config.TAL_NS: {None: TALElement},
         config.METAL_NS: {None: METALElement}}
 

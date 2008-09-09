@@ -17,6 +17,9 @@ Version 1.0dev
 
   Features
 
+- The ZPT parser now supports prefixed native attributes,
+  e.g. <tal:foo tal:bar="" />. [malthe]
+  
 - Source-code is now written to disk in debug mode. [malthe]
   
 - Custom validation error is now raised if inserted string does not

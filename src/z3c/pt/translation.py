@@ -1,6 +1,7 @@
 from StringIO import StringIO
 
 import generation
+import expressions
 import codegen
 import clauses
 import doctypes
@@ -22,6 +23,28 @@ class Node(object):
     """
 
     symbols = config.SYMBOLS
+
+    translate = None
+    translation_name = None
+    translation_domain = None
+    translated_attributes = None
+    skip = None
+    cdata = None
+    omit = None
+    define = None
+    macro = None
+    use_macro = None
+    define_macro = None
+    fill_slot = None
+    define_slot = None
+    condition = None
+    repeat = None
+    content = None
+    include = None
+    format = None
+    dict_attributes = None
+    static_attributes = utils.emptydict()
+    dynamic_attributes = utils.emptydict()
     
     def __init__(self, element):
         self.element = element
@@ -320,7 +343,7 @@ class Node(object):
         index = self.element.index(element)
 
         t = self.element.makeelement(utils.meta_attr('literal'))
-        t.attrib[utils.meta_attr('omit-tag')] = ''
+        t.attrib['omit-tag'] = ''
         t.tail = element.tail
         t.text = unicode(element)
         for child in element.getchildren():
@@ -365,12 +388,29 @@ class Element(etree.ElementBase):
     providing a code stream object.
     """
 
-    node = property(Node)
+    translator = expressions.python_translation
+    
+    class node(Node):
+        @property
+        def omit(self):
+            if self.element.meta_omit is not None:
+                return self.element.meta_omit or True
+            if self.element.meta_replace:
+                return True
+
+        @property
+        def content(self):
+            return self.element.meta_replace
+
+    node = property(node)
     
     def start(self, stream):
         self._stream = stream
         self.node.visit()
 
+    def update(self):
+        pass
+    
     @property
     def stream(self):
         while self is not None:
@@ -393,6 +433,40 @@ class Element(etree.ElementBase):
     meta_replace = utils.attribute(
         utils.meta_attr('replace'), lambda p: p.output)
 
+class MetaElement(Element):
+    meta_cdata = utils.attribute('cdata')
+    
+    meta_omit = True
+    
+    meta_attributes =  utils.attribute(
+        'attributes', lambda p: p.definitions)
+    meta_replace = utils.attribute(
+        'replace', lambda p: p.output)
+
+class NativeAttributePrefixSupport:
+    """Element mix-in which allows native attributes to appear with
+    namespace prefix.
+
+    >>> class MockElement(NativeAttributePrefixSupport):
+    ...     nsmap = {'prefix1': 'ns1'}
+    ...     prefix = 'prefix1'
+    ...     attrib = {'{ns1}attr1': '1', 'attr2': '2', '{ns2}attr3': '3'}
+
+    >>> element = MockElement()
+    >>> element.update()
+    >>> keys = utils.get_attributes_from_namespace(element, 'ns1').keys()
+    >>> tuple(sorted(keys))
+    ('attr1', 'attr2')
+    """
+    
+    def update(self):
+        namespace = self.nsmap[self.prefix]
+        for name, value in self.attrib.items():
+            if name.startswith('{%s}' % namespace):
+                del self.attrib[name]
+                name = name.split('}')[-1]
+                self.attrib[name] = value
+    
 class VariableInterpolation:
     def update(self):
         translator = self.translator
@@ -407,7 +481,7 @@ class VariableInterpolation:
                 t = self.makeelement(utils.meta_attr('interpolation'))
                 expression = "structure " + \
                              (m.group('expression') or m.group('variable'))
-                t.attrib[utils.meta_attr('replace')] = expression
+                t.attrib['replace'] = expression
                 t.tail = text[m.end():]
                 self.insert(0, t)
                 t.update()
@@ -426,7 +500,7 @@ class VariableInterpolation:
                 t = self.makeelement(utils.meta_attr('interpolation'))
                 expression = "structure " + \
                              (m.group('expression') or m.group('variable'))
-                t.attrib[utils.meta_attr('replace')] = expression
+                t.attrib['replace'] = expression
                 t.tail = self.tail[m.end():]
                 parent = self.getparent()
                 parent.insert(parent.index(self)+1, t)

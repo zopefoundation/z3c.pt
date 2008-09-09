@@ -326,6 +326,23 @@ py:match
       /* ]]> */
     </div>
 
+:: HTML comments
+
+  >>> print render_genshi("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:py="http://genshi.edgewall.org/">
+  ...   <!-- a comment -->
+  ...   <!-- a multi-
+  ...        line comment -->
+  ...   <!-- a comment with an ${'expression'} -->
+  ... </div>""")
+  <div xmlns="http://www.w3.org/1999/xhtml">
+    <!-- a comment -->
+    <!-- a multi-
+         line comment -->
+    <!-- a comment with an expression -->
+  </div>
+
 :: z3c.pt used to forget to output the ]; after the for loop
 
   >>> print render_genshi("""\
