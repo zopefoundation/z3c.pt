@@ -540,8 +540,8 @@ class Tag(object):
             assign = Assign(value)
             assign.begin(stream, temp)
 
-            # only include attribute if expression is not None
-            stream.write("if %s not in (False, None):" % temp)
+            # only include attribute if expression is not ``None`` or ``False``
+            stream.write("if %s is not None and %s is not False:" % (temp, temp))
             stream.indent()
 
             # if an encoding is specified, we need to check
