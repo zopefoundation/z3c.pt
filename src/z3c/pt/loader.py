@@ -3,9 +3,19 @@ import os.path
 from z3c.pt.pagetemplate import PageTemplateFile
 from z3c.pt.texttemplate import TextTemplateFile
 
+def cache(func):
+    def load(self, *args):
+        template = self.registry.get(args)
+        if template is None:
+            self.registry[args] = template = func(self, *args)
+        return template
+    return load
+    
 class TemplateLoader(object):
-    """Template loader tool.
-    """
+    """Template loader tool. To load templates using relative
+    filenames, pass a sequence of paths (or a single path) as
+    ``search_path``; if ``auto_reload`` is set, templates will be
+    reloaded when modified."""
 
     def __init__(self, search_path=None, auto_reload=False, parser=None):
         if search_path is None:
@@ -15,7 +25,9 @@ class TemplateLoader(object):
         self.search_path = search_path
         self.auto_reload = auto_reload
         self.parser = parser
+        self.registry = {}
 
+    @cache
     def _load(self, filename, klass):
         if os.path.isabs(filename):
             return klass(filename, self.parser)

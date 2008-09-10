@@ -17,6 +17,14 @@ class LoadTests:
         result = self._load(loader, 'view.pt')
         self.assertEqual(result.filename, os.path.join(here, 'view.pt'))
 
+    def test_consecutive_loads(self):
+        import os
+        here = os.path.dirname(__file__)
+        loader = self._makeOne(search_path = [here])
+        
+        self.assertTrue(
+            self._load(loader, 'view.pt') is self._load(loader, 'view.pt'))
+
     def test_load_relative_badpath_in_searchpath(self):
         import os
         here = os.path.dirname(__file__)

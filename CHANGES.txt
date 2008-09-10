@@ -20,6 +20,9 @@ Version 1.0dev
 
   Features
 
+- Optimized template loader so only a single template is instantiated
+  per file. [malthe]
+  
 - Made ``z3c.pt`` a namespace package. [malthe]
   
 - Added reduce and restore operation to the compilation and rendering
