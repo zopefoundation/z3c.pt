@@ -544,9 +544,6 @@ class Tag(object):
             stream.write("if %s not in (False, None):" % temp)
             stream.indent()
 
-            # print the attribute name
-            stream.write("%s(' %s=\"')" % (stream.symbols.write, attribute))
-
             # if an encoding is specified, we need to check
             # whether we're dealing with unicode strings or not,
             # before writing out the attribute
@@ -567,8 +564,9 @@ class Tag(object):
             # escape expression
             stream.escape(temp)
 
-            stream.write("%s(%s)" % (stream.symbols.write, temp))
-            stream.write("%s('\"')" % stream.symbols.write)
+            # print attribute
+            stream.write("%s(' %s=\"'+%s+'\"')" % (
+                stream.symbols.write, attribute, temp))
 
             stream.outdent()
             assign.end(stream)
