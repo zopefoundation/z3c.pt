@@ -204,8 +204,8 @@ metal:define-macro, metal:use-macro, metal:define-slot, metal:fill-slot
 xi:include
 
   >>> from z3c.pt.template import BaseTemplateFile
-  >>> template = BaseTemplateFile(path+"/xinclude1.pt", mock_parser)
-  >>> print template()
+  >>> template1 = BaseTemplateFile(path+"/xinclude1.pt", mock_parser)
+  >>> print template1()
   <div xmlns="http://www.w3.org/1999/xhtml">
     <div>
     <span>Hello, world!</span>
@@ -217,8 +217,26 @@ xi:include
 When using XInclude-statements in Genshi, macro-definitions are
 carried over from the included template. This is demonstrated below.
 
-  >>> template = BaseTemplateFile(path+"/xinclude3.pt", GenshiParser())
-  >>> print template()
+  >>> template2 = BaseTemplateFile(path+"/xinclude3.pt", GenshiParser())
+  >>> print template2()
+  <div xmlns="http://www.w3.org/1999/xhtml">
+  <BLANKLINE>
+  <BLANKLINE>
+    <p class="greeting">
+      Hello, world!
+    </p>
+  <BLANKLINE>
+  </div>
+
+Before we proceed, we reduce and restore the underlying byte-code
+template.
+  
+  >>> from cPickle import dumps, loads
+  >>> for registry in (template1.registry, template2.registry):
+  ...     for key, bct in registry.items():
+  ...         registry[key] = loads(dumps(bct))
+
+  >>> print template2()
   <div xmlns="http://www.w3.org/1999/xhtml">
   <BLANKLINE>
   <BLANKLINE>
