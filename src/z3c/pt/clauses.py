@@ -555,9 +555,11 @@ class Tag(object):
                 stream.indent()
                 stream.write("%s = %s.encode('%s')" % (temp, temp, stream.encoding))
                 stream.outdent()
-
+                stream.write("elif not isinstance(%s, str):" % temp)
+            else:
+                stream.write("if not isinstance(%s, (str, unicode)):" % temp)
+                
             # make sure this is a string
-            stream.write("if not isinstance(%s, (str, unicode)):" % temp)
             stream.indent()
             stream.write("%s = str(%s)" % (temp, temp))
             stream.outdent()
