@@ -132,7 +132,7 @@ class XHTMLElement(ZopePageTemplateElement):
     tal_omit = utils.attribute(
         utils.tal_attr('omit-tag'), lambda p: p.expression)
     tal_default_expression = utils.attribute(
-        utils.tal_attr('default-expression'))
+        utils.tal_attr('default-expression'), encoding='ascii')
     metal_define = utils.attribute(
         utils.metal_attr('define-macro'), lambda p: p.method)
     metal_use = utils.attribute(
@@ -211,7 +211,6 @@ class ZopePageTemplateParser(etree.Parser):
 
     def parse(self, body):
         root, doctype = super(ZopePageTemplateParser, self).parse(body)
-
         # if a default expression is not set explicitly in the
         # template, use the TAL-attribute ``default-expression``
         # to set it

@@ -7,13 +7,18 @@ class parts(tuple, expression):
     def __repr__(self):
         return 'parts'+tuple.__repr__(self)
 
-class value(str, expression):
+class value(unicode, expression):
     def __init__(self, *args):
         super(value, self).__init__(*args)
         self.symbol_mapping = {}
 
     def __repr__(self):
-        return 'value(%s)' % str.__repr__(self)
+        try:
+            r = repr(self.encode())
+        except UnicodeEncodeError:
+            r = unicode.__repr__(self)
+            
+        return "value(%s)" % r        
 
 class template(value):
     def __repr__(self):

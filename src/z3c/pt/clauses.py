@@ -14,7 +14,6 @@ class Assign(object):
     >>> bad_float = types.value("float('abc')")
     >>> abc = types.value("'abc'")
     >>> ghi = types.value("'ghi'")
-    >>> utf8_encoded = types.value("'La Pe\xc3\xb1a'")
     >>> exclamation = types.value("'!'")
         
     Simple value assignment:
@@ -61,25 +60,6 @@ class Assign(object):
     >>> b == 'abcghi'
     True
     >>> assign.end(stream)
-
-    UTF-8 coercing:
-
-    >>> assign = Assign(types.join((utf8_encoded, exclamation)))
-    >>> assign.begin(stream, 'b')
-    >>> exec stream.getvalue()
-    >>> b == 'La Pe\xc3\xb1a!'
-    True
-    >>> assign.end(stream)
-
-    UTF-8 coercing with unicode:
-    
-    >>> assign = Assign(types.join((utf8_encoded, u"!")))
-    >>> assign.begin(stream, 'b')
-    >>> exec stream.getvalue()
-    >>> b == 'La Pe\xc3\xb1a!'
-    True
-    >>> assign.end(stream)
-
     """
 
     def __init__(self, parts, variable=None):
@@ -137,7 +117,10 @@ class Assign(object):
                 elif isinstance(part, types.value):
                     parts.append(part)
                 elif isinstance(part, unicode):
-                    parts.append(repr(part.encode('utf-8')))
+                    if stream.encoding:
+                        parts.append(repr(part.encode(stream.encoding)))
+                    else:
+                        parts.append(repr(part))
                 elif isinstance(part, str):
                     parts.append(repr(part))
                 else:
@@ -510,33 +493,41 @@ class Tag(object):
         
         if self.expression:
             self.expression.begin(stream, stream.symbols.tmp)
+            # loop over all attributes
             stream.write("for %s, %s in %s.items():" % \
                          (temp, temp2, stream.symbols.tmp))            
             stream.indent()
-            if utils.unicode_required_flag:
-                stream.write(
-                    "if isinstance(%s, unicode) or isinstance(%s, unicode):" % (temp, temp2))
-                stream.indent()
+
+            # only include attribute if expression is not None
+            stream.write("if %s is not None:" % temp2)                
+            stream.indent()
+
+            # if an encoding is specified, we need to check
+            # whether we're dealing with unicode strings or not,
+            # before writing out the attribute
+            if stream.encoding is not None:
                 for t in (temp, temp2):
                     stream.write("if isinstance(%s, unicode):" % t)
                     stream.indent()
-                    stream.write("%s = %s.encode('utf-8')" % (t, t))
+                    stream.write("%s = %s.encode('%s')" % (t, t, stream.encoding))
                     stream.outdent()
-                stream.escape(temp2)
-                stream.write("%s(' %%s=\"%%s\"' %% (%s, %s))" % \
-                             (stream.symbols.write, temp, temp2))
+
+                # make sure this is a string
+                stream.write("if not isinstance(%s, (str, unicode)):" % temp2)
+                stream.indent()
+                stream.write("%s = str(%s)" % (temp2, temp2))
                 stream.outdent()
-                stream.write("elif %s is not None:" % temp2)
-            else:
-                stream.write("if %s is not None:" % temp2)
-            stream.indent()
-            stream.write("%s = str(%s)" % (temp2, temp2))
+                
+            # escape expression
             stream.escape(temp2)
+
+            # write out
             stream.write("%s(' %%s=\"%%s\"' %% (%s, %s))" % \
                          (stream.symbols.write, temp, temp2))
-            stream.outdent()
-            stream.outdent()
 
+            stream.outdent()
+            stream.outdent()
+            
         for attribute, value in dynamic:
             assign = Assign(value)
             assign.begin(stream, temp)
@@ -555,55 +546,60 @@ class Tag(object):
             toggle = ( (self.tag == 'option' and attribute == 'selected') or
                        (self.tag == 'input' and attribute == 'checked') )
 
-            if utils.unicode_required_flag:
+
+            # only include attribute if expression is not None
+            stream.write("if %s not in (False, None):" % temp)
+            stream.indent()
+
+            # print the attribute name
+            stream.write("%s(' %s=\"')" % (stream.symbols.write, attribute))
+
+            # if an encoding is specified, we need to check
+            # whether we're dealing with unicode strings or not,
+            # before writing out the attribute
+            if stream.encoding is not None:
                 stream.write("if isinstance(%s, unicode):" % temp)
                 stream.indent()
-                if toggle:
-                    stream.write('if %s:' % temp)
-                    stream.indent()
-                stream.write("%s(' %s=\"')" % (stream.symbols.write, attribute))
-                stream.write("%s = %s.encode('utf-8')" % (stream.symbols.tmp, temp))
-                stream.escape(stream.symbols.tmp)
-                stream.write("%s(%s)" % (stream.symbols.write, stream.symbols.tmp))
-                stream.write("%s('\"')" % stream.symbols.write)
+                stream.write("%s = %s.encode('%s')" % (temp, temp, stream.encoding))
                 stream.outdent()
-                if toggle:
-                    stream.outdent()
-                stream.write("elif %s is not None:" % temp)
-            else:
-                stream.write("if %s is not None:" % temp)
+
+            # make sure this is a string
+            stream.write("if not isinstance(%s, (str, unicode)):" % temp)
             stream.indent()
-            if toggle:
-                stream.write('if %s:' % temp)
-                stream.indent()
-            stream.write("%s(' %s=\"')" % (stream.symbols.write, attribute))
-            stream.write("%s = str(%s)" % (stream.symbols.tmp, temp))
-            stream.escape(stream.symbols.tmp)
-            stream.write("%s(%s)" % (stream.symbols.write, stream.symbols.tmp))
-            stream.write("%s('\"')" % stream.symbols.write)
+            stream.write("%s = str(%s)" % (temp, temp))
             stream.outdent()
-            if toggle:
-                stream.outdent()
+
+            # escape expression
+            stream.escape(temp)
+
+            stream.write("%s(%s)" % (stream.symbols.write, temp))
+            stream.write("%s('\"')" % stream.symbols.write)
+
+            stream.outdent()
             assign.end(stream)
 
         stream.restore()
         stream.restore()
-        
-        if self.expression:
-            for attribute, expression in static:
+
+        for attribute, expression in static:
+            if isinstance(expression, unicode) and stream.encoding:
+                expression = expression.encode(stream.encoding)
+
+            # escape expression
+            expression = utils.escape(expression, '"', stream.encoding)
+
+            # if there are dynamic expressions, we only want to write
+            # out static attributes if they're not in the dynamic
+            # expression dictionary
+            if self.expression:
                 stream.write("if '%s' not in %s:" % (attribute, stream.symbols.tmp))
                 stream.indent()
-                stream.write(
-                    "%s(' %s=\"%s\"')" % (
-                    stream.symbols.write, attribute, utils.escape(expression, '"')))
-                stream.outdent()
-        else:
-            for attribute, expression in static:
-                if isinstance(expression, unicode):
-                    expression = expression.encode('utf-8')
-                stream.out(
-                    ' %s="%s"' % (attribute, utils.escape(expression, '"')))
+                
+            stream.out(' %s="%s"' % (attribute, expression))
 
+            if self.expression:
+                stream.outdent()
+                
         if self.selfclosing:
             stream.out(" />")
         else:
@@ -756,8 +752,8 @@ class Write(object):
 
     Unicode:
 
-    >>> _out, _write, stream = testing.setup_stream()
-    >>> write = Write(types.value("unicode('La Pe\xc3\xb1a', 'utf-8')"))
+    >>> _out, _write, stream = testing.setup_stream('utf-8')
+    >>> write = Write(types.value(repr('La Pe\xc3\xb1a'.decode('utf-8'))))
     >>> write.begin(stream)
     >>> write.end(stream)
     >>> exec stream.getvalue()
@@ -794,22 +790,25 @@ class Write(object):
         stream.write("%s = %s" % (stream.symbols.tmp, expr))
         write("if %(tmp)s is not None:")
         stream.indent()
-        if utils.unicode_required_flag:
+
+        if stream.encoding is not None:
             write("if isinstance(%(tmp)s, unicode):")
             stream.indent()
-            write("%(tmp)s = %(tmp)s.encode('utf-8')")
+            write("%%(tmp)s = %%(tmp)s.encode('%s')" % stream.encoding)
             stream.outdent()
-            write("else:")
-            stream.indent()
-            write("%(tmp)s = str(%(tmp)s)")
-            stream.outdent()
-        else:
-            write("%(tmp)s = str(%(tmp)s)")
+
+        # make sure this is a string
+        write("if not isinstance(%(tmp)s, (str, unicode)):")
+        stream.indent()
+        write("%(tmp)s = str(%(tmp)s)")
+        stream.outdent()
+
         if self.structure:
             write("%(write)s(%(tmp)s)")
         else:
             stream.escape(stream.symbols.tmp)
             write("%(write)s(%(tmp)s)")
+
         stream.outdent()
 
         # validate XML if enabled
@@ -844,8 +843,8 @@ class UnicodeWrite(Write):
 
     Unicode:
 
-    >>> _out, _write, stream = testing.setup_stream()
-    >>> write = Write(types.value("unicode('La Pe\xc3\xb1a', 'utf-8')"))
+    >>> _out, _write, stream = testing.setup_stream('utf-8')
+    >>> write = Write(types.value(repr(unicode('La Pe\xc3\xb1a', 'utf-8'))))
     >>> write.begin(stream)
     >>> write.end(stream)
     >>> exec stream.getvalue()

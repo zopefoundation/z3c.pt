@@ -6,6 +6,9 @@ Version 1.0dev
 
   Backwards incompatibilities
 
+- Engine now expects all strings to be unicode or contain ASCII
+  characters only, unless an encoding is provided. [malthe]
+  
 - The default path traverser no longer proxies objects. [malthe]
   
 - Template output is now always converted to unicode. [malthe]

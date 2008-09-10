@@ -70,8 +70,8 @@ class TemplateASTTransformer(ASTTransformer):
         self.names.update(globals)
 
     def visitConst(self, node):
-        if isinstance(node.value, unicode):
-            return ast.Const(node.value.encode('utf-8'))
+        #if isinstance(node.value, unicode):
+        #    return ast.Const(node.value.encode('utf-8'))
         return node
 
     def visitAssName(self, node):
@@ -166,6 +166,9 @@ class Suite(object):
     def __init__(self, source, globals=()):
         """Create the code object from a string."""
 
+        if isinstance(source, unicode):
+            source = source.encode('utf-8')
+            
         node = parse(source, self.mode)
 
         # build tree

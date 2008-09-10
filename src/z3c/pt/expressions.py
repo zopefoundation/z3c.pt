@@ -501,12 +501,15 @@ class PythonTranslation(ExpressionTranslation):
     def validate(self, string):
         """We use the ``parser`` module to determine if
         an expression is a valid python expression."""
-        
-        parser.expr(string.encode('utf-8').strip())
 
-    def translate(self, string):
         if isinstance(string, unicode):
             string = string.encode('utf-8')
+            
+        parser.expr(string.strip())
+
+    def translate(self, string):
+        if isinstance(string, str):
+            string = string.decode('utf-8')
 
         return types.value(string.strip())
 
@@ -521,10 +524,10 @@ class StringTranslation(ExpressionTranslation):
     def validate(self, string):
         self.interpolate(string)
         self.split(string)
-
+            
     def translate(self, string):
         return types.join(self.split(string))
-        
+            
     def split(self, string):
         """Split up an interpolation string expression into parts that
         are either unicode strings or ``value``-tuples.
@@ -562,8 +565,8 @@ class StringTranslation(ExpressionTranslation):
         >>> split("abc${def | ghi}")
         ('abc', parts(value('def '), value(' ghi')))
 
-        >>> print split("abc${La Pe\xc3\xb1a}")
-        ('abc', value('La Pe\\xc3\\xb1a'))
+        >>> print split(u"abc${ghi}")
+        (u'abc', value('ghi'))
         
         """
 

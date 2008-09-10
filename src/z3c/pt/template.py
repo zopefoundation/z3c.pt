@@ -10,7 +10,8 @@ class BaseTemplate(object):
     defined by ``parser`` (``ZopePageTemplateParser`` or
     ``GenshiParser`` as of this writing). Must be passed an input
     string as ``body``. The ``format`` parameter supports values 'xml'
-    and 'text'."""
+    and 'text'. Pass a value for ``encoding`` if you need to allow
+    strings that are not unicode or plain ASCII."""
 
     compilers = {
         'xml': translation.Compiler,
@@ -20,12 +21,13 @@ class BaseTemplate(object):
     implicit_doctype = doctypes.xhtml
     explicit_doctype = None
     
-    def __init__(self, body, parser, format=None, doctype=None):
+    def __init__(self, body, parser, format=None, doctype=None, encoding=None):
         self.body = body
         self.parser = parser        
         self.signature = hash(body)
         self.registry = {}
-
+        self.encoding = encoding
+        
         if format is not None:
             self.format = format
 
@@ -45,7 +47,8 @@ class BaseTemplate(object):
         return self.compilers[self.format](
             self.body, self.parser,
             implicit_doctype=self.implicit_doctype,
-            explicit_doctype=self.explicit_doctype)
+            explicit_doctype=self.explicit_doctype,
+            encoding=self.encoding)
 
     def cook(self, **kwargs):
         return self.compiler(**kwargs)
@@ -56,7 +59,6 @@ class BaseTemplate(object):
         if template is None:
             template = self.cook(macro=macro, params=params)
             self.registry[key] = template
-            
         return template
 
     def prepare(self, kwargs):
@@ -66,8 +68,7 @@ class BaseTemplate(object):
         self.prepare(kwargs)
         template = self.cook_check(macro, tuple(kwargs))
         kwargs.update(template.selectors)
-        result = template.render(**kwargs) or ""
-        return result.decode('utf-8')
+        return template.render(**kwargs)
 
     def __repr__(self):
         return u"<%s %d>" % (self.__class__.__name__, id(self))

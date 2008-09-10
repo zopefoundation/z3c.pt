@@ -112,8 +112,8 @@ class Node(object):
         # tag tail (deferred)
         tail = self.element.tail
         if tail and not self.fill_slot:
-            if isinstance(tail, unicode):
-                tail = tail.encode('utf-8')
+            if isinstance(tail, unicode) and self.stream.encoding:
+                tail = tail.encode(self.stream.encoding)
             _.append(clauses.Out(tail, defer=True))
 
         # condition
@@ -201,8 +201,8 @@ class Node(object):
 
         # tag text (if we're not replacing tag body)
         if text and not dynamic:
-            if isinstance(text, unicode):
-                text = text.encode('utf-8')
+            if isinstance(text, unicode) and self.stream.encoding:
+                text = text.encode(self.stream.encoding)
             _.append(clauses.Out(text))
 
         # dynamic content
@@ -530,7 +530,8 @@ class Compiler(object):
     doctype = None
     implicit_doctype = ""
     
-    def __init__(self, body, parser, implicit_doctype=None, explicit_doctype=None):
+    def __init__(self, body, parser, implicit_doctype=None,
+                 explicit_doctype=None, encoding=None):
         # if no doctype is defined, prepend the implicit doctype to
         # the document source
         no_doctype_declaration = '<!DOCTYPE' not in body
@@ -554,11 +555,15 @@ class Compiler(object):
             
         self.parser = parser
 
+        if utils.coerces_gracefully(encoding):
+            self.encoding = None
+        else:
+            self.encoding = encoding
+        
     @classmethod
-    def from_text(cls, body, parser, implicit_doctype=None, explicit_doctype=None):
+    def from_text(cls, body, parser, **kwargs):
         compiler = Compiler(
-            "<html xmlns='%s'></html>" % config.XHTML_NS, parser,
-            implicit_doctype, explicit_doctype)
+            "<html xmlns='%s'></html>" % config.XHTML_NS, parser, **kwargs)
         compiler.root.text = body
         compiler.root.attrib[utils.meta_attr('omit-tag')] = ""
         return compiler
@@ -595,7 +600,8 @@ class Compiler(object):
 
         # initialize code stream object
         stream = generation.CodeIO(
-            self.root.node.symbols, indentation=1, indentation_string="\t")
+            self.root.node.symbols, encoding=self.encoding,
+            indentation=1, indentation_string="\t")
 
         # initialize variable scope
         stream.scope.append(set(
@@ -604,7 +610,9 @@ class Compiler(object):
 
         # output doctype if any
         if self.doctype and isinstance(self.doctype, (str, unicode)):
-            doctype = (self.doctype +'\n').encode('utf-8')
+            doctype = self.doctype + '\n'
+            if self.encoding:
+                doctype = doctype.encode(self.encoding)
             out = clauses.Out(doctype)
             stream.scope.append(set())
             stream.begin([out])
@@ -704,12 +712,14 @@ class GhostedByteCodeTemplate(object):
         self.code = marshal.dumps(template.func.func_code)
         self.defaults = len(template.func.func_defaults or ())
         self.symbols = template.symbols
+        self.source = template.source
         self.xmldoc = template.xmldoc
         self.parser = template.parser
         
     @classmethod
     def rebuild(cls, state):
         symbols = state['symbols']
+        source = state['source']
         xmldoc = state['xmldoc']
         parser = state['parser']
         tree, doctype = parser.parse(xmldoc)        
@@ -726,6 +736,7 @@ class GhostedByteCodeTemplate(object):
         return dict(
             func=func,
             symbols=symbols,
+            source=source,
             xmldoc=xmldoc,
             parser=parser,
             tree=tree)

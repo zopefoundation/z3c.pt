@@ -256,7 +256,7 @@ py:match
   ...   ${unicode('La Pe\xc3\xb1a', 'utf-8').encode('utf-8')}
   ...   <img alt="${unicode('La Pe\xc3\xb1a', 'utf-8').encode('utf-8')}" />
   ...   <img alt="Hello ${unicode('La Pe\xc3\xb1a', 'utf-8').encode('utf-8')}!" />
-  ... </div>""")
+  ... </div>""", encoding='utf-8')
     <div xmlns="http://www.w3.org/1999/xhtml">
       <img alt="La Peña" />
       <img alt="Hello La Peña" />

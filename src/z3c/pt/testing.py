@@ -22,14 +22,14 @@ class TestCompiler(translation.Compiler):
 def pyexp(string):
     return expressions.python_translation.expression(string)
 
-def setup_stream():
+def setup_stream(encoding=None):
     class symbols(translation.Node.symbols):
         out = '_out'
         write = '_write'
 
     out = StringIO()
     write = out.write
-    stream = generation.CodeIO(symbols)
+    stream = generation.CodeIO(symbols, encoding=encoding)
     return out, write, stream
 
 def compile_xhtml(body, **kwargs):
@@ -53,9 +53,10 @@ def render_zpt(body, **kwargs):
     template = compiler(params=sorted(kwargs.keys()))
     return template.render(**kwargs)    
 
-def render_genshi(body, **kwargs):
+def render_genshi(body, encoding=None, **kwargs):
     compiler = TestCompiler(
-        body, genshi.GenshiParser(), implicit_doctype=doctypes.xhtml)
+        body, genshi.GenshiParser(),
+        encoding=encoding, implicit_doctype=doctypes.xhtml)
     template = compiler(params=sorted(kwargs.keys()))
     kwargs.update(template.selectors)
     return template.render(**kwargs)    

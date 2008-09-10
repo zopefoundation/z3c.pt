@@ -44,7 +44,7 @@ tal:attributes 'checked' and 'selected' toggles
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
   ...   <option tal:attributes="selected True"/>
-  ...   <option tal:attributes="selected False"/>
+  ...   <option tal:attributes="selected None"/>
   ...   <input tal:attributes="checked True"/>
   ...   <input tal:attributes="checked False"/>
   ... </div>""")

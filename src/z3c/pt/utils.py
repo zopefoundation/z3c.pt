@@ -21,6 +21,11 @@ except UnicodeEncodeError:
              "an encoding that coerces gracefully to "
              "unicode is used ('utf-8' recommended)." % sys.getdefaultencoding())
 
+def coerces_gracefully(encoding):
+    if encoding != sys.getdefaultencoding() and unicode_required_flag:
+        return False
+    return True
+
 s_counter = 0
 
 def handler(key=None):
@@ -33,10 +38,12 @@ def handler(key=None):
         return g
     return decorate
 
-def attribute(ns, factory=None, default=None):
+def attribute(ns, factory=None, default=None, encoding=None):
     def get(self):
         value = self.attrib.get(ns)
         if value is not None:
+            if encoding or self.stream.encoding:
+                value = value.encode(encoding or self.stream.encoding)
             if factory is None:
                 return value
             f = factory(self.translator)
@@ -47,9 +54,8 @@ def attribute(ns, factory=None, default=None):
         self.attrib[ns] = value
     return property(get, set)
 
-def escape(string, quote=None):
-    if not isinstance(string, unicode):
-        encoding = 'utf-8'
+def escape(string, quote=None, encoding=None):
+    if not isinstance(string, unicode) and encoding:
         string = string.decode(encoding)
     else:
         encoding = None

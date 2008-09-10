@@ -70,10 +70,12 @@ class CodeIO(BufferIO):
     t_prefix = '_tmp'
     v_prefix = '_var'
 
-    def __init__(self, symbols=None, indentation=0, indentation_string="\t"):
+    def __init__(self, symbols=None, encoding=None,
+                 indentation=0, indentation_string="\t"):
         BufferIO.__init__(self)
         self.symbols = symbols or object
         self.symbol_mapping = {}
+        self.encoding = encoding
         self.indentation = indentation
         self.indentation_string = indentation_string
         self.queue = ''
@@ -114,12 +116,12 @@ class CodeIO(BufferIO):
             queue = self.queue
             self.queue = ''
             self.write(
-                "%s('%s')" %
-                (self.symbols.write, queue.replace('\n', '\\n').replace("'", "\\'")))
+                "%s(%s)" %
+                (self.symbols.write, repr(queue)))
 
     def write(self, string):
-        if isinstance(string, unicode):
-            string = string.encode('utf-8')
+        if isinstance(string, unicode) and self.encoding:
+            string = string.encode(self.encoding)
 
         self.l_counter += len(string.split('\n'))-1
 
