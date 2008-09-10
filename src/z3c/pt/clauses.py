@@ -796,9 +796,11 @@ class Write(object):
             stream.indent()
             write("%%(tmp)s = %%(tmp)s.encode('%s')" % stream.encoding)
             stream.outdent()
-
+            write("elif not isinstance(%(tmp)s, str):")
+        else:
+            write("if not isinstance(%(tmp)s, (str, unicode)):")
+            
         # make sure this is a string
-        write("if not isinstance(%(tmp)s, (str, unicode)):")
         stream.indent()
         write("%(tmp)s = str(%(tmp)s)")
         stream.outdent()
