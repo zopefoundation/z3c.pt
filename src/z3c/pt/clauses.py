@@ -540,21 +540,6 @@ class Tag(object):
             assign = Assign(value)
             assign.begin(stream, temp)
 
-            # XXX 'toggle' attributes are attributes whose mere
-            # presence signifies to the consumer that something should
-            # happen regardless of the attribute's value ('checked' on
-            # input tags and 'selected' on option tags); an
-            # HTML-specific misfeature. Determining whether an
-            # attribute is a toggle attribute really should be
-            # conditioned on the tag being in the xhtml namespace (in
-            # case we're rendering something other than HTML) and not
-            # just rely on tag and attribute names (chrism), but let's
-            # go ahead make the 99.999% case work.
-            
-            toggle = ( (self.tag == 'option' and attribute == 'selected') or
-                       (self.tag == 'input' and attribute == 'checked') )
-
-
             # only include attribute if expression is not None
             stream.write("if %s not in (False, None):" % temp)
             stream.indent()
