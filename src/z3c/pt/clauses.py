@@ -506,17 +506,25 @@ class Tag(object):
             # whether we're dealing with unicode strings or not,
             # before writing out the attribute
             if stream.encoding is not None:
-                for t in (temp, temp2):
-                    stream.write("if isinstance(%s, unicode):" % t)
-                    stream.indent()
-                    stream.write("%s = %s.encode('%s')" % (t, t, stream.encoding))
-                    stream.outdent()
-
-                # make sure this is a string
-                stream.write("if not isinstance(%s, (str, unicode)):" % temp2)
+                # attribute name
+                stream.write("if isinstance(%s, unicode):" % temp)
                 stream.indent()
-                stream.write("%s = str(%s)" % (temp2, temp2))
+                stream.write("%s = %s.encode('%s')" % (temp, temp, stream.encoding))
                 stream.outdent()
+
+                # attribute expression
+                stream.write("if isinstance(%s, unicode):" % temp2)
+                stream.indent()
+                stream.write("%s = %s.encode('%s')" % (temp2, temp2, stream.encoding))
+                stream.outdent()
+                stream.write("elif not isinstance(%s, str):" % temp2)
+            else:
+                stream.write("if not isinstance(%s, (str, unicode)):" % temp2)
+
+            # make sure this is a string
+            stream.indent()
+            stream.write("%s = str(%s)" % (temp2, temp2))
+            stream.outdent()
                 
             # escape expression
             stream.escape(temp2)
