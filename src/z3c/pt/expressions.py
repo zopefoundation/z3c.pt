@@ -1,6 +1,7 @@
 import zope.interface
 import zope.component
-import zope.traversing.adapters
+
+from zope.traversing.adapters import traversePathElement
 
 import parser
 import re
@@ -646,40 +647,35 @@ class StringTranslation(ExpressionTranslation):
         return string.replace(';;', ';')
 
 class ZopeTraverser(object):
-    def __init__(self, proxify=None):
-        if proxify is None:
-            self.proxify = utils.identity
-        else:
-            self.proxify = proxify
+    def __init__(self, proxify=utils.identity):
+        self.proxify = proxify
 
     def __call__(self, base, request, call, *path_items):
         """See ``zope.app.pagetemplate.engine``."""
 
-        _callable = getattr(base, '__call__', _marker) is not _marker
-
-        for i in range(len(path_items)):
-            name = path_items[i]
-
-            next = getattr(base, name, _marker)
-            if next is not _marker:
-                _callable = getattr(next, '__call__', _marker) is not _marker
-                base = next
-                continue
-            else:
-                # special-case dicts for performance reasons        
-                if getattr(base, '__class__', None) == dict:
-                    base = base[name]
+        length = len(path_items)
+        if length:
+            i = 0
+            while i < length:
+                name = path_items[i]
+                i += 1
+                next = getattr(base, name, _marker)
+                if next is not _marker:
+                    base = next
+                    continue
                 else:
-                    base = zope.traversing.adapters.traversePathElement(
-                        base, name, path_items[i+1:], request=request)
+                    # special-case dicts for performance reasons        
+                    if isinstance(base, dict):
+                        base = base[name]
+                    else:
+                        base = traversePathElement(
+                            base, name, path_items[i:], request=request)
 
-            _callable = getattr(base, '__call__', _marker) is not _marker
+                if not isinstance(base, (basestring, tuple, list)):
+                    base = self.proxify(base)
 
-            if not isinstance(base, (basestring, tuple, list)):
-                base = self.proxify(base)
-
-        if call and _callable:
-            base = base()
+        if call and getattr(base, '__call__', _marker) is not _marker:
+            return base()
 
         return base
 
