@@ -185,6 +185,9 @@ Version 1.0dev
 
   Bugfixes
 
+- Skip elements in a "define-slot" clause if its being filled by the
+  calling template. [malthe]
+  
 - Support "fill-slot" on elements with METAL namespace. [malthe]
   
 - Omit element text when rendering macro. [malthe]

@@ -27,7 +27,7 @@ tal:define, tal:attributes, tal:contents
   ...         tal:define="a 'abc'"
   ...         tal:attributes="class 'def' + a; style 'hij'; onClick 'alert();'"
   ...         tal:content="a + 'ghi'" />
-  ...   <span tal:replace="'Hello World!'">Hello Universe!</span>
+  ...   <span tal:replace="'Hello World!'">Hello <b>Universe</b>!</span>
   ...   <span tal:replace="'Hello World!'"><b>Hello Universe!</b></span>
   ...   <span tal:content="None" />
   ... </div>""")
@@ -315,7 +315,8 @@ metal:define-slot, metal:fill-slot
   ...      xmlns:tal="http://xml.zope.org/namespaces/tal"
   ...      xmlns:metal="http://xml.zope.org/namespaces/metal">
   ...   <div metal:define-macro="greeting">
-  ...     Hello, <b class="name" metal:define-slot="name">stranger!</b>
+  ...     Hey, <span class="name" metal:define-slot="name">
+  ...     a <em>stranger!</em></span>
   ...   </div>
   ...   <div metal:use-macro="template.macros['greeting']">
   ...     This will be omitted
@@ -340,26 +341,25 @@ metal:define-slot, metal:fill-slot
   >>> print render_zpt(body, template=template)
   <div>
     <div>
-      Hello, <b class="name">stranger!</b>
+      Hey, <span class="name">
+      a <em>stranger!</em></span>
+    </div>
+    <div>
+      Hey, <span class="name">earth!</span>
     </div>
   <BLANKLINE>
-      <div>
-      Hello, <b class="name">earth!</b>
+    <div>
+      Hey, <span class="name">earth!</span>
     </div>
   <BLANKLINE>
-  <BLANKLINE>
-      <div>
-      Hello, <b class="name">earth!</b>
+    <div>
+      Hey, <span class="name">
+      a <em>stranger!</em></span>
     </div>
   <BLANKLINE>
-  <BLANKLINE>
-      <div>
-      Hello, <b class="name">stranger!</b>
-    </div>
-  <BLANKLINE>
-  <BLANKLINE>
-      <div>
-      Hello, <b class="name">stranger!</b>
+    <div>
+      Hey, <span class="name">
+      a <em>stranger!</em></span>
     </div>
   <BLANKLINE>
   </div>

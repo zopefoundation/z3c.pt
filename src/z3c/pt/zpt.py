@@ -2,6 +2,7 @@ from zope import component
 
 import translation
 import interfaces
+import itertools
 import utils
 import config
 import etree
@@ -45,6 +46,11 @@ class ZopePageTemplateElement(
 
         @property
         def skip(self):
+            if self.define_slot:
+                variable = self.symbols.slot + self.define_slot
+                if variable in itertools.chain(*self.stream.scope):
+                    return True
+
             return self.content or \
                    self.use_macro or self.translate is not None
 
