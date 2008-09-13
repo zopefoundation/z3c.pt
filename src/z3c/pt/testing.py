@@ -1,8 +1,8 @@
 import translation
+import template
 import generation
 import expressions
 import doctypes
-import macro
 import etree
 import config
 import utils
@@ -72,7 +72,7 @@ class MockTemplate(object):
             compiler = TestCompiler(self.body, self.parser)
             template = compiler(macro=name, parameters=parameters)
             return template.render(**parameters)
-        return macro.Macros(render)
+        return template.Macros(render)
 
 class MockElement(translation.Element, translation.VariableInterpolation):
     translator = expressions.python_translation

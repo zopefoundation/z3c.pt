@@ -1,5 +1,4 @@
 import os
-import macro
 import config
 import doctypes
 import filecache
@@ -36,7 +35,7 @@ class BaseTemplate(object):
         
     @property
     def macros(self):
-        return macro.Macros(self.render_macro)
+        return Macros(self.render_macro)
 
     @property
     def compiler(self):
@@ -182,3 +181,15 @@ class XIncludes(object):
             return template
         return self.factory(filename, format=format)
     
+class Macro(object):
+    def __init__(self, render):
+        self.render = render
+
+class Macros(object):
+    def __init__(self, render_macro):
+        self.render = render_macro
+
+    def __getitem__(self, name):
+        def render(**kwargs):
+            return self.render(name, parameters=kwargs)
+        return Macro(render)

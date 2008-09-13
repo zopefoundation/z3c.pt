@@ -6,6 +6,9 @@ Version 1.0dev
 
   Backwards incompatibilities
 
+- Moved contents of ``z3c.pt.macro`` module into
+  ``z3c.pt.template``. [malthe]
+
 - Namespace attribute "xmlns" no longer rendered for templates with no
   explicit document type. [malthe]
   
