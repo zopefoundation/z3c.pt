@@ -14,7 +14,7 @@ XHTML
   ... <div xmlns="http://www.w3.org/1999/xhtml">
   ...   Hello World!
   ... </div>""")
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
       Hello World!
     </div>
 
@@ -38,7 +38,7 @@ XHTML
   ...   La Peña
   ...   <img alt="La Peña" />
   ... </div>""")
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
       La Peña
       <img alt="La Pe&ntilde;a" />
     </div>
@@ -51,7 +51,7 @@ XHTML
   ...   /* ]]> */
   ...   <span>Not protected</span> <![CDATA[ This is protected ]]>
   ... </div>""")
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
       /* <![CDATA[ */
       This is protected
       /* ]]> */
@@ -84,7 +84,7 @@ Literals
   ...   >&rarr;</a>
   ...   <span class="&rarr;" />
   ... </html>""")
-    <html xmlns="http://www.w3.org/1999/xhtml">
+    <html>
       Hello &nbsp; World!
       <a href="localhost" title="Singing &amp; Dancing">&rarr;</a>
       <span class="&rarr;" />
@@ -97,7 +97,7 @@ Literals
   ...   <?xml-stylesheet href="classic.xsl" type="text/xml"?>
   ...   Hello World!
   ... </html>""")
-    <html xmlns="http://www.w3.org/1999/xhtml">
+    <html>
       <?xml-stylesheet href="classic.xsl" type="text/xml"?>
       Hello World!
     </html>
@@ -108,7 +108,7 @@ Literals
   ... <html xmlns="http://www.w3.org/1999/xhtml">
   ...   <!-- hello world -->
   ... </html>""")
-    <html xmlns="http://www.w3.org/1999/xhtml">
+    <html>
       <!-- hello world -->
     </html>
   
@@ -160,7 +160,7 @@ Check that we're getting a template object back.
 Let's try and render the template.
  
   >>> print template.render()
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
     Hello World!
   </div>
 
@@ -171,30 +171,23 @@ Error handling
 This section demonstrates how the package handles templates that
 contain errors.
 
-No default namespace declaration:
-  A default namespace must be explicitly declared for the parser to work.
-  
-  >>> body = '<br />'
-  >>> render_xhtml(body)
-  Traceback (most recent call last):
-    ...
-  ValueError: Must define valid namespace for tag: 'br.'
-    
-Bad XML
-  We expect the xml-parser to raise an exception.
+:: Malformed syntax
+
+We expect the xml-parser to raise an exception.
   
   >>> body = '<div xmlns="http://www.w3.org/1999/xhtml"'
   >>> render_xhtml(body)
   Traceback (most recent call last):
     ...
-  XMLSyntaxError: Couldn't find end of Start Tag div...
+  XMLSyntaxError: ...
 
-Missing namespace definition:
-    We expect the engine to raise an exception*
+:: Missing namespace definition
 
-*) This test only passes on lxml 2.x.
+If a document type is provided, namespaces must be declared.
 
   >>> body = """\
+  ... <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  ...                       "http://www.w3.org/TR/html4/loose.dtd">
   ... <div xmlns="http://www.w3.org/1999/xhtml" tal:content="'Hello World'" />
   ... """
 

@@ -21,7 +21,7 @@ py:if
   ...     <b>Foo</b>
   ...   </py:if>
   ... </div>""")
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
     <div>
       <p>Foo</p>
     </div>
@@ -57,7 +57,7 @@ py:choose, py:when, py:otherwise
   ...     </div>
   ...   </div>
   ... </div>""")
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
     <div>
       <span>1</span>
       <div>
@@ -85,7 +85,7 @@ py:for
   ...    <li>${item}</li>
   ...  </py:for>
   ... </ul>""")
-  <ul xmlns="http://www.w3.org/1999/xhtml">
+  <ul>
     <li>0</li>
   <li>1</li>
   <li>2</li>
@@ -109,7 +109,7 @@ py:def
   ...  ${goodbye('world')}
   ...  ${goodbye('everyone')}  
   ... </div>""")
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
    <p class="greeting">
      Hello, world!
    </p>
@@ -142,7 +142,7 @@ py:with
   ...       "${q["quote"]} <em>${q["author"]}</em>
   ...   </blockquote>
   ... </div>""", quote=quote)
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
     <span>2 7 12</span>
     4 3 9
     <blockquote>
@@ -159,7 +159,7 @@ py:attrs
   ...   <li class="expand" py:attrs="{'class': 'collapse'}">Bar</li>
   ...   <li class="expand" py:attrs="d">Bar</li>
   ... </ul>""", d=dict({'class': u'\u1234'}))
-  <ul xmlns="http://www.w3.org/1999/xhtml">
+  <ul>
     <li class="collapse">Bar</li>
     <li class="ሴ">Bar</li>
   </ul>
@@ -172,7 +172,7 @@ py:content, py:replace
   ...   <span py:content="'Hello, world!'" />
   ...   <span py:replace="'Goodbye, world!'" />
   ... </div>""")
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
     <span>Hello, world!</span>
     Goodbye, world!
   </div>
@@ -184,7 +184,7 @@ py:strip
   ...      xmlns:py="http://genshi.edgewall.org/">
   ...    <span py:strip="True"><b>foo</b></span>
   ... </div>""")
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
      <b>foo</b>
   </div>
 
@@ -193,16 +193,16 @@ py:match
   >>> print render_genshi("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      xmlns:py="http://genshi.edgewall.org/">
-  ...   <span py:match="xmlns:greeting">
+  ...   <span py:match=".//xmlns:greeting">
   ...     Hello, ${select('@name')[0]}!
   ...   </span>
-  ...   <py:match path="xmlns:farewell">
+  ...   <py:match path=".//xmlns:farewell">
   ...      <span>Goodbye, ${select('@name')[0]}!</span>
   ...   </py:match>
   ...   <greeting name="dude" />
   ...   <farewell name="dude" />
   ... </div>""")
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
     <span>
       Hello, dude!
     </span>
@@ -226,7 +226,7 @@ py:match
   ...   <span style="position: ${'abs'}olute"
   ...         class="my-${int('test') | 'class'} item${'Last'}" />
   ... </div>""", ltr={'letter': 'A', 'href': '?title=A', 'iscurrent': 'current'})
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
       <span>interpolation</span>is convenient!
       <span>abc d</span>
       <span class="Hello World!" />
@@ -242,7 +242,7 @@ py:match
   ...      xmlns:py="http://genshi.edgewall.org/">
   ...   <span py:with="y=7; z=x+10">$x $y $z</span>
   ... </div>""", x=42)
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
     <span>42 7 52</span>
   </div>
 
@@ -257,7 +257,7 @@ py:match
   ...   <img alt="${unicode('La Pe\xc3\xb1a', 'utf-8').encode('utf-8')}" />
   ...   <img alt="Hello ${unicode('La Pe\xc3\xb1a', 'utf-8').encode('utf-8')}!" />
   ... </div>""", encoding='utf-8')
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
       <img alt="La Peña" />
       <img alt="Hello La Peña" />
       <img alt="La Peña, oh La Peña" />
@@ -273,7 +273,7 @@ py:match
   ...   <img alt="La Peña" />
   ...   <img alt="${alt}" />
   ... </div>""", alt=unicode("La Pe\xc3\xb1a", 'utf-8'))
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
     <img alt="La Pe&ntilde;a" />
     <img alt="La Peña" />
   </div>
@@ -283,7 +283,7 @@ py:match
   ... <div xmlns="http://www.w3.org/1999/xhtml">
   ...   <strong>"${quote}"</strong>
   ... </div>""", quote="Hello, World!")
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
       <strong>"Hello, World!"</strong>
     </div>
   
@@ -293,7 +293,7 @@ py:match
   ... <div xmlns="http://www.w3.org/1999/xhtml">
   ...   ${message}
   ... </div>""", message="Hello, <em>World</em>!")
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
       Hello, <em>World</em>!
     </div>
 
@@ -320,7 +320,7 @@ py:match
   ...   ${message}
   ... /* ]]> */
   ... </div>""", message="Hello, <em>World!")
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
       /* <![CDATA[ */
       Hello, <em>World!
       /* ]]> */
@@ -336,7 +336,7 @@ py:match
   ...        line comment -->
   ...   <!-- a comment with an ${'expression'} -->
   ... </div>""")
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
     <!-- a comment -->
     <!-- a multi-
          line comment -->
@@ -355,7 +355,7 @@ py:match
   ...  </py:for>
   ...  ];
   ... </script>""")
-  <script type="text/javascript" xmlns="http://www.w3.org/1999/xhtml">
+  <script type="text/javascript">
   var brands = [
   ];
   </script>
@@ -380,7 +380,7 @@ py:match
   ... });
   ... </script>
   ... </div>""", brands=brands)
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
   <script type="text/javascript">
     var brands = [
       { value : "1", title : "One" },
@@ -403,7 +403,7 @@ py:match
   ...     ${rendermenu([])}
   ...   </ul>
   ... </div>""")
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
   </div>
   
 :: Slightly more complex recursive function calls
@@ -421,7 +421,7 @@ py:match
   ...   </ul>
   ...   ${rendermenu(menu)}
   ... </div>""", menu=[dict(title=u"Menu entry", url="/test", current=True)])
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
     <ul>
       <li class="current">
         <a href="/test">Menu entry</a>

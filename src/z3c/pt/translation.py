@@ -236,7 +236,7 @@ class Node(object):
             # call template
             _.append(clauses.Write(
                 types.template(
-                "%%(xincludes)s.get(%%(include)s, %s).render(macro='', %s)" % \
+                "%%(xincludes)s.get(%%(include)s, %s).render_xinclude(%s)" % \
                 (repr(self.format), arguments))))
             
         # use macro
@@ -532,22 +532,41 @@ class Compiler(object):
     
     def __init__(self, body, parser, implicit_doctype=None,
                  explicit_doctype=None, encoding=None):
-        # if no doctype is defined, prepend the implicit doctype to
-        # the document source
+        # documents without a document type declaration are augmented
+        # with default namespace declarations and proper XML entity
+        # definitions; this represents a 'convention' over
+        # 'configuration' approach to template documents
         no_doctype_declaration = '<!DOCTYPE' not in body
+
+        # add default namespace declaration if no explicit document
+        # type has been set
+        if implicit_doctype and explicit_doctype is None and \
+               no_doctype_declaration:
+            body = """\
+            <meta:declare-ns
+            xmlns="%s" xmlns:tal="%s" xmlns:metal="%s" xmlns:i18n="%s"
+            xmlns:py="%s" xmlns:xinclude="%s" xmlns:meta="%s"
+            >%s</meta:declare-ns>""" % (
+                config.XHTML_NS, config.TAL_NS,
+                config.METAL_NS, config.I18N_NS,
+                config.PY_NS, config.XI_NS, config.META_NS,
+                body)
+
+        # prepend the implicit doctype to the document source and add
+        # entity definitions
         if implicit_doctype and no_doctype_declaration:
-            # munge entities into declaration
             entities = "".join((
                 '<!ENTITY %s "&#%s;">' % (name, text) for (name, text) in \
                 htmlentitydefs.name2codepoint.items()))
-            implicit_doctype = implicit_doctype[:-1] + '  [ %s ]>' % entities
 
-            # prepend to body
+            implicit_doctype = implicit_doctype[:-1] + '  [ %s ]>' % entities
             self.implicit_doctype = implicit_doctype
             body = implicit_doctype + "\n" + body
-            
+
+        # parse document
         self.root, parsed_doctype = parser.parse(body)
 
+        # explicit document type has priority
         if explicit_doctype is not None:
             self.doctype = explicit_doctype
         elif parsed_doctype and not no_doctype_declaration:
@@ -563,12 +582,13 @@ class Compiler(object):
     @classmethod
     def from_text(cls, body, parser, **kwargs):
         compiler = Compiler(
-            "<html xmlns='%s'></html>" % config.XHTML_NS, parser, **kwargs)
+            "<html xmlns='%s'></html>" % config.XHTML_NS, parser,
+            implicit_doctype=None, encoding=kwargs.get('encoding'))
         compiler.root.text = body
         compiler.root.attrib[utils.meta_attr('omit-tag')] = ""
         return compiler
 
-    def __call__(self, macro=None, params=()):
+    def __call__(self, macro=None, global_scope=True, parameters=()):
         if not isinstance(self.root, Element):
             raise ValueError(
                 "Must define valid namespace for tag: '%s.'" % self.root.tag)
@@ -577,27 +597,31 @@ class Compiler(object):
         # where the macro is defined
         if macro:
             elements = self.root.xpath(
-                'descendant-or-self::*[@metal:define-macro="%s"]' % macro,
+                'descendant-or-self::*[@metal:define-macro="%s"] |'
+                'descendant-or-self::metal:*[@define-macro="%s"]' % (macro, macro),
                 namespaces={'metal': config.METAL_NS})
 
             if not elements:
                 raise ValueError("Macro not found: %s." % macro)
 
-            self.root = elements[0]
-            del self.root.attrib[utils.metal_attr('define-macro')]
+            self.root = element = elements[0]
 
-        if macro is None or 'include_ns_attribute' in params:
-            # add namespace attribute
+            # remove attribute from tag
+            if element.nsmap[element.prefix] == config.METAL_NS:
+                del element.attrib['define-macro']
+            else:
+                del element.attrib[utils.metal_attr('define-macro')]
+                
+        if macro is None or 'include_ns_attribute' in parameters:
+            # add namespace attribute to 
             namespace = self.root.tag.split('}')[0][1:]
             self.root.attrib['xmlns'] = namespace
         
-        # choose function wrapper; note that if macro is the empty
-        # string, we'll still use the macro wrapper
-        if macro is not None:
-            wrapper = generation.macro_wrapper
-        else:
+        if global_scope:
             wrapper = generation.template_wrapper
-
+        else:
+            wrapper = generation.macro_wrapper
+            
         # initialize code stream object
         stream = generation.CodeIO(
             self.root.node.symbols, encoding=self.encoding,
@@ -606,10 +630,10 @@ class Compiler(object):
         # initialize variable scope
         stream.scope.append(set(
             (stream.symbols.out, stream.symbols.write, stream.symbols.scope) + \
-            tuple(params)))
+            tuple(parameters)))
 
         # output doctype if any
-        if self.doctype and isinstance(self.doctype, (str, unicode)):
+        if self.doctype and not macro:
             doctype = self.doctype + '\n'
             if self.encoding:
                 doctype = doctype.encode(self.encoding)
@@ -629,12 +653,12 @@ class Compiler(object):
         
         # prepare args
         ignore = 'target_language',
-        args = ', '.join((param for param in params if param not in ignore))
+        args = ', '.join((param for param in parameters if param not in ignore))
         if args:
             args += ', '
 
         # prepare kwargs
-        kwargs = ', '.join("%s=None" % param for param in params)
+        kwargs = ', '.join("%s=None" % param for param in parameters)
         if kwargs:
             kwargs += ', '
 
@@ -689,6 +713,7 @@ class ByteCodeTemplate(object):
                (type(self).__name__, str(type(self.parser)).split("'")[1])
 
     def render(self, *args, **kwargs):
+        kwargs.update(self.selectors)
         return self.func(generation, *args, **kwargs)
 
     @property

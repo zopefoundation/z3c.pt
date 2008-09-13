@@ -31,7 +31,7 @@ tal:define, tal:attributes, tal:contents
   ...   <span tal:replace="'Hello World!'"><b>Hello Universe!</b></span>
   ...   <span tal:content="None" />
   ... </div>""")
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
       <span class="defabc" style="hij" onclick="alert();" id="test">abcghi</span>
       Hello World!
       Hello World!
@@ -48,7 +48,7 @@ tal:attributes 'checked' and 'selected' toggles
   ...   <input tal:attributes="checked True"/>
   ...   <input tal:attributes="checked False"/>
   ... </div>""")
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
        <option selected="True" />
        <option />
        <input checked="True" />
@@ -64,7 +64,7 @@ tal:repeat
   ...     <li tal:repeat="i range(5)"><span tal:replace="'Item ' + str(i) + ')'" /></li>
   ...   </ul>
   ... </div>""")
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
       <ul>
         <li>Item 0)</li>
         <li>Item 1)</li>
@@ -83,7 +83,7 @@ tal:repeat (repeat-variable)
   ...     <li tal:repeat="i range(3)"><span tal:replace="str(i) + ' ' + str(repeat['i'].even())" /></li>
   ...   </ul>
   ... </div>""")
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
       <ul>
         <li>0 True</li>
         <li>1 False</li>
@@ -103,7 +103,7 @@ tal:condition
   ...     Do not show me!
   ...   </div>
   ... </div>""")
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
       <div>
         Show me!
       </div>
@@ -119,7 +119,7 @@ tal:condition
   ...        line comment -->
   ...   <!-- a comment with an ${'expression'} -->
   ... </div>""")
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
       <!-- a comment -->
       <!-- a multi-
            line comment -->
@@ -137,7 +137,7 @@ tal:condition
   ...   <tal:multiple repeat="i range(3)" replace="i" />
   ...   <tal:div condition="True">True</tal:div>
   ... </div>""")
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
       Hello World!
       Hello World!
       Hello World!
@@ -156,7 +156,7 @@ tal:omit-tag
   ...   <p tal:omit-tag="True">No paragraph here either.</p>
   ...   <p tal:omit-tag="False">A paragraph here.</p>
   ... </div>""")
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
       No paragraph here.
       No paragraph here either.
       <p>A paragraph here.</p>
@@ -172,7 +172,7 @@ tal:omit-tag
   ...   <span tal:replace="'%sbr /%s' % (chr(60), chr(62))" />
   ...   <span tal:content="unicode('La Pe\xc3\xb1a', 'utf-8')" />
   ... </div>""")
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
       <img title="&lt;Hello&gt;" />
       <br />
       &lt;br /&gt;
@@ -191,7 +191,7 @@ tal:omit-tag
   ...   <span tal:replace="path: test2/greeting" />
   ... </div>""", request=object(),
   ... test1={'greeting': u'Hello'}, test2=Test())
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
     Hello
     Hello
   </div>
@@ -205,7 +205,7 @@ tal:omit-tag
   ...   <img tal:attributes="alt string:Leonardo da Vinci;; Musee du Louvre, 1503;
   ...                        title string:Mona Lisa" />
   ... </div>""", request=object(), greeting=u'Hello')
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
     Hello, world!
     <img alt="Leonardo da Vinci; Musee du Louvre, 1503" title="Mona Lisa" />
   </div>
@@ -219,7 +219,7 @@ tal:omit-tag
   ...     <span tal:replace="test/greeting" />
   ...   </div>
   ... </div>""", request=object(), test={'greeting': u'Hello'})
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
     <div>
       Hello
     </div>
@@ -245,7 +245,7 @@ tal:omit-tag
   ...       <span tal:replace="int('a')|path: mydict/a" />
   ...   </tal:path-expression-testing>
   ... </div>""")
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
   <BLANKLINE>
         <div>
            1
@@ -269,7 +269,7 @@ tal:omit-tag
   ...         tal:replace="structure nocall: dir" />
   ...   <span tal:replace="structure dir" />
   ... </div>""", request=object())
-    <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
       <built-in function dir>
       <built-in function dir>
     </div>
@@ -296,7 +296,7 @@ metal:define-macro, metal:use-macro
 
   >>> template = MockTemplate(body, ZopePageTemplateParser())
   >>> print render_zpt(body, template=template)
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
     <div class="greeting">
       Hello, earth!
     </div>
@@ -337,7 +337,7 @@ metal:define-slot, metal:fill-slot
   
   >>> template = MockTemplate(body, ZopePageTemplateParser())
   >>> print render_zpt(body, template=template)
-  <div xmlns="http://www.w3.org/1999/xhtml">
+  <div>
     <div>
       Hello, <b class="name">stranger!</b>
     </div>

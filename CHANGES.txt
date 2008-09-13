@@ -6,6 +6,9 @@ Version 1.0dev
 
   Backwards incompatibilities
 
+- Namespace attribute "xmlns" no longer rendered for templates with no
+  explicit document type. [malthe]
+  
 - Changes to template method signatures. [malthe]
   
 - Engine now expects all strings to be unicode or contain ASCII
