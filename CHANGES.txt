@@ -185,6 +185,8 @@ Version 1.0dev
 
   Bugfixes
 
+- Omit element text when rendering macro. [malthe]
+  
 - ``Macros`` class should not return callable functions, but rather a
   ``Macro`` object, which has a ``render``-method. This makes it
   possible to use a path-expression to get to a macro without calling

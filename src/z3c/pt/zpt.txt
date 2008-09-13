@@ -318,6 +318,7 @@ metal:define-slot, metal:fill-slot
   ...     Hello, <b class="name" metal:define-slot="name">stranger!</b>
   ...   </div>
   ...   <div metal:use-macro="template.macros['greeting']">
+  ...     This will be omitted
   ...     <span metal:fill-slot="name">earth!</span>
   ...   </div>
   ...   <div metal:use-macro="template.macros['greeting']">

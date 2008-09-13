@@ -200,7 +200,7 @@ class Node(object):
                 _.append(tag)
 
         # tag text (if we're not replacing tag body)
-        if text and not dynamic:
+        if text and not dynamic and not self.use_macro:
             if isinstance(text, unicode) and self.stream.encoding:
                 text = text.encode(self.stream.encoding)
             _.append(clauses.Out(text))
