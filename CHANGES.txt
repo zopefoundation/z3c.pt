@@ -185,6 +185,8 @@ Version 1.0dev
 
   Bugfixes
 
+- Support "fill-slot" on elements with METAL namespace. [malthe]
+  
 - Omit element text when rendering macro. [malthe]
   
 - ``Macros`` class should not return callable functions, but rather a

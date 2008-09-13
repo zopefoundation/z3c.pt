@@ -245,7 +245,8 @@ class Node(object):
             # and save value in a temporary variable
             kwargs = []
             for element in self.element.xpath(
-                './/*[@metal:fill-slot]', namespaces={'metal': config.METAL_NS}):
+                './/*[@metal:fill-slot] | .//metal:*[@fill-slot]',
+                namespaces={'metal': config.METAL_NS}):
                 if element.node.fill_slot is None:
                     # XXX this should not be necessary, but the above
                     # xpath expression finds non-"metal:fill-slot"

@@ -323,7 +323,7 @@ metal:define-slot, metal:fill-slot
   ...   </div>
   ...   <div metal:use-macro="template.macros['greeting']">
   ...     <div>
-  ...       <span metal:fill-slot="name">earth!</span>
+  ...       <metal:earth fill-slot="name">earth!</metal:earth>
   ...     </div>
   ...   </div>
   ...   <div metal:use-macro="template.macros['greeting']">
