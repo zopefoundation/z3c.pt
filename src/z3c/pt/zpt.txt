@@ -210,6 +210,48 @@ tal:omit-tag
     <img alt="Leonardo da Vinci; Musee du Louvre, 1503" title="Mona Lisa" />
   </div>
 
+:: Using the "provider:" expression
+
+  >>> class Context(object): pass
+  >>> class Request(object): pass
+  >>> class View(object): pass
+
+This directive renders a content provider; let's define and register a
+content provider which allows us to verify the functionality of the
+expression.
+  
+  >>> from zope.contentprovider.interfaces import IContentProvider
+  >>> from zope import component
+  >>> from zope import interface
+    
+  >>> class DummyContentProvider(object):
+  ...     component.adapts(Context, Request, View)
+  ...     interface.implements(IContentProvider)
+  ...
+  ...     def __init__(self, context, request, view):
+  ...         self.context = context
+  ...         self.request = request
+  ...         self.view = view
+  ...
+  ...     def update(self):
+  ...         self.updated = True
+  ...
+  ...     def render(self):
+  ...         return type(self.context), type(self.request), \
+  ...                type(self.view), self.updated
+
+  >>> component.provideAdapter(
+  ...     DummyContentProvider, name="test")
+  
+  >>> print render_zpt("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal">
+  ...   <span tal:replace="structure provider:test" />
+  ... </div>""", context=Context(), request=Request(), view=View())
+  <div>
+    (<class 'Context'>, <class 'Request'>, <class 'View'>, True)
+  </div>
+
 :: Setting the default expression
 
   >>> print render_zpt("""\

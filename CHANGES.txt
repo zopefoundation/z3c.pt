@@ -28,6 +28,10 @@ Version 1.0dev
 
   Features
 
+- Added expression translator "provider:" (which renders a content
+  provider as defined in the ``zope.contentprovider``
+  package). [malthe]
+  
 - Added template API to render macros. [malthe]
   
 - Optimized template loader so only a single template is instantiated

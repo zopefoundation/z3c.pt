@@ -2,6 +2,7 @@ import zope.interface
 import zope.component
 
 from zope.traversing.adapters import traversePathElement
+from zope.contentprovider.interfaces import IContentProvider
 
 import parser
 import re
@@ -748,3 +749,28 @@ class PathTranslation(ExpressionTranslation):
         return value
 
 path_translation = PathTranslation()
+
+def get_content_provider(context, request, view, name):
+    cp = zope.component.getMultiAdapter(
+        (context, request, view), IContentProvider, name=name)
+    cp.update()
+    return cp.render()
+    
+class ProviderTranslation(object):
+    zope.interface.implements(interfaces.IExpressionTranslation)
+    
+    provider_regex = re.compile(r'^[A-Za-z][A-Za-z0-9_-]*$')
+    symbol = '_get_content_provider'
+    
+    def validate(self, string):
+        if self.provider_regex.match(string) is None:
+            raise SyntaxError(
+                "%s is not a valid content provider name." % string)
+
+    def translate(self, string):
+        value = types.value("%s(context, request, view, '%s')" % \
+                            (self.symbol, string))
+        value.symbol_mapping[self.symbol] = get_content_provider
+        return value
+    
+provider_translation = ProviderTranslation()

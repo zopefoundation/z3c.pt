@@ -12,6 +12,10 @@
      name="path"
      component=".expressions.path_translation" />
 
+  <utility
+     name="provider"
+     component=".expressions.provider_translation" />
+
   <adapter
      name="string"
      factory=".expressions.StringTranslation" />
