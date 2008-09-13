@@ -165,7 +165,7 @@ class BenchmarkTestCase(BaseTestCase):
     def testCompilation(self):
         table = self.table
 
-        t_z3c = timing(self.bigtable_python_z3c.cook, params=('table',))
+        t_z3c = timing(self.bigtable_python_z3c.cook, parameters=('table',))
         t_zope = timing(self.bigtable_python_zope._cook)
 
         print "z3c.pt:            %.2f" % t_z3c
@@ -191,7 +191,7 @@ class FileBenchmarkTestCase(BaseTestCase):
             self._testfile('bigtable_python_z3c.pt'))
         z3cfile.registry = filecache.TemplateCache(z3cfile.filename)
         z3cfile.registry.purge()
-        z3cfile.cook_check(None, ())
+        z3cfile.cook_check(parameters=())
         assert len(z3cfile.registry) == 1
         z3cfile.registry.save()
     
@@ -199,7 +199,7 @@ class FileBenchmarkTestCase(BaseTestCase):
             self._testfile('bigtable_python_zope.pt'))
 
         t_cached_z3c = timing(z3cfile.registry.load)
-        t_cook_z3c = timing(z3cfile.cook, params=('table',))
+        t_cook_z3c = timing(z3cfile.cook, parameters=('table',))
         t_zope = timing(zopefile._cook)
 
         print "z3c.pt cooking:    %.3f" % t_cook_z3c

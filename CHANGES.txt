@@ -6,6 +6,8 @@ Version 1.0dev
 
   Backwards incompatibilities
 
+- Changes to template method signatures. [malthe]
+  
 - Engine now expects all strings to be unicode or contain ASCII
   characters only, unless an encoding is provided. [malthe]
   
@@ -20,6 +22,8 @@ Version 1.0dev
 
   Features
 
+- Added template API to render macros. [malthe]
+  
 - Optimized template loader so only a single template is instantiated
   per file. [malthe]
   

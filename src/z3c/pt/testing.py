@@ -35,7 +35,7 @@ def setup_stream(encoding=None):
 def compile_xhtml(body, **kwargs):
     compiler = TestCompiler(
         body, mock_parser, implicit_doctype=doctypes.xhtml)
-    return compiler(params=sorted(kwargs.keys()))
+    return compiler(parameters=sorted(kwargs.keys()))
 
 def render_xhtml(body, **kwargs):
     template = compile_xhtml(body, **kwargs)
@@ -44,20 +44,20 @@ def render_xhtml(body, **kwargs):
 def render_text(body, **kwargs):
     compiler = TestCompiler.from_text(
         body, mock_parser, implicit_doctype=doctypes.xhtml)
-    template = compiler(params=sorted(kwargs.keys()))
+    template = compiler(parameters=sorted(kwargs.keys()))
     return template.render(**kwargs)    
 
 def render_zpt(body, **kwargs):
     compiler = TestCompiler(
         body, zpt.ZopePageTemplateParser(), implicit_doctype=doctypes.xhtml)
-    template = compiler(params=sorted(kwargs.keys()))
+    template = compiler(parameters=sorted(kwargs.keys()))
     return template.render(**kwargs)    
 
 def render_genshi(body, encoding=None, **kwargs):
     compiler = TestCompiler(
         body, genshi.GenshiParser(),
         encoding=encoding, implicit_doctype=doctypes.xhtml)
-    template = compiler(params=sorted(kwargs.keys()))
+    template = compiler(parameters=sorted(kwargs.keys()))
     kwargs.update(template.selectors)
     return template.render(**kwargs)    
 
@@ -68,10 +68,10 @@ class MockTemplate(object):
 
     @property
     def macros(self):
-        def render(macro=None, **kwargs):
+        def render(name, parameters={}):
             compiler = TestCompiler(self.body, self.parser)
-            template = compiler(macro=macro, params=kwargs.keys())
-            return template.render(**kwargs)
+            template = compiler(macro=name, parameters=parameters)
+            return template.render(**parameters)
         return macro.Macros(render)
 
 class MockElement(translation.Element, translation.VariableInterpolation):

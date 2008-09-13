@@ -35,12 +35,8 @@ class BaseTemplate(object):
             self.explicit_doctype = doctype
         
     @property
-    def translate(self):
-        return NotImplementedError("Must be provided by subclass.")
-
-    @property
     def macros(self):
-        return macro.Macros(self.render)
+        return macro.Macros(self.render_macro)
 
     @property
     def compiler(self):
@@ -53,27 +49,33 @@ class BaseTemplate(object):
     def cook(self, **kwargs):
         return self.compiler(**kwargs)
     
-    def cook_check(self, macro, params):
-        key = self.signature, macro, params, self.explicit_doctype
+    def cook_check(self, parameters, **kwargs):
+        key = tuple(parameters), \
+              tuple(item for item in kwargs.iteritems()), \
+              self.signature, self.explicit_doctype
         template = self.registry.get(key, None)
         if template is None:
-            template = self.cook(macro=macro, params=params)
+            template = self.cook(parameters=parameters, **kwargs)
             self.registry[key] = template
         return template
 
-    def prepare(self, kwargs):
-        pass
-    
-    def render(self, macro=None, **kwargs):
-        self.prepare(kwargs)
-        template = self.cook_check(macro, tuple(kwargs))
-        kwargs.update(template.selectors)
+    def render(self, **kwargs):
+        template = self.cook_check(parameters=kwargs)
         return template.render(**kwargs)
+
+    def render_macro(self, macro, global_scope=False, parameters={}):
+        template = self.cook_check(
+            parameters=parameters, macro=macro, global_scope=global_scope)
+        return template.render(**parameters)
+    
+    def render_xinclude(self, **kwargs):
+        return self.render_macro("", parameters=kwargs)
 
     def __repr__(self):
         return u"<%s %d>" % (self.__class__.__name__, id(self))
 
-    __call__ = render
+    def __call__(self, **kwargs):
+        return self.render(**kwargs)
     
 class BaseTemplateFile(BaseTemplate):
     """Constructs a template object using the template language
@@ -124,11 +126,13 @@ class BaseTemplateFile(BaseTemplate):
     filename = property(_get_filename, _set_filename)
 
     def read(self):
-        fd = open(self.filename, 'r')
+        filename = self.filename
+        mtime = self.mtime()
+        fd = open(filename, 'r')
         self.body = body = fd.read()
         fd.close()
-        self.signature = hash(body)
-        self._v_last_read = self.mtime()
+        self.signature = filename, mtime
+        self._v_last_read = mtime
 
     def cook(self, **kwargs):
         template = self.compiler(**kwargs)
@@ -141,14 +145,15 @@ class BaseTemplateFile(BaseTemplate):
 
         return template
 
-    def cook_check(self, *args):
+    def cook_check(self, **kwargs):
         if self.auto_reload and self._v_last_read != self.mtime():
             self.read()
 
-        return BaseTemplate.cook_check(self, *args)
+        return BaseTemplate.cook_check(self, **kwargs)
 
-    def prepare(self, kwargs):
+    def render(self, **kwargs):
         kwargs[config.SYMBOLS.xincludes] = self.xincludes
+        return super(BaseTemplateFile, self).render(**kwargs)
 
     def mtime(self):
         try:

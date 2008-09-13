@@ -6,7 +6,7 @@ import zpt
 import sys
 import os
 
-def prepare_language_support(kwargs):
+def prepare_language_support(**kwargs):
     target_language = kwargs.get('target_language')
 
     if config.DISABLE_I18N:
@@ -31,9 +31,9 @@ class PageTemplate(template.BaseTemplate):
             parser = self.default_parser
         super(PageTemplate, self).__init__(body, parser, format, doctype)
 
-    def prepare(self, kwargs):
-        super(PageTemplate, self).prepare(kwargs)
-        prepare_language_support(kwargs)
+    def render(self, **kwargs):
+        prepare_language_support(**kwargs)
+        return super(PageTemplate, self).render(**kwargs)
 
 class PageTemplateFile(template.BaseTemplateFile):
     __doc__ = template.BaseTemplateFile.__doc__ # for Sphinx autodoc
@@ -47,9 +47,9 @@ class PageTemplateFile(template.BaseTemplateFile):
         super(PageTemplateFile, self).__init__(filename, parser, format,
                                                doctype, **kwargs)
 
-    def prepare(self, kwargs):
-        super(PageTemplateFile, self).prepare(kwargs)
-        prepare_language_support(kwargs)
+    def render(self, **kwargs):
+        prepare_language_support(**kwargs)
+        return super(PageTemplateFile, self).render(**kwargs)
 
 class ZopePageTemplate(PageTemplate):
     default_parser = zpt.ZopePageTemplateParser(default_expression='path')
@@ -69,15 +69,29 @@ class ViewPageTemplate(property):
         self.template = ZopePageTemplate(body, **kwargs)
         property.__init__(self, self.bind)
 
-    def bind(self, view):
-        def template(**kwargs):
-            return self.template.render(view=view,
-                                        context=view.context,
-                                        request=view.request,
-                                        template=self.template,
-                                        options=kwargs)
-        return template
+    def bind(self, view, request=None, macro=None, global_scope=True):
+        def render(**kwargs):
+            template = self.template
+            
+            parameters = dict(
+                view=view,
+                context=view.context,
+                request=request or view.request,
+                template=template,
+                options=kwargs)
 
+            if macro is None:
+                return template.render(**parameters)
+            else:
+                return template.render_macro(
+                    macro, global_scope=global_scope, parameters=parameters)
+            
+        return render
+
+    @property
+    def macros(self):
+        return self.template.macros
+    
 class ViewPageTemplateFile(ViewPageTemplate):
     """If ``filename`` is a relative path, the module path of the
     class where the instance is used to get an absolute path."""
