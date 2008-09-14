@@ -3,6 +3,7 @@ import zope.component
 
 from zope.traversing.adapters import traversePathElement
 from zope.contentprovider.interfaces import IContentProvider
+from zope.contentprovider.interfaces import ContentProviderLookupError
 
 import parser
 import re
@@ -751,8 +752,13 @@ class PathTranslation(ExpressionTranslation):
 path_translation = PathTranslation()
 
 def get_content_provider(context, request, view, name):
-    cp = zope.component.getMultiAdapter(
+    cp = zope.component.queryMultiAdapter(
         (context, request, view), IContentProvider, name=name)
+
+    # provide a useful error message, if the provider was not found.
+    if cp is None:
+        raise ContentProviderLookupError(name)
+
     cp.update()
     return cp.render()
     
