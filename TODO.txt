@@ -1,4 +1,0 @@
-- Make e.g. <tal:block tal:foo /> and <metal:foo metal:define-macro/> etc.
-  work
-
-- 
