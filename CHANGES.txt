@@ -1,7 +1,10 @@
 Changelog
 ---------
 
-Version 1.0dev
+Head
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Version 1.0b1 - October 2, 2008
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   Package changes
