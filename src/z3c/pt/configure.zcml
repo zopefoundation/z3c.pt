@@ -1,35 +1,18 @@
 <configure package="z3c.pt"
-           xmlns="http://namespaces.zope.org/zope"
-           xmlns:zcml="http://namespaces.zope.org/zcml">
+           xmlns="http://namespaces.zope.org/zope">
 
   <include package="zope.component" file="meta.zcml" />
+
+  <include package="chameleon.core" />
+  <include package="chameleon.zpt" />
   
   <utility
-     name="python"
-     component=".expressions.python_translation" />
-
-  <utility
      name="path"
-     component=".expressions.path_translation" />
+     component=".expressions.path_translator" />
 
   <utility
      name="provider"
-     component=".expressions.provider_translation" />
+     component=".expressions.provider_translator" />
 
-  <adapter
-     name="string"
-     factory=".expressions.StringTranslation" />
-
-  <configure zcml:condition="installed zope.app.component">
-           
-      <include package="zope.app.component" file="meta.zcml" />
-      <include package="zope.app.security" file="meta.zcml" />
-      
-      <class class=".utils.repeatitem">
-        <allow interface=".interfaces.ITALESIterator" />
-      </class>
-    
-  </configure>
-  
 </configure>
  

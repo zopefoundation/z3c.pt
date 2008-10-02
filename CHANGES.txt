@@ -4,6 +4,10 @@ Changelog
 Version 1.0dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+  Package changes
+
+- Split out compiler to "Chameleon" package. [malthe]
+
   Backwards incompatibilities
 
 - Moved contents of ``z3c.pt.macro`` module into

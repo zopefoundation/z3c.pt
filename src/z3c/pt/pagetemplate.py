@@ -1,62 +1,16 @@
-import zope.i18n
-
-import template
-import config
-import zpt
-import sys
 import os
+import sys
 
-def prepare_language_support(**kwargs):
-    target_language = kwargs.get('target_language')
-
-    if config.DISABLE_I18N:
-        if target_language:
-            del kwargs['target_language']
-        return
-    
-    if not target_language:
-        context = kwargs.get(config.SYMBOLS.i18n_context)
-        target_language = zope.i18n.negotiate(context)
-
-        if target_language:
-            kwargs['target_language'] = target_language    
-
-class PageTemplate(template.BaseTemplate):
-    __doc__ = template.BaseTemplate.__doc__ # for Sphinx autodoc
-
-    default_parser = zpt.ZopePageTemplateParser()
-    
-    def __init__(self, body, parser=None, format=None, doctype=None):
-        if parser is None:
-            parser = self.default_parser
-        super(PageTemplate, self).__init__(body, parser, format, doctype)
-
-    def render(self, **kwargs):
-        prepare_language_support(**kwargs)
-        return super(PageTemplate, self).render(**kwargs)
-
-class PageTemplateFile(template.BaseTemplateFile):
-    __doc__ = template.BaseTemplateFile.__doc__ # for Sphinx autodoc
-
-    default_parser = zpt.ZopePageTemplateParser()
-    
-    def __init__(self, filename, parser=None, format=None,
-                 doctype=None, **kwargs):
-        if parser is None:
-            parser = self.default_parser
-        super(PageTemplateFile, self).__init__(filename, parser, format,
-                                               doctype, **kwargs)
-
-    def render(self, **kwargs):
-        prepare_language_support(**kwargs)
-        return super(PageTemplateFile, self).render(**kwargs)
+from chameleon.zpt.template import PageTemplate
+from chameleon.zpt.template import PageTemplateFile
+from chameleon.zpt.language import Parser
 
 class ZopePageTemplate(PageTemplate):
-    default_parser = zpt.ZopePageTemplateParser(default_expression='path')
+    default_parser = Parser(default_expression='path')
 
 class ZopePageTemplateFile(PageTemplateFile):
-    default_parser = zpt.ZopePageTemplateParser(default_expression='path')
-
+    default_parser = Parser(default_expression='path')
+    
 class ViewPageTemplate(property):
     """Template class suitable for use with a Zope browser view; the
     variables ``view``, ``context`` and ``request`` variables are
@@ -65,8 +19,10 @@ class ViewPageTemplate(property):
     dictionary. Note that the default expression type for this class
     is 'path' (standard Zope traversal)."""
     
+    template_class = ZopePageTemplate
+
     def __init__(self, body, **kwargs):
-        self.template = ZopePageTemplate(body, **kwargs)
+        self.template = self.template_class(body, **kwargs)
         property.__init__(self, self.bind)
 
     def bind(self, view, request=None, macro=None, global_scope=True):
@@ -95,6 +51,8 @@ class ViewPageTemplate(property):
 class ViewPageTemplateFile(ViewPageTemplate):
     """If ``filename`` is a relative path, the module path of the
     class where the instance is used to get an absolute path."""
+
+    template_class = ZopePageTemplateFile
     
     def __init__(self, filename, path=None, content_type=None, **kwargs):
         if path is not None:
@@ -117,7 +75,7 @@ class ViewPageTemplateFile(ViewPageTemplate):
  	 
             filename = path + os.sep + filename
 
-        self.template = ZopePageTemplateFile(filename, **kwargs)
+        self.template = self.template_class(filename, **kwargs)
         property.__init__(self, self.bind)
 
     def __call__(self, view, **kwargs):

@@ -11,8 +11,9 @@ import zope.configuration.xmlconfig
 import zope.pagetemplate.pagetemplatefile
 import z3c.pt
 
-from z3c.pt import config
-from z3c.pt import filecache
+from chameleon.core import config
+from chameleon.core import filecache
+
 from z3c.pt import pagetemplate
 
 from lxml import etree
@@ -63,7 +64,7 @@ class BaseTestCase(unittest.TestCase):
 
 class BenchmarkTestCase(BaseTestCase):
 
-    helloworld_z3c = pagetemplate.PageTemplate("""\
+    helloworld_z3c = pagetemplate.ZopePageTemplate("""\
     <div xmlns="http://www.w3.org/1999/xhtml">
     Hello World!
     </div>""")
@@ -86,7 +87,7 @@ class BenchmarkTestCase(BaseTestCase):
     </tr>
     </table>""")
 
-    bigtable_path_z3c = pagetemplate.PageTemplate("""\
+    bigtable_path_z3c = pagetemplate.ZopePageTemplate("""\
     <table xmlns="http://www.w3.org/1999/xhtml"
     xmlns:tal="http://xml.zope.org/namespaces/tal"
     tal:default-expression="path">
@@ -229,7 +230,7 @@ class FileBenchmarkTestCase(BaseTestCase):
     def testBigTablePathFile(self):
         table = self.table
 
-        z3cfile = pagetemplate.PageTemplateFile(
+        z3cfile = pagetemplate.ZopePageTemplateFile(
             self._testfile('bigtable_path_z3c.pt'))
 
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(

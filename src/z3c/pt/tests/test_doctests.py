@@ -6,26 +6,20 @@ OPTIONFLAGS = (zope.testing.doctest.ELLIPSIS |
 
 import zope.component.testing
 import zope.configuration.xmlconfig
+import z3c.pt
 
-import z3c.pt.config
+from chameleon.core import config
 
 def setUp(suite):
     zope.component.testing.setUp(suite)
     zope.configuration.xmlconfig.XMLConfig('configure.zcml', z3c.pt)()
 
 def test_suite():
-    filesuites = ('zpt.txt', 'genshi.txt', 'template.txt',
-                  'i18n.txt', 'codegen.txt', 'translation.txt')
-    testsuites = ('z3c.pt.translation', 'z3c.pt.clauses', 'z3c.pt.expressions')
+    filesuites = 'README.txt',
 
-    z3c.pt.config.DISK_CACHE = False
+    config.DISK_CACHE = False
     
     return unittest.TestSuite(
-        [zope.testing.doctest.DocTestSuite(
-        doctest, optionflags=OPTIONFLAGS,
-        setUp=setUp, tearDown=zope.component.testing.tearDown) \
-         for doctest in testsuites] + 
-        
         [zope.testing.doctest.DocFileSuite(
         doctest, optionflags=OPTIONFLAGS,
         setUp=setUp, tearDown=zope.component.testing.tearDown,

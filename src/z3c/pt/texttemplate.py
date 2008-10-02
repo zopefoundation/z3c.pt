@@ -1,5 +1,4 @@
 import pagetemplate
-import translation
 
 class TextTemplate(pagetemplate.PageTemplate):
     __doc__ = pagetemplate.PageTemplate.__doc__ # for Sphinx autodoc
@@ -9,21 +8,10 @@ class TextTemplateFile(pagetemplate.PageTemplateFile):
     __doc__ = pagetemplate.PageTemplateFile.__doc__ # for Sphinx autodoc
     format = 'text'
 
-class ViewTextTemplate(property):
-    def __init__(self, body):
-        self.template = TextTemplate(body)
-        property.__init__(self, self.render)
-
-    def render(self, view):
-        def template(**kwargs):
-            return self.template.render(view=view,
-                                        context=view.context,
-                                        request=view.request,
-                                        _context=view.request,
-                                        options=kwargs)
-        return template        
-    
-class ViewTextTemplateFile(ViewTextTemplate):
-    def __init__(self, filename):
-        self.template = TextTemplateFile(filename)
-        property.__init__(self, self.render)
+class ViewTextTemplate(pagetemplate.ViewPageTemplate):
+    __doc__ = pagetemplate.ViewPageTemplate.__doc__ # for Sphinx autodoc
+    template_class = TextTemplate
+        
+class ViewTextTemplateFile(pagetemplate.ViewPageTemplateFile):
+    __doc__ = pagetemplate.ViewPageTemplateFile.__doc__ # for Sphinx autodoc
+    template_class = TextTemplateFile
