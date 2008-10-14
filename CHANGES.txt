@@ -4,6 +4,10 @@ Changelog
 Head
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+  Bug fixes
+
+- Allow '+' character in path-expressions.
+
 Version 1.0b1 - October 2, 2008
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

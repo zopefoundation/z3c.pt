@@ -52,30 +52,38 @@ class ZopeTraverser(object):
 class PathTranslator(expressions.ExpressionTranslator):
     path_regex = re.compile(
         r'^((nocall|not):\s*)*([A-Za-z_][A-Za-z0-9_]*)'+
-        r'(/[A-Za-z_@-][A-Za-z0-9_@-\\.]*)*$')
+        r'(/[A-Za-z_@\-+][A-Za-z0-9_@\-\.+/]*)*$')
 
     path_traverse = ZopeTraverser()
 
     symbol = '_path'
     
     def validate(self, string):
+        """
+        >>> validate = PathTranslator().validate
+        >>> validate("image_path/++resource++/@@hello.html")
+        """
+
         if not self.path_regex.match(string.strip()):
             raise SyntaxError("Not a valid path-expression.")
 
     def translate(self, string):
         """
-            >>> translate = PathTranslator().translate
-            >>> translate("a/b")
-            value("_path(a, request, True, 'b')")
+        >>> translate = PathTranslator().translate
 
-            >>> translate("context/@@view")
-            value("_path(context, request, True, '@@view')")
+        >>> translate("a/b")
+        value("_path(a, request, True, 'b')")
 
-            >>> translate("nocall: context/@@view")
-            value("_path(context, request, False, '@@view')")
+        Verify allowed character set.
 
-            >>> translate("not: context/@@view")
-            value("not(_path(context, request, True, '@@view'))")
+        >>> translate("context/@@view")
+        value("_path(context, request, True, '@@view')")
+
+        >>> translate("nocall: context/@@view")
+        value("_path(context, request, False, '@@view')")
+
+        >>> translate("not: context/@@view")
+        value("not(_path(context, request, True, '@@view'))")
 
         """
 
