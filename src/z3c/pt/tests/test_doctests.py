@@ -16,14 +16,21 @@ def setUp(suite):
 
 def test_suite():
     filesuites = 'README.txt',
-
+    testsuites = 'z3c.pt.expressions',
+    
     config.DISK_CACHE = False
     
     return unittest.TestSuite(
         [zope.testing.doctest.DocFileSuite(
         doctest, optionflags=OPTIONFLAGS,
         setUp=setUp, tearDown=zope.component.testing.tearDown,
-        package="z3c.pt") for doctest in filesuites]
+        package="z3c.pt") for doctest in filesuites] + \
+        
+        [zope.testing.doctest.DocTestSuite(
+        doctest, optionflags=OPTIONFLAGS,
+        setUp=setUp, tearDown=zope.component.testing.tearDown) \
+         for doctest in testsuites]
+        
         )
 
 if __name__ == '__main__':
