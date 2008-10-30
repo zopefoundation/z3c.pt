@@ -6,6 +6,8 @@ Head
 
   Bug fixes
 
+- Allow '.' character in content provider expressions.
+
 - Allow '+' character in path-expressions.
 
 Version 1.0b1 - October 2, 2008
@@ -22,19 +24,19 @@ Version 1.0b1 - October 2, 2008
 
 - Namespace attribute "xmlns" no longer rendered for templates with no
   explicit document type. [malthe]
-  
+
 - Changes to template method signatures. [malthe]
-  
+
 - Engine now expects all strings to be unicode or contain ASCII
   characters only, unless an encoding is provided. [malthe]
-  
+
 - The default path traverser no longer proxies objects. [malthe]
-  
+
 - Template output is now always converted to unicode. [malthe]
-  
+
 - The ``ViewPageTemplateFile`` class now uses 'path' as the default
   expression type. [malthe]
-  
+
 - The compiler now expects an instantiated parser instance. [malthe]
 
   Features
@@ -42,22 +44,22 @@ Version 1.0b1 - October 2, 2008
 - Added expression translator "provider:" (which renders a content
   provider as defined in the ``zope.contentprovider``
   package). [malthe]
-  
+
 - Added template API to render macros. [malthe]
-  
+
 - Optimized template loader so only a single template is instantiated
   per file. [malthe]
-  
+
 - Made ``z3c.pt`` a namespace package. [malthe]
-  
+
 - Added reduce and restore operation to the compilation and rendering
   flow in the test examples to verify integrity. [malthe]
 
 - The ZPT parser now supports prefixed native attributes,
   e.g. <tal:foo tal:bar="" />. [malthe]
-  
+
 - Source-code is now written to disk in debug mode. [malthe]
-  
+
 - Custom validation error is now raised if inserted string does not
   validate (when debug mode is enabled). [malthe]
 
@@ -71,13 +73,13 @@ Version 1.0b1 - October 2, 2008
   expression. [chrism]
 
 - XML namespace attribute is now always printed for root tag. [malthe]
-  
+
 - Allow standard HTML entities. [malthe]
-  
+
 - Added compiler option to specify an implicit doctype; this is
   currently used by the template classes to let the loose XHTML
   doctype be the default. [malthe]
-  
+
 - Added support for translation of tag body. [malthe]
 
 - Added security configuration for the TALES iterator (repeat
@@ -86,11 +88,11 @@ Version 1.0b1 - October 2, 2008
 
 - Dynamic attributes are now ordered as they appear in the
   template. [malthe]
-  
+
 - Added ``symbol_mapping`` attribute to code streams such that
   function dependencies can be registered at compile-time. [malthe]
 
-- Allow BaseTemplate-derived classes (PageTemplate, PageTemplateFile, 
+- Allow BaseTemplate-derived classes (PageTemplate, PageTemplateFile,
   et. al) to accept a ``doctype`` argument, which will override the
   doctype supplied by the source of the template if specified. [chrism]
 
@@ -152,7 +154,7 @@ Version 1.0b1 - October 2, 2008
   in setup.py install_requires.  [chrism]
 
 - Add test-nolxml and py-nolxml parts to buildout so the package's
-  tests can be run without lxml.  [chrism]  
+  tests can be run without lxml.  [chrism]
 
 - No longer require default namespace. [malthe]
 
@@ -202,19 +204,19 @@ Version 1.0b1 - October 2, 2008
 
 - Skip elements in a "define-slot" clause if its being filled by the
   calling template. [malthe]
-  
+
 - Support "fill-slot" on elements with METAL namespace. [malthe]
-  
+
 - Omit element text when rendering macro. [malthe]
-  
+
 - ``Macros`` class should not return callable functions, but rather a
   ``Macro`` object, which has a ``render``-method. This makes it
   possible to use a path-expression to get to a macro without calling
   it. [malthe]
-  
+
 - Fixed bug where a repeat-clause would reset the repeat variable
   before evaluating the expression. [malthe]
-  
+
 - Fixed an issue related to correct restoring of ghosted template
   objects. [malthe]
 
@@ -236,19 +238,19 @@ Version 1.0b1 - October 2, 2008
   properly). [chrism]
 
 - Preserve whitespace in string translation expressions. [malthe]
-  
+
 - Fixed interpolation bug where multiple attributes with interpolation
   expressions would result in corrupted output. [malthe]
 
 - Support try-except operator ('|') when 'python' is the default
   expression type. [malthe]
-  
+
 - METAL macros should render in the template where they're
   defined. [malthe]
-  
+
 - Avoid printing a line-break when we repeat over a single item
   only. [malthe]
-  
+
 - Corrected Genshi namespace (needs a trailing slash). [malthe]
 
 - Fixed a few more UnicodeDecodeErrors (test contributed by Wiggy).
@@ -280,7 +282,7 @@ Version 1.0b1 - October 2, 2008
 
 - Static attributes are now properly overriden by py:attr-attributes.
   [malthe]
-  
+
 Version 0.9 - August 7, 2008
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -289,7 +291,7 @@ Version 0.9 - August 7, 2008
 
 - Cleanup and refactoring of translation module.
   [malthe]
-  
+
 - If the template source contains a DOCTYPE declaration, output it
   during rendering. [chrism]
 
@@ -462,7 +464,7 @@ Version 0.7 - March 10, 2008
      <!-- ${'Hello World!'} -->
 
   Comments are always included.
-  
+
 Version 0.6 - February 24, 2008
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -484,18 +486,18 @@ Version 0.4 - February 22, 2008
 Version 0.3 - December 23, 2007
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Code optimization; bug fixing spree  
+- Code optimization; bug fixing spree
 
 - Added ``ViewPageTemplateFile`` class
-  
+
 - Added support for i18n
-  
-- Engine rewrite; improved code generation abstractions 
-  
+
+- Engine rewrite; improved code generation abstractions
+
 Version 0.2 - December 5, 2007
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Major optimizations to the generated code  
+- Major optimizations to the generated code
 
 Version 0.1 - December 3, 2007
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
