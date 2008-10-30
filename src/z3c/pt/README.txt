@@ -8,10 +8,10 @@ Page templates
 --------------
 
   >>> from z3c.pt.pagetemplate import ZopePageTemplate
-  >>> from z3c.pt.pagetemplate import ZopePageTemplateFile  
+  >>> from z3c.pt.pagetemplate import ZopePageTemplateFile
 
 The ``ZopePageTemplate`` class is initialized with a string.
-  
+
   >>> print ZopePageTemplate("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml">
   ...   Hello World!
@@ -22,7 +22,7 @@ The ``ZopePageTemplate`` class is initialized with a string.
 
 The ``ZopePageTemplateFile`` class is initialized with an absolute
 path to a template file on disk.
-  
+
   >>> from z3c.pt import tests
   >>> path = tests.__path__[0]
   >>> t = ZopePageTemplateFile(path+'/helloworld.pt')
@@ -40,19 +40,19 @@ View page templates
 
   >>> from z3c.pt.pagetemplate import ViewPageTemplate
   >>> from z3c.pt.pagetemplate import ViewPageTemplateFile
-  
+
   >>> class View(object):
   ...     request = u'request'
   ...     context = u'context'
   ...
   ...     def __repr__(self):
   ...         return 'view'
-  
+
   >>> view = View()
 
 As before, we can initialize view page templates with a string (here
 incidentally loaded from disk).
-  
+
   >>> template = ViewPageTemplate(
   ...     open(path+'/view.pt').read())
 
@@ -68,9 +68,9 @@ class).
     <span>request</span>
     <span>test</span>
   </div>
-  
+
 The exercise is similar for the file-based variant.
-  
+
   >>> template = ViewPageTemplateFile(path+'/view.pt')
   >>> print template.bind(view)(test=u'test')
   <div>
@@ -85,7 +85,7 @@ Text templates
 
   >>> from z3c.pt.texttemplate import ViewTextTemplate
   >>> from z3c.pt.texttemplate import ViewTextTemplateFile
-  
+
   >>> template = ViewTextTemplate(open(path+'/view.css').read())
   >>> print template.bind(view)(color=u'#ccc')
   #region {
