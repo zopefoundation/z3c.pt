@@ -34,7 +34,7 @@ class ZopeTraverser(object):
                     base = next
                     continue
                 else:
-                    # special-case dicts for performance reasons        
+                    # special-case dicts for performance reasons
                     if isinstance(base, dict):
                         base = base[name]
                     else:
@@ -57,7 +57,7 @@ class PathTranslator(expressions.ExpressionTranslator):
     path_traverse = ZopeTraverser()
 
     symbol = '_path'
-    
+
     def validate(self, string):
         """
         >>> validate = PathTranslator().validate
@@ -109,7 +109,7 @@ class PathTranslator(expressions.ExpressionTranslator):
 
         # map 'nothing' to 'None'
         parts = map(lambda part: part == 'nothing' and 'None' or part, parts)
-        
+
         base = parts[0]
         components = [repr(part) for part in parts[1:]]
 
@@ -139,11 +139,11 @@ def get_content_provider(context, request, view, name):
 
     cp.update()
     return cp.render()
-    
+
 class ProviderTranslator(expressions.ExpressionTranslator):
-    provider_regex = re.compile(r'^[A-Za-z][A-Za-z0-9_-]*$')
+    provider_regex = re.compile(r'^[A-Za-z][A-Za-z0-9_\.-]*$')
     symbol = '_get_content_provider'
-    
+
     def validate(self, string):
         if self.provider_regex.match(string) is None:
             raise SyntaxError(
@@ -154,5 +154,5 @@ class ProviderTranslator(expressions.ExpressionTranslator):
                             (self.symbol, string))
         value.symbol_mapping[self.symbol] = get_content_provider
         return value
-    
+
 provider_translator = ProviderTranslator()
