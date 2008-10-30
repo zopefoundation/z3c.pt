@@ -15,7 +15,7 @@ def setUp(suite):
     zope.configuration.xmlconfig.XMLConfig('configure.zcml', z3c.pt)()
 
 def test_suite():
-    filesuites = 'README.txt'
+    filesuites = 'README.txt',
     testsuites = 'z3c.pt.expressions',
 
     config.DISK_CACHE = False
