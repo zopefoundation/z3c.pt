@@ -1,40 +1,35 @@
 import os
 import sys
 
-from chameleon.zpt.template import PageTemplate
-from chameleon.zpt.template import PageTemplateFile
-from chameleon.zpt.language import Parser
+import chameleon.zpt.template
+import chameleon.zpt.language
 
-class ZopePageTemplate(PageTemplate):
-    default_parser = Parser(default_expression='path')
+class ZopePageTemplate(chameleon.zpt.template.PageTemplate):
+    default_parser = chameleon.zpt.language.Parser(default_expression='path')
 
-class ZopePageTemplateFile(PageTemplateFile):
-    default_parser = Parser(default_expression='path')
-    
-class ViewPageTemplate(property):
-    """Template class suitable for use with a Zope browser view; the
-    variables ``view``, ``context`` and ``request`` variables are
-    brought in to the local scope of the template automatically, while
-    keyword arguments are passed in through the ``options``
-    dictionary. Note that the default expression type for this class
-    is 'path' (standard Zope traversal)."""
-    
+class ZopePageTemplateFile(chameleon.zpt.template.PageTemplateFile):
+    default_parser = chameleon.zpt.language.Parser(default_expression='path')
+
+class PageTemplate(property):
+    """Template class suitable for standalone use or as a class
+    attribute (property). Keyword-arguments are passed into the
+    template as-is."""
+
     template_class = ZopePageTemplate
-
+    
     def __init__(self, body, **kwargs):
         self.template = self.template_class(body, **kwargs)
         property.__init__(self, self.bind)
 
-    def bind(self, view, request=None, macro=None, global_scope=True):
+    def bind(self, obj, macro=None, global_scope=True):
         def render(**kwargs):
             template = self.template
-            
+
             parameters = dict(
-                view=view,
-                context=view.context,
-                request=request or view.request,
+                request=None,
                 template=template,
-                options=kwargs)
+                options=kwargs,
+                nothing=None)
 
             if macro is None:
                 return template.render(**parameters)
@@ -47,8 +42,12 @@ class ViewPageTemplate(property):
     @property
     def macros(self):
         return self.template.macros
-    
-class ViewPageTemplateFile(ViewPageTemplate):
+
+    def __call__(self, **kwargs):
+        template = self.bind(None)
+        return template(**kwargs)
+
+class PageTemplateFile(PageTemplate):
     """If ``filename`` is a relative path, the module path of the
     class where the instance is used to get an absolute path."""
 
@@ -78,6 +77,43 @@ class ViewPageTemplateFile(ViewPageTemplate):
         self.template = self.template_class(filename, **kwargs)
         property.__init__(self, self.bind)
 
+    @property
+    def filename(self):
+        return self.template.filename
+    
+class ViewPageTemplate(PageTemplate):
+    """Template class suitable for use with a Zope browser view; the
+    variables ``view``, ``context`` and ``request`` variables are
+    brought in to the local scope of the template automatically, while
+    keyword arguments are passed in through the ``options``
+    dictionary. Note that the default expression type for this class
+    is 'path' (standard Zope traversal)."""
+    
+    def bind(self, view, request=None, macro=None, global_scope=True):
+        def render(**kwargs):
+            template = self.template
+            
+            parameters = dict(
+                view=view,
+                context=view.context,
+                request=request or view.request,
+                template=template,
+                options=kwargs,
+                nothing=None)
+
+            if macro is None:
+                return template.render(**parameters)
+            else:
+                return template.render_macro(
+                    macro, global_scope=global_scope, parameters=parameters)
+            
+        return render
+
     def __call__(self, view, **kwargs):
         template = self.bind(view)
         return template(**kwargs)
+
+class ViewPageTemplateFile(ViewPageTemplate, PageTemplateFile):
+    """If ``filename`` is a relative path, the module path of the
+    class where the instance is used to get an absolute path."""
+

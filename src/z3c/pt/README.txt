@@ -7,33 +7,56 @@ template classes in ``z3c.pt`` use path-expressions by default.
 Page templates
 --------------
 
-  >>> from z3c.pt.pagetemplate import ZopePageTemplate
-  >>> from z3c.pt.pagetemplate import ZopePageTemplateFile
+  >>> from z3c.pt.pagetemplate import PageTemplate
+  >>> from z3c.pt.pagetemplate import PageTemplateFile
 
-The ``ZopePageTemplate`` class is initialized with a string.
+The ``PageTemplate`` class is initialized with a string.
 
-  >>> print ZopePageTemplate("""\
+  >>> template = PageTemplate("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml">
   ...   Hello World!
-  ... </div>""")()
+  ... </div>""")
+
+  >>> print template()
   <div>
     Hello World!
   </div>
 
-The ``ZopePageTemplateFile`` class is initialized with an absolute
+The ``PageTemplateFile`` class is initialized with an absolute
 path to a template file on disk.
 
   >>> from z3c.pt import tests
   >>> path = tests.__path__[0]
-  >>> t = ZopePageTemplateFile(path+'/helloworld.pt')
-  >>> print t()
+  >>> template_file = PageTemplateFile(path+'/helloworld.pt')
+  >>> print template_file()
   <div>
     Hello World!
   </div>
 
   >>> import os
-  >>> t.filename.startswith(os.sep)
+  >>> template_file.filename.startswith(os.sep)
   True
+
+Both may be used as class attributes (properties).
+
+  >>> class MyClass(object):
+  ...     template = PageTemplate("""\
+  ...       <div xmlns="http://www.w3.org/1999/xhtml">
+  ...          Hello World!
+  ...       </div>""")
+  ...
+  ...     template_file = PageTemplateFile(path+'/helloworld.pt')
+
+  >>> instance = MyClass()
+  >>> print instance.template()
+  <div>
+    Hello World!
+  </div>
+
+  >>> print instance.template_file()
+  <div>
+    Hello World!
+  </div>
 
 View page templates
 -------------------
