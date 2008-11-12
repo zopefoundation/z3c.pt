@@ -2,7 +2,10 @@ Changelog
 ---------
 
 Head
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~
+
+Version 1.0b3 - November 12, 2008
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Added ``PageTemplate`` and ``PageTemplateFile`` classes. [malthe]
 
