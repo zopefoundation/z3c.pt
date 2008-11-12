@@ -11,6 +11,7 @@ import zope.configuration.xmlconfig
 import zope.pagetemplate.pagetemplatefile
 import z3c.pt
 
+from chameleon import zpt
 from chameleon.core import config
 from chameleon.core import filecache
 
@@ -75,7 +76,7 @@ class BenchmarkTestCase(BaseTestCase):
     Hello World!
     </div>""", 'text/xhtml')
     
-    bigtable_python_z3c = pagetemplate.PageTemplate("""\
+    bigtable_python_z3c = zpt.template.PageTemplate("""\
     <table xmlns="http://www.w3.org/1999/xhtml"
     xmlns:tal="http://xml.zope.org/namespaces/tal">
     <tr tal:repeat="row table">
@@ -188,7 +189,7 @@ class FileBenchmarkTestCase(BaseTestCase):
     def testCache(self):
         table = self.table
 
-        z3cfile = pagetemplate.PageTemplateFile(
+        z3cfile = zpt.template.PageTemplateFile(
             self._testfile('bigtable_python_z3c.pt'))
         z3cfile.registry = filecache.TemplateCache(z3cfile.filename)
         z3cfile.registry.purge()
@@ -213,7 +214,7 @@ class FileBenchmarkTestCase(BaseTestCase):
     def testBigTablePythonFile(self):
         table = self.table
 
-        z3cfile = pagetemplate.PageTemplateFile(
+        z3cfile = zpt.template.PageTemplateFile(
             self._testfile('bigtable_python_z3c.pt'))
 
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
@@ -297,7 +298,7 @@ class I18NBenchmarkTestCase(BaseTestCase):
     def testI18N(self):
         table = self.table
 
-        z3cfile = pagetemplate.PageTemplateFile(
+        z3cfile = zpt.template.PageTemplateFile(
             self._testfile('bigtable_i18n_z3c.pt'))
 
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
@@ -319,7 +320,7 @@ class I18NBenchmarkTestCase(BaseTestCase):
     def testDisabledI18N(self):
         table = self.table
 
-        z3cfile = pagetemplate.PageTemplateFile(
+        z3cfile = zpt.template.PageTemplateFile(
             self._testfile('bigtable_i18n_z3c.pt'))
 
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
