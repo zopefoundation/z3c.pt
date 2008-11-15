@@ -6,13 +6,11 @@
 import sys
 import timeit
 
-import zope.component.testing
-import zope.configuration.xmlconfig
-import zope.pagetemplate.pagetemplate
+from zope.pagetemplate import pagetemplate
 
-import z3c.pt
+from chameleon.zpt import template
 
-bigtable_z3c = z3c.pt.PageTemplate("""
+bigtable_z3c = template.PageTemplate("""
 <table xmlns="http://www.w3.org/1999/xhtml"
 xmlns:tal="http://xml.zope.org/namespaces/tal">
 <tr tal:repeat="row table">
@@ -20,7 +18,7 @@ xmlns:tal="http://xml.zope.org/namespaces/tal">
 </td></tr></table>
 """)
 
-bigtable_zope = zope.pagetemplate.pagetemplate.PageTemplate()
+bigtable_zope = pagetemplate.PageTemplate()
 bigtable_zope.pt_edit("""\
 <table xmlns="http://www.w3.org/1999/xhtml"
 xmlns:tal="http://xml.zope.org/namespaces/tal">
@@ -33,8 +31,12 @@ table = [dict(a=1,b=2,c=3,d=4,e=5,f=6,g=7,h=8,i=9,j=10) \
          for x in range(1000)]
 
 def setup():
-    zope.component.testing.setUp()
-    zope.configuration.xmlconfig.XMLConfig('configure.zcml', z3c.pt)()
+    import z3c.pt
+    from zope.component.testing import setUp
+    from zope.configuration import xmlconfig
+
+    setUp()
+    xmlconfig.XMLConfig('configure.zcml', z3c.pt)()
 
 def test_z3c():
     """z3c.pt template"""

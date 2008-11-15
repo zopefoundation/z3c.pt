@@ -4,6 +4,10 @@ Changelog
 Head
 ~~~~
 
+  Bug fixes
+
+- Adjusted the bigtable benchmark test to API changes. [hannosch]
+
 Version 1.0b3 - November 12, 2008
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
