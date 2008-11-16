@@ -4,6 +4,10 @@ Changelog
 Head
 ~~~~
 
+- Updated expressions to recent API changes. [malthe]
+
+- Added 'exists' and 'not' translators. [malthe]
+
   Bug fixes
 
 - Adjusted the bigtable benchmark test to API changes. [hannosch]

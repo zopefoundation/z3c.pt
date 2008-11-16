@@ -11,8 +11,16 @@
      component=".expressions.path_translator" />
 
   <utility
+     name="not"
+     component=".expressions.not_translator" />
+
+  <utility
      name="provider"
      component=".expressions.provider_translator" />
+
+  <utility
+     name="exists"
+     component=".expressions.exists_translator" />
 
 </configure>
  

@@ -10,11 +10,23 @@ from zope.contentprovider.interfaces import ContentProviderLookupError
 
 from chameleon.core import types
 from chameleon.zpt import expressions
+from chameleon.zpt.interfaces import IExpressionTranslator
 
 _marker = object()
 
 def identity(x):
     return x
+
+def get_content_provider(context, request, view, name):
+    cp = zope.component.queryMultiAdapter(
+        (context, request, view), IContentProvider, name=name)
+
+    # provide a useful error message, if the provider was not found.
+    if cp is None:
+        raise ContentProviderLookupError(name)
+
+    cp.update()
+    return cp.render()
 
 class ZopeTraverser(object):
     def __init__(self, proxify=identity):
@@ -48,6 +60,16 @@ class ZopeTraverser(object):
             return base()
 
         return base
+    
+class ZopeExistsTraverser(ZopeTraverser):
+    exceptions = AttributeError, LookupError, TypeError
+    
+    def __call__(self, *args, **kwargs):
+        try:
+            return ZopeTraverser.__call__(self, *args, **kwargs)
+        except self.exceptions:
+            return 0
+        return 1
 
 class PathTranslator(expressions.ExpressionTranslator):
     path_regex = re.compile(
@@ -58,16 +80,7 @@ class PathTranslator(expressions.ExpressionTranslator):
 
     symbol = '_path'
 
-    def validate(self, string):
-        """
-        >>> validate = PathTranslator().validate
-        >>> validate("image_path/++resource++/@@hello.html")
-        """
-
-        if not self.path_regex.match(string.strip()):
-            raise SyntaxError("Not a valid path-expression.")
-
-    def translate(self, string):
+    def translate(self, string, escape=None):
         """
         >>> translate = PathTranslator().translate
 
@@ -76,6 +89,9 @@ class PathTranslator(expressions.ExpressionTranslator):
 
         Verify allowed character set.
 
+        >>> translate("image_path/++res++/@@hello.html")
+        value("_path(image_path, request, True, '++res++', '@@hello.html')")
+        
         >>> translate("context/@@view")
         value("_path(context, request, True, '@@view')")
 
@@ -86,6 +102,9 @@ class PathTranslator(expressions.ExpressionTranslator):
         value("not(_path(context, request, True, '@@view'))")
 
         """
+
+        if not self.path_regex.match(string.strip()):
+            raise SyntaxError("Not a valid path-expression: %s." % string)
 
         nocall = False
         negate = False
@@ -127,32 +146,42 @@ class PathTranslator(expressions.ExpressionTranslator):
 
         return value
 
-path_translator = PathTranslator()
+class NotTranslator(PathTranslator):
+    symbol = '_path_not'
 
-def get_content_provider(context, request, view, name):
-    cp = zope.component.queryMultiAdapter(
-        (context, request, view), IContentProvider, name=name)
-
-    # provide a useful error message, if the provider was not found.
-    if cp is None:
-        raise ContentProviderLookupError(name)
-
-    cp.update()
-    return cp.render()
+    def translate(self, string, escape=None):
+        path_translator = zope.component.getUtility(
+            IExpressionTranslator, name='path')
+        value = path_translator.translate(string, escape=escape)
+        symbol_mapping = value.symbol_mapping
+        value = types.value("not(%s)" % value)
+        value.symbol_mapping = symbol_mapping
+        return value
 
 class ProviderTranslator(expressions.ExpressionTranslator):
     provider_regex = re.compile(r'^[A-Za-z][A-Za-z0-9_\.-]*$')
+    
     symbol = '_get_content_provider'
 
-    def validate(self, string):
+    def translate(self, string, escape=None):
         if self.provider_regex.match(string) is None:
             raise SyntaxError(
                 "%s is not a valid content provider name." % string)
 
-    def translate(self, string):
         value = types.value("%s(context, request, view, '%s')" % \
                             (self.symbol, string))
         value.symbol_mapping[self.symbol] = get_content_provider
         return value
 
+class ExistsTranslator(PathTranslator):
+    """Implements string translation expression."""
+
+    symbol = '_path_exists'
+    
+    path_traverse = ZopeExistsTraverser()
+
+exists_translator = ExistsTranslator()
+path_translator = PathTranslator()
+not_translator = NotTranslator()    
 provider_translator = ProviderTranslator()
+
