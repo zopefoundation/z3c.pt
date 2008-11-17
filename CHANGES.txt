@@ -4,6 +4,8 @@ Changelog
 Head
 ~~~~
 
+- Simplified template class inheritance. [malthe]
+
 - Added support for the question-mark operator in path-expressions. [malthe]
 
 - Updated expressions to recent API changes. [malthe]

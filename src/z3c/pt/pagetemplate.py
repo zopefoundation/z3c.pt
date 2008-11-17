@@ -4,55 +4,42 @@ import sys
 import chameleon.zpt.template
 import chameleon.zpt.language
 
-class ZopePageTemplate(chameleon.zpt.template.PageTemplate):
-    default_parser = chameleon.zpt.language.Parser(default_expression='path')
-
-class ZopePageTemplateFile(chameleon.zpt.template.PageTemplateFile):
-    default_parser = chameleon.zpt.language.Parser(default_expression='path')
-
-class PageTemplate(property):
+class PageTemplate(chameleon.zpt.template.PageTemplate):
     """Template class suitable for standalone use or as a class
     attribute (property). Keyword-arguments are passed into the
     template as-is."""
 
-    template_class = ZopePageTemplate
+    default_parser = chameleon.zpt.language.Parser(default_expression='path')
     
-    def __init__(self, body, **kwargs):
-        self.template = self.template_class(body, **kwargs)
-        property.__init__(self, self.bind)
-
-    def bind(self, obj, macro=None, global_scope=True):
+    def bind(self, ob, request=None, macro=None, global_scope=True):
         def render(**kwargs):
-            template = self.template
-
-            parameters = dict(
-                request=None,
-                template=template,
-                options=kwargs,
-                nothing=None)
-
-            if macro is None:
-                return template.render(**parameters)
-            else:
-                return template.render_macro(
-                    macro, global_scope=global_scope, parameters=parameters)
+            context = self._pt_get_context(ob, request, **kwargs)
             
-        return render
+            if macro is None:
+                return self.render(**context)
+            else:
+                return self.render_macro(
+                    macro, global_scope=global_scope, parameters=context)
 
-    @property
-    def macros(self):
-        return self.template.macros
+        return BoundPageTemplate(render, self)
 
-    def __call__(self, **kwargs):
-        template = self.bind(None)
-        return template(**kwargs)
+    def __call__(self, _ob=None, **kwargs):
+        bound_pt = self.__get__(_ob)
+        return bound_pt(**kwargs)
 
-class PageTemplateFile(PageTemplate):
+    def _pt_get_context(self, instance, request, **kwargs):
+        return dict(
+            options=kwargs,
+            request=request,
+            template=self,
+            nothing=None)
+
+    __get__ = bind
+
+class PageTemplateFile(PageTemplate, chameleon.zpt.template.PageTemplateFile):
     """If ``filename`` is a relative path, the module path of the
     class where the instance is used to get an absolute path."""
 
-    template_class = ZopePageTemplateFile
-    
     def __init__(self, filename, path=None, content_type=None, **kwargs):
         if path is not None:
             filename = os.path.join(path, filename)
@@ -74,13 +61,26 @@ class PageTemplateFile(PageTemplate):
  	 
             filename = path + os.sep + filename
 
-        self.template = self.template_class(filename, **kwargs)
-        property.__init__(self, self.bind)
+        chameleon.zpt.template.PageTemplateFile.__init__(
+            self, filename, **kwargs)
 
-    @property
-    def filename(self):
-        return self.template.filename
-    
+class BoundPageTemplate(object):
+    def __init__(self, render, pt):
+        object.__setattr__(self, 'im_func', render)
+        object.__setattr__(self, 'im_self', pt)
+
+    macros = property(lambda self: self.im_self.macros)
+    filename = property(lambda self: self.im_self.filename)
+
+    def __call__(self, *args, **kw):
+        return self.im_func(*args, **kw)
+
+    def __setattr__(self, name, v):
+        raise AttributeError("Can't set attribute", name)
+
+    def __repr__(self):
+        return "<%s %r>" % (type(self).__name__, self.filename)
+
 class ViewPageTemplate(PageTemplate):
     """Template class suitable for use with a Zope browser view; the
     variables ``view``, ``context`` and ``request`` variables are
@@ -88,30 +88,15 @@ class ViewPageTemplate(PageTemplate):
     keyword arguments are passed in through the ``options``
     dictionary. Note that the default expression type for this class
     is 'path' (standard Zope traversal)."""
-    
-    def bind(self, view, request=None, macro=None, global_scope=True):
-        def render(**kwargs):
-            template = self.template
-            
-            parameters = dict(
-                view=view,
-                context=view.context,
-                request=request or view.request,
-                template=template,
-                options=kwargs,
-                nothing=None)
 
-            if macro is None:
-                return template.render(**parameters)
-            else:
-                return template.render_macro(
-                    macro, global_scope=global_scope, parameters=parameters)
-            
-        return render
-
-    def __call__(self, view, **kwargs):
-        template = self.bind(view)
-        return template(**kwargs)
+    def _pt_get_context(self, view, request, **kwargs):
+        return dict(
+            view=view,
+            context=view.context,
+            request=request or view.request,
+            template=self,
+            options=kwargs,
+            nothing=None)
 
 class ViewPageTemplateFile(ViewPageTemplate, PageTemplateFile):
     """If ``filename`` is a relative path, the module path of the
