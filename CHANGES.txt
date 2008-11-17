@@ -4,6 +4,8 @@ Changelog
 Head
 ~~~~
 
+- Added support for the question-mark operator in path-expressions. [malthe]
+
 - Updated expressions to recent API changes. [malthe]
 
 - Added 'exists' and 'not' translators. [malthe]

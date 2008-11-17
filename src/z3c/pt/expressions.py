@@ -74,7 +74,10 @@ class ZopeExistsTraverser(ZopeTraverser):
 class PathTranslator(expressions.ExpressionTranslator):
     path_regex = re.compile(
         r'^((nocall|not):\s*)*([A-Za-z_][A-Za-z0-9_]*)'+
-        r'(/[A-Za-z_@\-+][A-Za-z0-9_@\-\.+/]*)*$')
+        r'(/[?A-Za-z_@\-+][?A-Za-z0-9_@\-\.+/]*)*$')
+
+    interpolation_regex = re.compile(
+        r'\?[A-Za-z][A-Za-z0-9_]+')
 
     path_traverse = ZopeTraverser()
 
@@ -101,6 +104,11 @@ class PathTranslator(expressions.ExpressionTranslator):
         >>> translate("not: context/@@view")
         value("not(_path(context, request, True, '@@view'))")
 
+        >>> translate("context/?view")
+        value("_path(context, request, True, '%s' % (view,))")
+
+        >>> translate("context/@@?view")
+        value("_path(context, request, True, '@@%s' % (view,))")
         """
 
         if not self.path_regex.match(string.strip()):
@@ -129,12 +137,33 @@ class PathTranslator(expressions.ExpressionTranslator):
         # map 'nothing' to 'None'
         parts = map(lambda part: part == 'nothing' and 'None' or part, parts)
 
-        base = parts[0]
-        components = [repr(part) for part in parts[1:]]
+        components = []
+        for part in parts[1:]:
+            interpolation_args = []
 
+            def replace(match):
+                start, end = match.span()
+                interpolation_args.append(
+                    part[start+1:end])
+                return "%s"
+
+            while True:
+                part, count = self.interpolation_regex.subn(replace, part)
+                if count == 0:
+                    break
+
+            if len(interpolation_args):
+                component = "%s %% (%s,)" % (
+                    repr(part), ", ".join(interpolation_args))
+            else:
+                component = repr(part)
+
+            components.append(component)
+            
         if not components:
             components = ()
 
+        base = parts[0]
         value = types.value(
             '%s(%s, request, %s, %s)' % \
             (self.symbol, base, not nocall, ', '.join(components)))
