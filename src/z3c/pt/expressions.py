@@ -87,6 +87,9 @@ class PathTranslator(expressions.ExpressionTranslator):
         """
         >>> translate = PathTranslator().translate
 
+        >>> translate("") is None
+        True
+
         >>> translate("a/b")
         value("_path(a, request, True, 'b')")
 
@@ -111,6 +114,9 @@ class PathTranslator(expressions.ExpressionTranslator):
         value("_path(context, request, True, '@@%s' % (view,))")
         """
 
+        if not string:
+            return None
+        
         if not self.path_regex.match(string.strip()):
             raise SyntaxError("Not a valid path-expression: %s." % string)
 
