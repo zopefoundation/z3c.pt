@@ -79,7 +79,9 @@ class BoundPageTemplate(object):
         raise AttributeError("Can't set attribute", name)
 
     def __repr__(self):
-        return "<%s %r>" % (type(self).__name__, self.filename)
+        return "<%s.Bound%s %r>" % (
+            type(self.im_self).__module__,
+            type(self.im_self).__name__, self.filename)
 
 class ViewPageTemplate(PageTemplate):
     """Template class suitable for use with a Zope browser view; the
