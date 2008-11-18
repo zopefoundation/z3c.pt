@@ -4,12 +4,23 @@ import sys
 import chameleon.zpt.template
 import chameleon.zpt.language
 
+from zope import i18n
+
 class BaseTemplate(chameleon.zpt.template.PageTemplate):
     default_parser = chameleon.zpt.language.Parser(default_expression='path')
     
     def bind(self, ob, request=None, macro=None, global_scope=True):
-        def render(**kwargs):
-            context = self._pt_get_context(ob, request, **kwargs)
+        def render(target_language=None, **kwargs):
+            context = self._pt_get_context(ob, request, kwargs)
+
+            if target_language is None:
+                try:
+                    target_language = i18n.negotiate(
+                        request or context.get('request'))
+                except:
+                    target_language = None
+                    
+            context['target_language'] = target_language
             
             if macro is None:
                 return self.render(**context)
@@ -23,7 +34,7 @@ class BaseTemplate(chameleon.zpt.template.PageTemplate):
         bound_pt = self.bind(_ob)
         return bound_pt(**kwargs)
 
-    def _pt_get_context(self, instance, request, **kwargs):
+    def _pt_get_context(self, instance, request, kwargs):
         return dict(
             options=kwargs,
             request=request,
@@ -85,7 +96,7 @@ class ViewPageTemplate(PageTemplate):
     dictionary. Note that the default expression type for this class
     is 'path' (standard Zope traversal)."""
 
-    def _pt_get_context(self, view, request, **kwargs):
+    def _pt_get_context(self, view, request, kwargs):
         return dict(
             view=view,
             context=view.context,

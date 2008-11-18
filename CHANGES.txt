@@ -4,6 +4,8 @@ Changelog
 Head
 ~~~~
 
+- Added language negotiation. [malthe]
+
 - Simplified template class inheritance. [malthe]
 
 - Added support for the question-mark operator in path-expressions. [malthe]

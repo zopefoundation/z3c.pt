@@ -65,7 +65,7 @@ class BaseTestCase(unittest.TestCase):
 
 class BenchmarkTestCase(BaseTestCase):
 
-    helloworld_z3c = pagetemplate.ZopePageTemplate("""\
+    helloworld_z3c = pagetemplate.PageTemplate("""\
     <div xmlns="http://www.w3.org/1999/xhtml">
     Hello World!
     </div>""")
@@ -88,11 +88,11 @@ class BenchmarkTestCase(BaseTestCase):
     </tr>
     </table>""")
 
-    bigtable_path_z3c = pagetemplate.ZopePageTemplate("""\
+    bigtable_path_z3c = pagetemplate.PageTemplate("""\
     <table xmlns="http://www.w3.org/1999/xhtml"
     xmlns:tal="http://xml.zope.org/namespaces/tal"
     tal:default-expression="path">
-    <tr tal:repeat="row table">
+    <tr tal:repeat="row options/table">
     <td tal:repeat="c row/values">
     <span tal:define="d python: c + 1"
     tal:attributes="class string:column-${d}"
@@ -231,7 +231,7 @@ class FileBenchmarkTestCase(BaseTestCase):
     def testBigTablePathFile(self):
         table = self.table
 
-        z3cfile = pagetemplate.ZopePageTemplateFile(
+        z3cfile = pagetemplate.PageTemplateFile(
             self._testfile('bigtable_path_z3c.pt'))
 
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
@@ -285,11 +285,9 @@ class I18NBenchmarkTestCase(BaseTestCase):
         catalog = SimpleTranslationDomain('domain')
         zope.component.provideUtility(catalog, ITranslationDomain, 'domain')
         self.files = os.path.abspath(os.path.join(__file__, '..', 'input'))
-        self.disable = config.DISABLE_I18N
 
     def tearDown(self):
         BaseTestCase.tearDown(self)
-        config.DISABLE_I18N = self.disable
 
     def _testfile(self, name):
         return os.path.join(self.files, name)
@@ -298,7 +296,7 @@ class I18NBenchmarkTestCase(BaseTestCase):
     def testI18N(self):
         table = self.table
 
-        z3cfile = zpt.template.PageTemplateFile(
+        z3cfile = pagetemplate.PageTemplateFile(
             self._testfile('bigtable_i18n_z3c.pt'))
 
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
@@ -309,7 +307,7 @@ class I18NBenchmarkTestCase(BaseTestCase):
 
         assert config.SYMBOLS.i18n_context=='_i18n_context'
         
-        t_z3c = timing(z3cfile, table=table, _i18n_context=self.env)
+        t_z3c = timing(z3cfile, table=table, target_language='klingon')
         t_zope = timing(zopefile, table=table, env=self.env)
 
         print "z3c.pt:            %.2f" % t_z3c
@@ -320,7 +318,7 @@ class I18NBenchmarkTestCase(BaseTestCase):
     def testDisabledI18N(self):
         table = self.table
 
-        z3cfile = zpt.template.PageTemplateFile(
+        z3cfile = pagetemplate.PageTemplateFile(
             self._testfile('bigtable_i18n_z3c.pt'))
 
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
@@ -328,10 +326,7 @@ class I18NBenchmarkTestCase(BaseTestCase):
 
         zopefile.pt_getEngineContext = _pt_getEngineContext
 
-        # Let's disable i18n for this test
-        config.DISABLE_I18N = True
-
-        t_z3c = timing(z3cfile, table=table, _context=self.env)
+        t_z3c = timing(z3cfile, table=table)
         t_zope = timing(zopefile, table=table, env=self.env)
 
         print "z3c.pt:            %.2f" % t_z3c
