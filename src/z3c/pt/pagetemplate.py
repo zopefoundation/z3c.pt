@@ -4,11 +4,7 @@ import sys
 import chameleon.zpt.template
 import chameleon.zpt.language
 
-class PageTemplate(chameleon.zpt.template.PageTemplate):
-    """Template class suitable for standalone use or as a class
-    attribute (property). Keyword-arguments are passed into the
-    template as-is."""
-
+class BaseTemplate(chameleon.zpt.template.PageTemplate):
     default_parser = chameleon.zpt.language.Parser(default_expression='path')
     
     def bind(self, ob, request=None, macro=None, global_scope=True):
@@ -21,10 +17,10 @@ class PageTemplate(chameleon.zpt.template.PageTemplate):
                 return self.render_macro(
                     macro, global_scope=global_scope, parameters=context)
 
-        return BoundPageTemplate(render, self)
+        return BoundPageTemplate(self, render)
 
     def __call__(self, _ob=None, **kwargs):
-        bound_pt = self.__get__(_ob)
+        bound_pt = self.bind(_ob)
         return bound_pt(**kwargs)
 
     def _pt_get_context(self, instance, request, **kwargs):
@@ -34,9 +30,7 @@ class PageTemplate(chameleon.zpt.template.PageTemplate):
             template=self,
             nothing=None)
 
-    __get__ = bind
-
-class PageTemplateFile(PageTemplate, chameleon.zpt.template.PageTemplateFile):
+class BaseTemplateFile(BaseTemplate, chameleon.zpt.template.PageTemplateFile):
     """If ``filename`` is a relative path, the module path of the
     class where the instance is used to get an absolute path."""
 
@@ -64,24 +58,24 @@ class PageTemplateFile(PageTemplate, chameleon.zpt.template.PageTemplateFile):
         chameleon.zpt.template.PageTemplateFile.__init__(
             self, filename, **kwargs)
 
-class BoundPageTemplate(object):
-    def __init__(self, render, pt):
-        object.__setattr__(self, 'im_func', render)
-        object.__setattr__(self, 'im_self', pt)
+class PageTemplate(BaseTemplate):
+    """Page Templates using TAL, TALES, and METAL.
 
-    macros = property(lambda self: self.im_self.macros)
-    filename = property(lambda self: self.im_self.filename)
+    This class is suitable for standalone use or class
+    property. Keyword-arguments are passed into the template as-is.
 
-    def __call__(self, *args, **kw):
-        return self.im_func(*args, **kw)
+    Initialize with a template string."""
 
-    def __setattr__(self, name, v):
-        raise AttributeError("Can't set attribute", name)
+    def __get__(self, instance, type):
+        return self.bind(instance)
 
-    def __repr__(self):
-        return "<%s.Bound%s %r>" % (
-            type(self.im_self).__module__,
-            type(self.im_self).__name__, self.filename)
+class PageTemplateFile(BaseTemplateFile, PageTemplate):
+    """Page Templates using TAL, TALES, and METAL.
+
+    This class is suitable for standalone use or class
+    property. Keyword-arguments are passed into the template as-is.
+
+    Initialize with a filename."""
 
 class ViewPageTemplate(PageTemplate):
     """Template class suitable for use with a Zope browser view; the
@@ -104,3 +98,25 @@ class ViewPageTemplateFile(ViewPageTemplate, PageTemplateFile):
     """If ``filename`` is a relative path, the module path of the
     class where the instance is used to get an absolute path."""
 
+class BoundPageTemplate(object):
+    """When a page template class is used as a property, it's bound to
+    the class instance on access, which is implemented using this
+    helper class."""
+    
+    def __init__(self, pt, render):
+        object.__setattr__(self, 'im_self', pt)
+        object.__setattr__(self, 'im_func', render)
+        
+    macros = property(lambda self: self.im_self.macros)
+    filename = property(lambda self: self.im_self.filename)
+
+    def __call__(self, *args, **kw):
+        return self.im_func(**kw)
+
+    def __setattr__(self, name, v):
+        raise AttributeError("Can't set attribute", name)
+
+    def __repr__(self):
+        return "<%s.Bound%s %r>" % (
+            type(self.im_self).__module__,
+            type(self.im_self).__name__, self.filename)
