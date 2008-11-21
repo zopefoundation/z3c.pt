@@ -4,6 +4,9 @@ Changelog
 Head
 ~~~~
 
+Version 1.0b4 - November 19, 2008
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 - Split out content provider function call to allow modification
   through subclassing. [malthe]
 
