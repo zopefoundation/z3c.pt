@@ -17,16 +17,17 @@ _marker = object()
 def identity(x):
     return x
 
-def get_content_provider(context, request, view, name):
-    cp = zope.component.queryMultiAdapter(
-        (context, request, view), IContentProvider, name=name)
+class ContentProviderTraverser(object):
+    def __call__(self, context, request, view, name):
+        cp = zope.component.queryMultiAdapter(
+            (context, request, view), IContentProvider, name=name)
 
-    # provide a useful error message, if the provider was not found.
-    if cp is None:
-        raise ContentProviderLookupError(name)
+        # provide a useful error message, if the provider was not found.
+        if cp is None:
+            raise ContentProviderLookupError(name)
 
-    cp.update()
-    return cp.render()
+        cp.update()
+        return cp.render()
 
 class ZopeTraverser(object):
     def __init__(self, proxify=identity):
@@ -197,6 +198,7 @@ class ProviderTranslator(expressions.ExpressionTranslator):
     provider_regex = re.compile(r'^[A-Za-z][A-Za-z0-9_\.-]*$')
     
     symbol = '_get_content_provider'
+    content_provider_traverser = ContentProviderTraverser()
 
     def translate(self, string, escape=None):
         if self.provider_regex.match(string) is None:
@@ -205,7 +207,7 @@ class ProviderTranslator(expressions.ExpressionTranslator):
 
         value = types.value("%s(context, request, view, '%s')" % \
                             (self.symbol, string))
-        value.symbol_mapping[self.symbol] = get_content_provider
+        value.symbol_mapping[self.symbol] = self.content_provider_traverser
         return value
 
 class ExistsTranslator(PathTranslator):

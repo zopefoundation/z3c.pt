@@ -4,6 +4,9 @@ Changelog
 Head
 ~~~~
 
+- Split out content provider function call to allow modification
+  through subclassing. [malthe]
+
 - Added language negotiation. [malthe]
 
 - Simplified template class inheritance. [malthe]
