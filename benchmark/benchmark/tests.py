@@ -34,7 +34,7 @@ def timing(func, *args, **kwargs):
         func(*args, **kwargs)
         i += 1
         t2 = time.time()
-    return 100*(t2-t1)/i
+    return float(100*(t2-t1))/i
 
 def bigtable_python_lxml(table=None):
     root = etree.Element("html")
@@ -193,17 +193,22 @@ class FileBenchmarkTestCase(BaseTestCase):
             self._testfile('bigtable_python_z3c.pt'))
         z3cfile.registry = filecache.TemplateCache(z3cfile.filename)
         z3cfile.registry.purge()
-        z3cfile.cook_check(parameters=())
-        assert len(z3cfile.registry) == 1
-        z3cfile.registry.save()
-    
+        
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
             self._testfile('bigtable_python_zope.pt'))
+
+        # make sure both templates are fully prepared
+        len(zopefile(table=table))
+        len(z3cfile(table=table))
+
+        # save registry
+        assert len(z3cfile.registry) == 1
+        z3cfile.registry.save()
 
         t_cached_z3c = timing(z3cfile.registry.load)
         t_cook_z3c = timing(z3cfile.cook, parameters=('table',))
         t_zope = timing(zopefile._cook)
-
+                
         print "z3c.pt cooking:    %.3f" % t_cook_z3c
         print "--------------------------"
         print "z3c.pt cached:     %.3f" % t_cached_z3c
