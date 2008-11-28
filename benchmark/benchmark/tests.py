@@ -3,9 +3,6 @@ import unittest
 import time
 import sys
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
-
 import zope.component.testing
 import zope.configuration.xmlconfig
 import zope.pagetemplate.pagetemplatefile
