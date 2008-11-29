@@ -81,6 +81,7 @@ class PathTranslator(expressions.ExpressionTranslator):
         r'\?[A-Za-z][A-Za-z0-9_]+')
 
     path_traverse = ZopeTraverser()
+    scope = 'request'
 
     symbol = '_path'
 
@@ -172,8 +173,8 @@ class PathTranslator(expressions.ExpressionTranslator):
 
         base = parts[0]
         value = types.value(
-            '%s(%s, request, %s, %s)' % \
-            (self.symbol, base, not nocall, ', '.join(components)))
+            '%s(%s, %s, %s, %s)' % \
+            (self.symbol, base, self.scope, not nocall, ', '.join(components)))
 
         if negate:
             value = types.value('not(%s)' % value)

@@ -4,6 +4,8 @@ Changelog
 Head
 ~~~~
 
+- Allow more flexibility in overriding the PathTranslator method. [hannosch]
+
 - Removed the forced defaultencoding from the benchmark suite. [hannosch]
 
 Version 1.0b4 - November 19, 2008
