@@ -42,10 +42,4 @@ class Parser(chameleon.zpt.language.Parser):
         config.METAL_NS: {None: METALElement}}
 
     fallback = XHTMLElement
-
     default_expression = 'path'
-
-    def parse(self, body):
-        root, doctype = super(Parser, self).parse(body)
-        root.meta_translator = self.default_expression
-        return root, doctype

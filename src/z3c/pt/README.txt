@@ -18,7 +18,7 @@ The ``PageTemplate`` class is initialized with a string.
   ... </div>""")
 
   >>> print template()
-  <div>
+  <div xmlns="http://www.w3.org/1999/xhtml">
     Hello World!
   </div>
 
@@ -29,7 +29,7 @@ path to a template file on disk.
   >>> path = tests.__path__[0]
   >>> template_file = PageTemplateFile(path+'/helloworld.pt')
   >>> print template_file()
-  <div>
+  <div xmlns="http://www.w3.org/1999/xhtml">
     Hello World!
   </div>
 
@@ -49,12 +49,12 @@ Both may be used as class attributes (properties).
 
   >>> instance = MyClass()
   >>> print instance.template()
-  <div>
+  <div xmlns="http://www.w3.org/1999/xhtml">
     Hello World!
   </div>
 
   >>> print instance.template_file()
-  <div>
+  <div xmlns="http://www.w3.org/1999/xhtml">
     Hello World!
   </div>
 
@@ -85,7 +85,7 @@ passing the view as an argument (view page templates derive from the
 class).
 
   >>> print template.bind(view)(test=u'test')
-  <div>
+  <div xmlns="http://www.w3.org/1999/xhtml">
     <span>view</span>
     <span>context</span>
     <span>request</span>
@@ -96,7 +96,7 @@ The exercise is similar for the file-based variant.
 
   >>> template = ViewPageTemplateFile(path+'/view.pt')
   >>> print template.bind(view)(test=u'test')
-  <div>
+  <div xmlns="http://www.w3.org/1999/xhtml">
     <span>view</span>
     <span>context</span>
     <span>request</span>
@@ -115,7 +115,7 @@ we don't allow $-interpolation like in ``chameleon.zpt``::
   ... </div>""")
 
   >>> print template()
-  <div>
+  <div xmlns="http://www.w3.org/1999/xhtml">
     ${this does not break}
   </div>
 
@@ -130,7 +130,7 @@ But we can **enable** this in a template::
   ... </div>""")
 
   >>> print template(foo=u'bar')
-  <div>
+  <div xmlns="http://www.w3.org/1999/xhtml">
     <div>
       bar
     </div>
