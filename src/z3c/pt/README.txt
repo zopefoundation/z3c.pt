@@ -103,6 +103,40 @@ The exercise is similar for the file-based variant.
     <span>test</span>
   </div>
 
+Dollar-Interpolation
+--------------------
+
+As ``z3c.pt` **should** be as compatible as possible to it's original,
+we don't allow $-interpolation like in ``chameleon.zpt``::
+
+  >>> template = PageTemplate("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml">
+  ...   ${this does not break}
+  ... </div>""")
+
+  >>> print template()
+  <div>
+    ${this does not break}
+  </div>
+
+But we can **enable** this in a template::
+
+  >>> template = PageTemplate("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:meta="http://xml.zope.org/namespaces/meta">
+  ...   <div meta:interpolation="true">
+  ...     ${options/foo}
+  ...   </div>
+  ... </div>""")
+
+  >>> print template(foo=u'bar')
+  <div>
+    <div>
+      bar
+    </div>
+  </div>
+
+
 Text templates
 --------------
 

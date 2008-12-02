@@ -2,12 +2,13 @@ import os
 import sys
 
 import chameleon.zpt.template
-import chameleon.zpt.language
+
+import z3c.pt.language
 
 from zope import i18n
 
 class BaseTemplate(chameleon.zpt.template.PageTemplate):
-    default_parser = chameleon.zpt.language.Parser(default_expression='path')
+    default_parser = z3c.pt.language.Parser()
     
     def bind(self, ob, request=None, macro=None, global_scope=True):
         def render(target_language=None, **kwargs):

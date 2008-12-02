@@ -4,6 +4,9 @@ Changelog
 Head
 ~~~~
 
+- Switched off the $-interpolation feature per default; It may be activated
+  on a per-template basis using ``meta:interpolation='true'``. [seletz]
+
 - Allow more flexibility in overriding the PathTranslator method. [hannosch]
 
 - Removed the forced defaultencoding from the benchmark suite. [hannosch]
