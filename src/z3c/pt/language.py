@@ -4,27 +4,19 @@ from chameleon.core import utils
 
 import chameleon.zpt.language
 
-
 class ZopePageTemplateElement(chameleon.zpt.language.ZopePageTemplateElement):
-    """Zope Page Template element.
-
-    Implements the ZPT subset of the attribute template language.
-    """
     meta_interpolation = utils.attribute(
         utils.meta_attr('interpolation'), default="false")
 
 class XHTMLElement(chameleon.zpt.language.XHTMLElement):
-    """XHTML namespace element."""
     meta_interpolation = utils.attribute(
         utils.meta_attr('interpolation'), default="false")
 
 class TALElement(chameleon.zpt.language.TALElement):
-    """TAL namespace element."""
     meta_interpolation = utils.attribute(
         utils.meta_attr('interpolation'), default="false")
 
 class METALElement(chameleon.zpt.language.METALElement):
-    """METAL namespace element."""
     meta_interpolation = utils.attribute(
         utils.meta_attr('interpolation'), default="false")
 
