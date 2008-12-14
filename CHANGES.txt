@@ -1,8 +1,11 @@
 Changelog
 ---------
 
-Head
-~~~~
+In next release
+
+- View templates now support argument-passing for alternative context
+  and request (for compatibility with
+  ``zope.app.pagetemplate``). [malthe]
 
 - Switched off the $-interpolation feature per default; It may be activated
   on a per-template basis using ``meta:interpolation='true'``. [seletz]

@@ -1,15 +1,14 @@
 import os
 import sys
 
-import chameleon.zpt.template
-
-import z3c.pt.language
-
 from zope import i18n
+from chameleon.zpt import template
 
-class BaseTemplate(chameleon.zpt.template.PageTemplate):
-    default_parser = z3c.pt.language.Parser()
-    
+import language
+
+class BaseTemplate(template.PageTemplate):
+    default_parser = language.Parser()
+
     def bind(self, ob, request=None, macro=None, global_scope=True):
         def render(target_language=None, **kwargs):
             context = self._pt_get_context(ob, request, kwargs)
@@ -20,9 +19,9 @@ class BaseTemplate(chameleon.zpt.template.PageTemplate):
                         request or context.get('request'))
                 except:
                     target_language = None
-                    
+
             context['target_language'] = target_language
-            
+
             if macro is None:
                 return self.render(**context)
             else:
@@ -42,7 +41,7 @@ class BaseTemplate(chameleon.zpt.template.PageTemplate):
             template=self,
             nothing=None)
 
-class BaseTemplateFile(BaseTemplate, chameleon.zpt.template.PageTemplateFile):
+class BaseTemplateFile(BaseTemplate, template.PageTemplateFile):
     """If ``filename`` is a relative path, the module path of the
     class where the instance is used to get an absolute path."""
 
@@ -58,7 +57,7 @@ class BaseTemplateFile(BaseTemplate, chameleon.zpt.template.PageTemplateFile):
                 if package_name != self.__module__:	 
                     break	 
  	 
-            module = sys.modules[package_name]	 
+            module = sys.modules[package_name]
             try:	 
                 path = module.__path__[0]	 
             except AttributeError:	 
@@ -67,7 +66,7 @@ class BaseTemplateFile(BaseTemplate, chameleon.zpt.template.PageTemplateFile):
  	 
             filename = path + os.sep + filename
 
-        chameleon.zpt.template.PageTemplateFile.__init__(
+        template.PageTemplateFile.__init__(
             self, filename, **kwargs)
 
 class PageTemplate(BaseTemplate):
@@ -100,11 +99,17 @@ class ViewPageTemplate(PageTemplate):
     def _pt_get_context(self, view, request, kwargs):
         return dict(
             view=view,
-            context=view.context,
-            request=request or view.request,
+            context=kwargs.get('context', view.context),
+            request=request or kwargs.get('request', view.request),
             template=self,
             options=kwargs,
             nothing=None)
+
+    def __call__(self, _ob=None, context=None, request=None, **kwargs):
+        kwargs.setdefault('context', context)
+        kwargs.setdefault('request', request)
+        return super(ViewPageTemplate, self).__call__(
+            _ob=_ob, **kwargs)
 
 class ViewPageTemplateFile(ViewPageTemplate, PageTemplateFile):
     """If ``filename`` is a relative path, the module path of the

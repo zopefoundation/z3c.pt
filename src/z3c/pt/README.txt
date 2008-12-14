@@ -103,6 +103,17 @@ The exercise is similar for the file-based variant.
     <span>test</span>
   </div>
 
+For compatibility reasons, view templates may be called with an
+alternative context and request.
+
+  >>> print template(view, u"alt_context", "alt_request", test=u'test')
+  <div xmlns="http://www.w3.org/1999/xhtml">
+    <span>view</span>
+    <span>alt_context</span>
+    <span>alt_request</span>
+    <span>test</span>
+  </div>
+
 Dollar-Interpolation
 --------------------
 
