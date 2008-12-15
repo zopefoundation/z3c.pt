@@ -1,7 +1,8 @@
 Changelog
 ---------
 
-In next release
+Version 1.0b5 - December 15, 2008
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - View templates now support argument-passing for alternative context
   and request (for compatibility with
