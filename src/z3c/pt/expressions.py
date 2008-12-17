@@ -106,9 +106,6 @@ class PathTranslator(expressions.ExpressionTranslator):
         >>> translate("nocall: context/@@view")
         value("_path(context, request, False, '@@view')")
 
-        >>> translate("not: context/@@view")
-        value("not(_path(context, request, True, '@@view'))")
-
         >>> translate("context/?view")
         value("_path(context, request, True, '%s' % (view,))")
 
@@ -123,7 +120,6 @@ class PathTranslator(expressions.ExpressionTranslator):
             raise SyntaxError("Not a valid path-expression: %s." % string)
 
         nocall = False
-        negate = False
 
         while string:
             m = self.re_pragma.match(string)
@@ -135,8 +131,6 @@ class PathTranslator(expressions.ExpressionTranslator):
 
             if pragma == 'nocall':
                 nocall = True
-            elif pragma == 'not':
-                negate = True
             else:
                 raise ValueError("Invalid pragma: %s" % pragma)
 
@@ -176,24 +170,53 @@ class PathTranslator(expressions.ExpressionTranslator):
             '%s(%s, %s, %s, %s)' % \
             (self.symbol, base, self.scope, not nocall, ', '.join(components)))
 
-        if negate:
-            value = types.value('not(%s)' % value)
-
         value.symbol_mapping[self.symbol] = self.path_traverse
 
         return value
 
-class NotTranslator(PathTranslator):
-    symbol = '_path_not'
+class NotTranslator(expressions.ExpressionTranslator):
+    zope.component.adapts(IExpressionTranslator)
 
-    def translate(self, string, escape=None):
-        path_translator = zope.component.getUtility(
-            IExpressionTranslator, name='path')
-        value = path_translator.translate(string, escape=escape)
-        symbol_mapping = value.symbol_mapping
-        value = types.value("not(%s)" % value)
-        value.symbol_mapping = symbol_mapping
-        return value
+    recursive = True
+    
+    def __init__(self, translator):
+        self.translator = translator
+
+    def tales(self, string, escape=None):
+        """
+        >>> tales = NotTranslator(path_translator).tales
+        
+        >>> tales("abc/def/ghi")
+        value("not(_path(abc, request, True, 'def', 'ghi'))")
+        
+        >>> tales("abc | def")
+        parts(value('not(_path(abc, request, True, ))'),
+              value('not(_path(def, request, True, ))'))
+
+        >>> tales("abc | not: def")
+        parts(value('not(_path(abc, request, True, ))'),
+              value('not(not(_path(def, request, True, )))'))
+
+        >>> tales("abc | not: def | ghi")
+        parts(value('not(_path(abc, request, True, ))'),
+              value('not(not(_path(def, request, True, )))'),
+              value('not(not(_path(ghi, request, True, )))'))
+        """
+
+        value = self.translator.tales(string, escape=escape)
+        if isinstance(value, types.value):
+            value = (value,)
+            
+        parts = []
+        for part in value:
+            factory = type(part)
+            parts.append(
+                factory("not(%s)" % part))
+
+        if len(parts) == 1:
+            return parts[0]
+        
+        return types.parts(parts)
 
 class ProviderTranslator(expressions.ExpressionTranslator):
     provider_regex = re.compile(r'^[A-Za-z][A-Za-z0-9_\.-]*$')
@@ -220,6 +243,5 @@ class ExistsTranslator(PathTranslator):
 
 exists_translator = ExistsTranslator()
 path_translator = PathTranslator()
-not_translator = NotTranslator()    
 provider_translator = ProviderTranslator()
 

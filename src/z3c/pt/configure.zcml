@@ -10,9 +10,9 @@
      name="path"
      component=".expressions.path_translator" />
 
-  <utility
+  <adapter
      name="not"
-     component=".expressions.not_translator" />
+     factory=".expressions.NotTranslator" />
 
   <utility
      name="provider"
