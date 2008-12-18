@@ -1,7 +1,8 @@
 Changelog
 ---------
 
-In next release
+Version 1.0b6 - December 18, 2008
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - The 'not' pragma acts recursively. [malthe]
 
