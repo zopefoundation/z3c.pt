@@ -188,7 +188,7 @@ class FileBenchmarkTestCase(BaseTestCase):
 
         z3cfile = zpt.template.PageTemplateFile(
             self._testfile('bigtable_python_z3c.pt'))
-        z3cfile.registry = filecache.TemplateCache(z3cfile.filename)
+        z3cfile.registry = filecache.TemplateCache(z3cfile.filename, 1)
         z3cfile.registry.purge()
         
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
