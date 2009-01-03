@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+In next version
+
+- Added Zope security  declaration for  the repeat dictionary (tales
+  iterator). [malthe]
+
 Version 1.0b6 - December 18, 2008
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
