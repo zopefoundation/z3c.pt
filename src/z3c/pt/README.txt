@@ -184,3 +184,35 @@ defined ``path`` function in a ``python:`` expression in ``z3c.pt``:
     <span>test</span>
     <span>test</span>
   </div>
+
+'default' and path expressions
+------------------------------
+
+Another feature from standard ZPT: using 'default' means whatever the
+the literal HTML contains will be output if the condition is not met.
+
+This works for attributes:
+
+  >>> template = PageTemplate("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml">
+  ...   <span tal:attributes="class options/not-existing | default"
+  ...         class="blue">i'm blue</span>
+  ... </div>""")
+
+  >>> print template()
+  <div xmlns="http://www.w3.org/1999/xhtml">
+    <span class="blue">i'm blue</span>
+  </div>
+
+And also for contents:
+
+  >>> template = PageTemplate("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml">
+  ...   <span tal:content="options/not-existing | default"
+  ...         >default content</span>
+  ... </div>""")
+
+  >>> print template()
+  <div xmlns="http://www.w3.org/1999/xhtml">
+    <span>default content</span>
+  </div>
