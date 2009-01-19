@@ -167,11 +167,11 @@ Text templates
   }
 
 
-Global Path Expression
+Global 'path' Function
 ----------------------
 
 Just like ``zope.pagetemplate``, it is possible to use a globally
-defined ``path`` function in a ``python:`` expression in ``z3c.pt``:
+defined ``path()`` function in a ``python:`` expression in ``z3c.pt``:
 
   >>> template = PageTemplate("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml">
@@ -183,6 +183,21 @@ defined ``path`` function in a ``python:`` expression in ``z3c.pt``:
   <div xmlns="http://www.w3.org/1999/xhtml">
     <span>test</span>
     <span>test</span>
+  </div>
+
+Global 'exists' Function
+------------------------
+
+The same applies to the ``exists()`` function:
+
+  >>> template = PageTemplate("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml">
+  ...   <span tal:content="python: exists('options/test') and 'Yes' or 'No'" />
+  ... </div>""")
+
+  >>> print template(test='test')
+  <div xmlns="http://www.w3.org/1999/xhtml">
+    <span>Yes</span>
   </div>
 
 'default' and path expressions
