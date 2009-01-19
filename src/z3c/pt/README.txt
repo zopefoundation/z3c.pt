@@ -165,3 +165,22 @@ Text templates
   #region {
       background: #ccc;
   }
+
+
+Global Path Expression
+----------------------
+
+Just like ``zope.pagetemplate``, it is possible to use a globally
+defined ``path`` function in a ``python:`` expression in ``z3c.pt``:
+
+  >>> template = PageTemplate("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml">
+  ...   <span tal:content="options/test" />
+  ...   <span tal:content="python: path('options/test')" />
+  ... </div>""")
+
+  >>> print template(test='test')
+  <div xmlns="http://www.w3.org/1999/xhtml">
+    <span>test</span>
+    <span>test</span>
+  </div>
