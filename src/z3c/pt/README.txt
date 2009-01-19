@@ -231,3 +231,40 @@ And also for contents:
   <div xmlns="http://www.w3.org/1999/xhtml">
     <span>default content</span>
   </div>
+
+'exists'-type expression
+------------------------
+
+Using 'exists()' function on non-global name and global name:
+
+  >>> template = PageTemplate("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml">
+  ...   <span tal:content="python: exists('options/nope') and 'Yes' or 'No'"
+  ...         >do I exist?</span>
+  ...   <span tal:content="python: exists('nope') and 'Yes' or 'No'"
+  ...         >do I exist?</span>
+  ... </div>""")
+
+  >>> print template()
+  <div xmlns="http://www.w3.org/1999/xhtml">
+    <span>No</span>
+    <span>No</span>
+  </div>
+
+Using 'exists:' expression on non-global name and global name
+
+  >>> template = PageTemplate("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml">
+  ...   <span tal:define="yup exists:options/nope" 
+  ...         tal:content="python: yup and 'Yes' or 'No'"
+  ...         >do I exist?</span>
+  ...   <span tal:define="yup exists:nope" 
+  ...         tal:content="python: yup and 'Yes' or 'No'"
+  ...         >do I exist?</span>
+  ... </div>""")
+
+  >>> print template()
+  <div xmlns="http://www.w3.org/1999/xhtml">
+    <span>No</span>
+    <span>No</span>
+  </div>
