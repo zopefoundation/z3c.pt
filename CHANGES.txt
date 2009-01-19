@@ -3,6 +3,10 @@ Changelog
 
 In next version
 
+- Moved evaluate_path and evaluate_exists over from ``five.pt``, adds
+  support for global ``path()`` and ``exists()`` functions for use in
+  ``python:`` expressions. [sidnei]
+
 - Added Zope security  declaration for  the repeat dictionary (tales
   iterator). [malthe]
 
