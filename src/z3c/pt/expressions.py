@@ -92,6 +92,12 @@ class PathTranslator(expressions.ExpressionTranslator):
         >>> translate("") is None
         True
 
+        >>> translate("nocall: a")
+        value('a')
+
+        >>> translate("nothing")
+        value('None')
+
         >>> translate("a/b")
         value("_path(a, request, True, 'b')")
 
@@ -162,10 +168,15 @@ class PathTranslator(expressions.ExpressionTranslator):
 
             components.append(component)
             
-        if not components:
-            components = ()
-
         base = parts[0]
+
+        if not components:
+            if len(parts) == 1 and (nocall or base == 'None'):
+                value = types.value('%s' % base)
+                return value
+            else:
+                components = ()
+
         value = types.value(
             '%s(%s, %s, %s, %s)' % \
             (self.symbol, base, self.scope, not nocall, ', '.join(components)))
