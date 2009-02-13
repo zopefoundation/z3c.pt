@@ -1,7 +1,8 @@
 Changelog
 ---------
 
-In next version
+Version 1.0b7 - February 13, 2009
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Fixed issue where symbol mapping would not be carried through under
   a negation (not). [malthe]
