@@ -221,14 +221,15 @@ class NotTranslator(expressions.ExpressionTranslator):
         parts = []
         for part in value:
             factory = type(part)
-            parts.append(
-                factory("not(%s)" % part))
+            value = factory("not(%s)" % part)
+            value.symbol_mapping.update(part.symbol_mapping)
+            parts.append(value)
 
         if len(parts) == 1:
             return parts[0]
-        
-        return types.parts(parts)
 
+        return types.parts(parts)
+    
 class ProviderTranslator(expressions.ExpressionTranslator):
     provider_regex = re.compile(r'^[A-Za-z][A-Za-z0-9_\.-]*$')
     

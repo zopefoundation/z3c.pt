@@ -268,3 +268,14 @@ Using 'exists:' expression on non-global name and global name
     <span>No</span>
     <span>No</span>
   </div>
+
+Using 'exists:' in conjunction with a negation:
+
+  >>> print PageTemplate("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml">
+  ...   <span tal:condition="not:exists:options/nope"
+  ...         >I don't exist?</span>
+  ... </div>""")()
+  <div xmlns="http://www.w3.org/1999/xhtml">
+    <span>I don't exist?</span>
+  </div>

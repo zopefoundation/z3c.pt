@@ -3,6 +3,9 @@ Changelog
 
 In next version
 
+- Fixed issue where symbol mapping would not be carried through under
+  a negation (not). [malthe]
+
 - Optimize simple case: if path expression is a single path and path
   is 'nothing' or has 'nocall:', just return value as-is, without
   going through path_traverse. [sidnei]
