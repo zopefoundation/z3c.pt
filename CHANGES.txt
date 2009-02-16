@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+- Allow attribute access to ``__call__`` method on bound page
+  templates. [malthe]
+
 Version 1.0b7 - February 13, 2009
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

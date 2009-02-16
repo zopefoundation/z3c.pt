@@ -31,7 +31,11 @@
     <class class="chameleon.core.utils.repeatitem">
       <allow interface="chameleon.core.interfaces.ITALESIterator" />
     </class>
-    
+
+    <class class=".pagetemplate.BoundPageTemplate">
+      <allow attributes="__call__ __str__ __name__" />
+    </class>
+
   </configure>
 
 </configure>
