@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+- When evaluating path-expressions at runtime (e.g. the ``path``
+  method), run the source through the transform first to support
+  dynamic scope. [malthe]
+
 Version 1.0b8 - February 17, 2009
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

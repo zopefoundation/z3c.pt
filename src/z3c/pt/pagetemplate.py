@@ -1,11 +1,13 @@
 import os
 import sys
+import compiler
 
 from zope import i18n
 from zope import component
 
 from chameleon.core import types
 from chameleon.core import config
+from chameleon.core import codegen
 from chameleon.core import clauses
 from chameleon.core import generation
 
@@ -19,10 +21,9 @@ _expr_cache = {}
 
 def evaluate_expression(pragma, expr):
     key = "%s(%s)" % (pragma, expr)
-    cache = getattr(_expr_cache, key, _marker)
-    if cache is not _marker:
-        symbol_mapping, parts, source = cache
-    else:
+    try:
+        symbol_mapping, parts, source = _expr_cache[key]
+    except KeyError:
         translator = component.getUtility(IExpressionTranslator, name=pragma)
         parts = translator.tales(expr)
         stream = generation.CodeIO(symbols=config.SYMBOLS)
@@ -46,10 +47,22 @@ def evaluate_expression(pragma, expr):
             raise RuntimeError, "Can't locate template frame."
 
     _locals = frame.f_locals
-    _locals.update(symbol_mapping)    
+    _locals.update(symbol_mapping)
+    
+    # to support dynamic scoping (like in templates), we must
+    # transform the code to take the scope locals into account; for
+    # efficiency, this is cached for reuse
+    code_cache_key = key, tuple(_locals)
+    try:
+        code = _expr_cache[code_cache_key]
+    except KeyError:
+        suite = codegen.Suite(source, _locals)
+        code = compiler.compile(
+            suite.source, 'dynamic_path_expression.py', 'exec')
+        _expr_cache[code_cache_key] = code
 
     # execute code and return evaluation
-    exec source in _locals
+    exec code in codegen.lookup_globals.copy(), _locals
     return _locals['result']
 
 def evaluate_path(expr):
