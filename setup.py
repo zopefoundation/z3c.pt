@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 import sys
-version = '1.0b8'
+version = '1.0b9'
 
 install_requires = [
     'setuptools',
@@ -9,7 +9,7 @@ install_requires = [
     'zope.i18n >= 3.5',
     'zope.traversing',
     'zope.contentprovider',
-    'chameleon.core >= 1.0b17',
+    'chameleon.core >= 1.0b18',
     'chameleon.zpt >= 1.0b9',
     ]
 
