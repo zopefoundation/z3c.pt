@@ -1,21 +1,21 @@
 Changelog
 ---------
 
-Version 1.0b9 - February 19, 2009
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.0b9 (2009/02/19)
+~~~~~~~~~~~~~~~~~~
 
 - When evaluating path-expressions at runtime (e.g. the ``path``
   method), run the source through the transform first to support
   dynamic scope. [malthe]
 
-Version 1.0b8 - February 17, 2009
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.0b8 (2009/02/17)
+~~~~~~~~~~~~~~~~~~
 
 - Allow attribute access to ``__call__`` method on bound page
   templates. [malthe]
 
-Version 1.0b7 - February 13, 2009
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.0b7 (2009/02/13)
+~~~~~~~~~~~~~~~~~~
 
 - Fixed issue where symbol mapping would not be carried through under
   a negation (not). [malthe]
@@ -31,13 +31,13 @@ Version 1.0b7 - February 13, 2009
 - Added Zope security  declaration for  the repeat dictionary (tales
   iterator). [malthe]
 
-Version 1.0b6 - December 18, 2008
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.0b6 (2008/12/18)
+~~~~~~~~~~~~~~~~~~
 
 - The 'not' pragma acts recursively. [malthe]
 
-Version 1.0b5 - December 15, 2008
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.0b5 (2008/12/15)
+~~~~~~~~~~~~~~~~~~
 
 - View templates now support argument-passing for alternative context
   and request (for compatibility with
@@ -50,8 +50,8 @@ Version 1.0b5 - December 15, 2008
 
 - Removed the forced defaultencoding from the benchmark suite. [hannosch]
 
-Version 1.0b4 - November 19, 2008
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.0b4 (2008/11/19)
+~~~~~~~~~~~~~~~~~~
 
 - Split out content provider function call to allow modification
   through subclassing. [malthe]
@@ -70,13 +70,13 @@ Version 1.0b4 - November 19, 2008
 
 - Adjusted the bigtable benchmark test to API changes. [hannosch]
 
-Version 1.0b3 - November 12, 2008
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.0b3 (2008/11/12)
+~~~~~~~~~~~~~~~~~~
 
 - Added ``PageTemplate`` and ``PageTemplateFile`` classes. [malthe]
 
-Version 1.0b2 - November 3, 2008
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.0b2 (2008/11/03)
+~~~~~~~~~~~~~~~~~~
 
   Bug fixes
 
@@ -84,8 +84,8 @@ Version 1.0b2 - November 3, 2008
 
 - Allow '+' character in path-expressions.
 
-Version 1.0b1 - October 2, 2008
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.0b1 (2008/10/02)
+~~~~~~~~~~~~~~~~~~
 
   Package changes
 
@@ -357,8 +357,8 @@ Version 1.0b1 - October 2, 2008
 - Static attributes are now properly overriden by py:attr-attributes.
   [malthe]
 
-Version 0.9 - August 7, 2008
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+0.9 (2008/08/07)
+~~~~~~~~~~~~~~~~
 
 - Added support for Genshi-templates.
   [malthe]
@@ -511,8 +511,8 @@ Version 0.9 - August 7, 2008
 - Added template source annotations on exceptions raised while
   rendering a template.
 
-Version 0.8 - March 19, 2008
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+0.8 (2008/03/19)
+~~~~~~~~~~~~~~~~
 
 - Added support for 'nocall' and 'not' (for path-expressions).
 
@@ -529,8 +529,8 @@ Version 0.8 - March 19, 2008
 
 - Benchmark is now built as a custom testrunner
 
-Version 0.7 - March 10, 2008
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+0.7 (2008/03/10)
+~~~~~~~~~~~~~~~~
 
 - Added support for comments; expressions are allowed
   inside comments, i.e.
@@ -539,26 +539,26 @@ Version 0.7 - March 10, 2008
 
   Comments are always included.
 
-Version 0.6 - February 24, 2008
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+0.7 (2008/02/24)
+~~~~~~~~~~~~~~~~
 
 - Added support for text templates; these allow expression
   interpolation in non-XML documents like CSS stylesheets and
   javascript files.
 
-Version 0.5 - February 23, 2008
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+0.5 (2008/02/23)
+~~~~~~~~~~~~~~~~
 
 - Expression interpolation implemented.
 
-Version 0.4 - February 22, 2008
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+0.4 (2008/02/22)
+~~~~~~~~~~~~~~~~
 
 - Engine now uses cStringIO yielding a 2.5x performance
   improvement. Unicode is now handled correctly.
 
-Version 0.3 - December 23, 2007
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+0.3 (2007/12/23)
+~~~~~~~~~~~~~~~~
 
 - Code optimization; bug fixing spree
 
@@ -568,13 +568,13 @@ Version 0.3 - December 23, 2007
 
 - Engine rewrite; improved code generation abstractions
 
-Version 0.2 - December 5, 2007
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+0.2 (2007/12/05)
+~~~~~~~~~~~~~~~~
 
 - Major optimizations to the generated code
 
-Version 0.1 - December 3, 2007
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+0.1 (2007/12/03)
+~~~~~~~~~~~~~~~~
 
 - First public release
 
