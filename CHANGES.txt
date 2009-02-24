@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+In next release
+
+- Fixed exists-traverser such that it always returns a boolean
+  value. [malthe]
+
 1.0b9 (2009/02/19)
 ~~~~~~~~~~~~~~~~~~
 

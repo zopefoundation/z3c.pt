@@ -65,12 +65,13 @@ class ZopeTraverser(object):
 class ZopeExistsTraverser(ZopeTraverser):
     exceptions = AttributeError, LookupError, TypeError
     
-    def __call__(self, *args, **kwargs):
+    def __call__(self, base, request, call, *args, **kwargs):
         try:
-            return ZopeTraverser.__call__(self, *args, **kwargs)
+            return ZopeTraverser.__call__(
+                self, base, request, False, *args, **kwargs) is not None
         except self.exceptions:
-            return 0
-        return 1
+            return False
+        return True
 
 class PathTranslator(expressions.ExpressionTranslator):
     path_regex = re.compile(
