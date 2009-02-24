@@ -1,7 +1,8 @@
 Changelog
 ---------
 
-In next release
+1.0b10 (2009/02/24)
+~~~~~~~~~~~~~~~~~~~
 
 - Fixed exists-traverser such that it always returns a boolean
   value. [malthe]
