@@ -145,8 +145,10 @@ class PageTemplate(BaseTemplate):
     Initialize with a template string."""
 
     def __get__(self, instance, type):
-        return self.bind(instance)
-
+        if instance is not None:
+            return self.bind(instance)
+        return self
+    
 class PageTemplateFile(BaseTemplateFile, PageTemplate):
     """Page Templates using TAL, TALES, and METAL.
 
