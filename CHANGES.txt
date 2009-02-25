@@ -3,6 +3,8 @@ Changelog
 
 In next release
 
+- Expressions in text templates are never escaped. [malthe]
+
 - Do not bind template to a trivial instance. [malthe]
 
 1.0b10 (2009/02/24)
