@@ -106,7 +106,8 @@ class BaseTemplate(template.PageTemplate):
             template=self,
             path=evaluate_path,
             exists=evaluate_exists,
-            nothing=None)
+            nothing=None,
+            modules=sys.modules)
 
 class BaseTemplateFile(BaseTemplate, template.PageTemplateFile):
     """If ``filename`` is a relative path, the module path of the
@@ -174,7 +175,8 @@ class ViewPageTemplate(PageTemplate):
             path=evaluate_path,
             exists=evaluate_exists,
             options=kwargs,
-            nothing=None)
+            nothing=None,
+            modules=sys.modules)
 
     def __call__(self, _ob=None, context=None, request=None, **kwargs):
         kwargs.setdefault('context', context)
