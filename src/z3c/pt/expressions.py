@@ -3,10 +3,12 @@ import re
 
 import zope.interface
 import zope.component
+import zope.event
 
 from zope.traversing.adapters import traversePathElement
 from zope.contentprovider.interfaces import IContentProvider
 from zope.contentprovider.interfaces import ContentProviderLookupError
+from zope.contentprovider.interfaces import BeforeUpdateEvent
 
 from chameleon.core import types
 from chameleon.zpt import expressions
@@ -26,6 +28,7 @@ class ContentProviderTraverser(object):
         if cp is None:
             raise ContentProviderLookupError(name)
 
+        zope.event.notify(BeforeUpdateEvent(cp, request))
         cp.update()
         return cp.render()
 
