@@ -165,12 +165,16 @@ class ViewPageTemplate(PageTemplate):
     keyword arguments are passed in through the ``options``
     dictionary. Note that the default expression type for this class
     is 'path' (standard Zope traversal)."""
-
+    
     def _pt_get_context(self, view, request, kwargs):
+        context = kwargs.get('context')
+        if context is None:
+            context = view.context
+        request = request or kwargs.get('request') or view.request
         return dict(
             view=view,
-            context=kwargs.get('context', view.context),
-            request=request or kwargs.get('request', view.request),
+            context=context,
+            request=request,
             template=self,
             path=evaluate_path,
             exists=evaluate_exists,
