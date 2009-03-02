@@ -3,6 +3,8 @@ Changelog
 
 In next release
 
+- Catch ``NameError`` in exists-traverser (return false). [malthe]
+
 - Catch ``NameError`` in exists-evaluator (return false). [malthe]
 
 - If the supplied ``context`` and ``request`` parameters are trivial,

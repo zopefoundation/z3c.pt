@@ -257,6 +257,17 @@ class ExistsTranslator(PathTranslator):
     
     path_traverse = ZopeExistsTraverser()
 
+    def translate(self, *args, **kwargs):
+        value = super(ExistsTranslator, self).translate(*args, **kwargs)
+        if value is None:
+            return
+        
+        assert isinstance(value, types.value)
+        parts = types.parts(
+            (value, types.value('False')))
+        parts.exceptions = NameError,
+        return parts
+    
 exists_translator = ExistsTranslator()
 path_translator = PathTranslator()
 provider_translator = ProviderTranslator()
