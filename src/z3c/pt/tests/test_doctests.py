@@ -16,7 +16,7 @@ def setUp(suite):
 
 def test_suite():
     filesuites = 'README.txt',
-    testsuites = 'z3c.pt.expressions',
+    testsuites = 'z3c.pt.expressions', 'z3c.pt.namespaces'
 
     config.DISK_CACHE = False
 

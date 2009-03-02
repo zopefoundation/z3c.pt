@@ -1,20 +1,24 @@
-import parser
 import re
-
-import zope.interface
-import zope.component
+import namespaces
 import zope.event
 
 from zope.traversing.adapters import traversePathElement
 from zope.contentprovider.interfaces import IContentProvider
 from zope.contentprovider.interfaces import ContentProviderLookupError
-from zope.contentprovider.interfaces import BeforeUpdateEvent
+
+try:
+    from zope.contentprovider.interfaces import BeforeUpdateEvent
+except ImportError:
+    BeforeUpdateEvent = None
 
 from chameleon.core import types
 from chameleon.zpt import expressions
 from chameleon.zpt.interfaces import IExpressionTranslator
 
+from types import MethodType
+
 _marker = object()
+_valid_name = re.compile(r"[a-zA-Z][a-zA-Z0-9_]*$").match
 
 def identity(x):
     return x
@@ -28,7 +32,8 @@ class ContentProviderTraverser(object):
         if cp is None:
             raise ContentProviderLookupError(name)
 
-        zope.event.notify(BeforeUpdateEvent(cp, request))
+        if BeforeUpdateEvent is not None:
+            zope.event.notify(BeforeUpdateEvent(cp, request))
         cp.update()
         return cp.render()
 
@@ -39,15 +44,20 @@ class ZopeTraverser(object):
     def __call__(self, base, request, call, *path_items):
         """See ``zope.app.pagetemplate.engine``."""
 
-        length = len(path_items)
-        if length:
-            i = 0
-            while i < length:
-                name = path_items[i]
-                i += 1
+        if bool(path_items):
+            path_items = list(path_items)
+            
+            while len(path_items):
+                name = path_items.pop(0)
+                ns = ':' in name
+                if ns is True:
+                    namespace, name = name.split(':', 1)
+                    base = namespaces.function_namespaces[namespace](base)
                 next = getattr(base, name, _marker)
                 if next is not _marker:
                     base = next
+                    if ns is True and isinstance(base, MethodType):
+                        base = base()
                     continue
                 else:
                     # special-case dicts for performance reasons
@@ -55,7 +65,7 @@ class ZopeTraverser(object):
                         base = base[name]
                     else:
                         base = traversePathElement(
-                            base, name, path_items[i:], request=request)
+                            base, name, path_items, request=request)
 
                 if not isinstance(base, (basestring, tuple, list)):
                     base = self.proxify(base)
@@ -78,8 +88,8 @@ class ZopeExistsTraverser(ZopeTraverser):
 
 class PathTranslator(expressions.ExpressionTranslator):
     path_regex = re.compile(
-        r'^((nocall|not):\s*)*([A-Za-z_][A-Za-z0-9_]*)'+
-        r'(/[?A-Za-z_@\-+][?A-Za-z0-9_@\-\.+/]*)*$')
+        r'^((nocall|not):\s*)*([A-Za-z_][A-Za-z0-9_:]*)'+
+        r'(/[?A-Za-z_@\-+][?A-Za-z0-9_@\-\.+/:]*)*$')
 
     interpolation_regex = re.compile(
         r'\?[A-Za-z][A-Za-z0-9_]+')
@@ -267,8 +277,7 @@ class ExistsTranslator(PathTranslator):
             (value, types.value('False')))
         parts.exceptions = NameError,
         return parts
-    
+
 exists_translator = ExistsTranslator()
 path_translator = PathTranslator()
 provider_translator = ProviderTranslator()
-

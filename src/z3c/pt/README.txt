@@ -90,6 +90,7 @@ class).
     <span>context</span>
     <span>request</span>
     <span>test</span>
+    <span>test</span>
   </div>
 
 The exercise is similar for the file-based variant.
@@ -101,6 +102,7 @@ The exercise is similar for the file-based variant.
     <span>context</span>
     <span>request</span>
     <span>test</span>
+    <span>test</span>
   </div>
 
 For compatibility reasons, view templates may be called with an
@@ -111,6 +113,7 @@ alternative context and request.
     <span>view</span>
     <span>alt_context</span>
     <span>alt_request</span>
+    <span>test</span>
     <span>test</span>
   </div>
 
@@ -278,4 +281,99 @@ Using 'exists:' in conjunction with a negation:
   ... </div>""")()
   <div xmlns="http://www.w3.org/1999/xhtml">
     <span>I don't exist?</span>
+  </div>
+
+TALES Function Namespaces
+-------------------------
+
+As described on http://wiki.zope.org/zope3/talesns.html, it is
+possible to implement custom TALES Namespace Adapters. We also support
+low-level TALES Function Namespaces (which the TALES Namespace
+Adapters build upon).
+
+  >>> import datetime
+  >>> import zope.interface
+  >>> import zope.component
+  >>> from zope.traversing.interfaces import ITraversable
+  >>> from zope.traversing.interfaces import IPathAdapter
+  >>> from zope.tales.interfaces import ITALESFunctionNamespace
+  >>> from z3c.pt.namespaces import function_namespaces
+
+  >>> class ns1(object):
+  ...     zope.interface.implements(ITALESFunctionNamespace)
+  ...     def __init__(self, context):
+  ...         self.context = context
+  ...     def parent(self):
+  ...         return self.context.parent
+
+  >>> function_namespaces.registerFunctionNamespace('ns1', ns1)
+
+  >>> class ns2(object):
+  ...     def __init__(self, context):
+  ...         self.context = context
+  ...     def upper(self):
+  ...         return self.context.upper()
+
+  >>> zope.component.getGlobalSiteManager().registerAdapter(
+  ...     ns2, [zope.interface.Interface], IPathAdapter, 'ns2')
+
+  >>> class ns3(object):
+  ...     def __init__(self, context):
+  ...         self.context = context
+  ...     def fullDateTime(self):
+  ...         return self.context.strftime('%Y-%m-%d %H:%M:%S')
+
+  >>> zope.component.getGlobalSiteManager().registerAdapter(
+  ...     ns3, [zope.interface.Interface], IPathAdapter, 'ns3')
+
+
+A really corner-ish case from a legacy application: the TALES
+Namespace Adapter doesn't have a callable function but traverses the
+remaining path instead::
+
+  >>> class ns4(object):
+  ...     zope.interface.implements(ITraversable)
+  ...     def __init__(self, context):
+  ...         self.context = context
+  ...     def traverse(self, name, furtherPath):
+  ...         if len(furtherPath) == 1:
+  ...              name = '%s/%s' % (name, furtherPath.pop())
+  ...         return 'traversed: ' + name
+
+  >>> zope.component.getGlobalSiteManager().registerAdapter(
+  ...     ns4, [zope.interface.Interface], IPathAdapter, 'ns4')
+
+  >>> class Ob(object):
+  ...     def __init__(self, title, date, parent=None, child=None):
+  ...         self.title = title
+  ...         self.date = date
+  ...         self.parent = parent
+  ...         self.child = child
+
+  >>> child = Ob('child', datetime.datetime(2008, 12, 30, 13, 48, 0, 0))
+  >>> father = Ob('father', datetime.datetime(1978, 12, 30, 13, 48, 0, 0))
+  >>> grandpa = Ob('grandpa', datetime.datetime(1948, 12, 30, 13, 48, 0, 0))
+
+  >>> child.parent = father
+  >>> father.child = child
+  >>> father.parent = grandpa
+  >>> grandpa.child = father
+
+  >>> class View(object):
+  ...     request = u'request'
+  ...     context = father
+  ...
+  ...     def __repr__(self):
+  ...         return 'view'
+
+  >>> view = View()
+  >>> template = ViewPageTemplateFile(path+'/function_namespaces.pt')
+  >>> print template.bind(view)()
+  <div xmlns="http://www.w3.org/1999/xhtml">
+    <span>GRANDPA</span>
+    <span>2008-12-30 13:48:00</span>
+    <span>traversed: link:main</span>
+    <span>traversed: page/another</span>
+    <span>traversed: zope.Public</span>
+    <span>traversed: text-to-html</span>
   </div>

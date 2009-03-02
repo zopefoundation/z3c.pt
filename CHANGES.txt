@@ -3,6 +3,8 @@ Changelog
 
 In next release
 
+- Implemented TALES function namespaces. [sidnei, malthe]
+
 - Catch ``NameError`` in exists-traverser (return false). [malthe]
 
 - Catch ``NameError`` in exists-evaluator (return false). [malthe]
