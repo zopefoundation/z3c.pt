@@ -46,13 +46,16 @@ class ZopeTraverser(object):
 
         if bool(path_items):
             path_items = list(path_items)
-            
+
             while len(path_items):
                 name = path_items.pop(0)
                 ns = ':' in name
                 if ns is True:
                     namespace, name = name.split(':', 1)
                     base = namespaces.function_namespaces[namespace](base)
+                # XXX Need to check for ITraversable on 'base' here
+                # and use traversePathElement instead of getattr. See
+                # failing test.
                 next = getattr(base, name, _marker)
                 if next is not _marker:
                     base = next
@@ -74,10 +77,10 @@ class ZopeTraverser(object):
             return base()
 
         return base
-    
+
 class ZopeExistsTraverser(ZopeTraverser):
     exceptions = AttributeError, LookupError, TypeError
-    
+
     def __call__(self, base, request, call, *args, **kwargs):
         try:
             return ZopeTraverser.__call__(
@@ -119,7 +122,7 @@ class PathTranslator(expressions.ExpressionTranslator):
 
         >>> translate("image_path/++res++/@@hello.html")
         value("_path(image_path, request, True, '++res++', '@@hello.html')")
-        
+
         >>> translate("context/@@view")
         value("_path(context, request, True, '@@view')")
 
@@ -135,7 +138,7 @@ class PathTranslator(expressions.ExpressionTranslator):
 
         if not string:
             return None
-        
+
         if not self.path_regex.match(string.strip()):
             raise SyntaxError("Not a valid path-expression: %s." % string)
 
@@ -181,7 +184,7 @@ class PathTranslator(expressions.ExpressionTranslator):
                 component = repr(part)
 
             components.append(component)
-            
+
         base = parts[0]
 
         if not components:
@@ -203,17 +206,17 @@ class NotTranslator(expressions.ExpressionTranslator):
     zope.component.adapts(IExpressionTranslator)
 
     recursive = True
-    
+
     def __init__(self, translator):
         self.translator = translator
 
     def tales(self, string, escape=None):
         """
         >>> tales = NotTranslator(path_translator).tales
-        
+
         >>> tales("abc/def/ghi")
         value("not(_path(abc, request, True, 'def', 'ghi'))")
-        
+
         >>> tales("abc | def")
         parts(value('not(_path(abc, request, True, ))'),
               value('not(_path(def, request, True, ))'))
@@ -231,7 +234,7 @@ class NotTranslator(expressions.ExpressionTranslator):
         value = self.translator.tales(string, escape=escape)
         if isinstance(value, types.value):
             value = (value,)
-            
+
         parts = []
         for part in value:
             factory = type(part)
@@ -243,10 +246,10 @@ class NotTranslator(expressions.ExpressionTranslator):
             return parts[0]
 
         return types.parts(parts)
-    
+
 class ProviderTranslator(expressions.ExpressionTranslator):
     provider_regex = re.compile(r'^[A-Za-z][A-Za-z0-9_\.-]*$')
-    
+
     symbol = '_get_content_provider'
     content_provider_traverser = ContentProviderTraverser()
 
@@ -264,14 +267,14 @@ class ExistsTranslator(PathTranslator):
     """Implements string translation expression."""
 
     symbol = '_path_exists'
-    
+
     path_traverse = ZopeExistsTraverser()
 
     def translate(self, *args, **kwargs):
         value = super(ExistsTranslator, self).translate(*args, **kwargs)
         if value is None:
             return
-        
+
         assert isinstance(value, types.value)
         parts = types.parts(
             (value, types.value('False')))

@@ -336,9 +336,19 @@ remaining path instead::
   ...     def __init__(self, context):
   ...         self.context = context
   ...     def traverse(self, name, furtherPath):
+  ...         if name == 'page':
+  ...             if len(furtherPath) == 1:
+  ...		      pagetype = furtherPath.pop()
+  ...		  elif not furtherPath:
+  ...                 pagetype = 'default'
+  ...             else:
+  ...                 raise TraversalError("Max 1 path segment after ns4:page")
+  ...             return self.page(pagetype)
   ...         if len(furtherPath) == 1:
   ...              name = '%s/%s' % (name, furtherPath.pop())
   ...         return 'traversed: ' + name
+  ...     def page(self, pagetype):
+  ...         return 'called page: ' + pagetype
 
   >>> zope.component.getGlobalSiteManager().registerAdapter(
   ...     ns4, [zope.interface.Interface], IPathAdapter, 'ns4')

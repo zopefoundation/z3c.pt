@@ -3,7 +3,9 @@
   <span tal:content="context/ns1:parent/title/ns2:upper" />
   <span tal:content="context/ns1:parent/child/child/date/ns3:fullDateTime" />
   <span tal:content="context/ns4:link:main" />
+  <span tal:content="context/ns4:page" />
   <span tal:content="context/ns4:page/another" />
+  <span tal:content="context/ns4:page/yet/another" />
   <span tal:content="context/ns4:zope.Public" />
   <span tal:content="context/ns4:text-to-html" />
 </div>
