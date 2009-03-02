@@ -69,7 +69,10 @@ def evaluate_path(expr):
     return evaluate_expression('path', expr)
 
 def evaluate_exists(expr):
-    return evaluate_expression('exists', expr)
+    try:
+        return evaluate_expression('exists', expr)
+    except NameError:
+        return False
 
 class BaseTemplate(template.PageTemplate):
     default_parser = language.Parser()
