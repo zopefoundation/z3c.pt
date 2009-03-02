@@ -76,7 +76,8 @@ def evaluate_exists(expr):
 
 class BaseTemplate(template.PageTemplate):
     default_parser = language.Parser()
-
+    version = 1
+    
     def bind(self, ob, request=None, macro=None, global_scope=True):
         def render(target_language=None, **kwargs):
             context = self._pt_get_context(ob, request, kwargs)
@@ -148,6 +149,8 @@ class PageTemplate(BaseTemplate):
 
     Initialize with a template string."""
 
+    version = 1
+    
     def __get__(self, instance, type):
         if instance is not None:
             return self.bind(instance)
