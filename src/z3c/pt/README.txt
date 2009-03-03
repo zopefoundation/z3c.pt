@@ -342,7 +342,7 @@ remaining path instead::
   ...		  elif not furtherPath:
   ...                 pagetype = 'default'
   ...             else:
-  ...                 raise TraversalError("Max 1 path segment after ns4:page")
+  ...                 raise ValueError("Max 1 path segment after ns4:page")
   ...             return self.page(pagetype)
   ...         if len(furtherPath) == 1:
   ...              name = '%s/%s' % (name, furtherPath.pop())
