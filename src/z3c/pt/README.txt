@@ -335,8 +335,10 @@ remaining path instead::
   
   >>> class ns4(object):
   ...     zope.interface.implements(ITraversable)
+  ...
   ...     def __init__(self, context):
   ...         self.context = context
+  ...
   ...     def traverse(self, name, furtherPath):
   ...         if name == 'page':
   ...             if len(furtherPath) == 1:
@@ -345,11 +347,12 @@ remaining path instead::
   ...                 pagetype = 'default'
   ...             else:
   ...                 raise TraversalError("Max 1 path segment after ns4:page")
-  ...             return self.page(pagetype)
+  ...             return self._page(pagetype)
   ...         if len(furtherPath) == 1:
   ...              name = '%s/%s' % (name, furtherPath.pop())
   ...         return 'traversed: ' + name
-  ...     def page(self, pagetype):
+  ...
+  ...     def _page(self, pagetype):
   ...         return 'called page: ' + pagetype
 
   >>> zope.component.getGlobalSiteManager().registerAdapter(
@@ -385,7 +388,8 @@ remaining path instead::
     <span>GRANDPA</span>
     <span>2008-12-30 13:48:00</span>
     <span>traversed: link:main</span>
-    <span>traversed: page/another</span>
+    <span>called page: default</span>
+    <span>called page: another</span>
     <span>traversed: zope.Public</span>
     <span>traversed: text-to-html</span>
   </div>
