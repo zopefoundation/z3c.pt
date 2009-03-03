@@ -331,6 +331,8 @@ A really corner-ish case from a legacy application: the TALES
 Namespace Adapter doesn't have a callable function but traverses the
 remaining path instead::
 
+  >>> from zope.traversing.interfaces import TraversalError
+  
   >>> class ns4(object):
   ...     zope.interface.implements(ITraversable)
   ...     def __init__(self, context):
@@ -342,7 +344,7 @@ remaining path instead::
   ...		  elif not furtherPath:
   ...                 pagetype = 'default'
   ...             else:
-  ...                 raise ValueError("Max 1 path segment after ns4:page")
+  ...                 raise TraversalError("Max 1 path segment after ns4:page")
   ...             return self.page(pagetype)
   ...         if len(furtherPath) == 1:
   ...              name = '%s/%s' % (name, furtherPath.pop())
