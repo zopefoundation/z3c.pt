@@ -5,6 +5,7 @@ import zope.event
 from zope.traversing.adapters import traversePathElement
 from zope.contentprovider.interfaces import IContentProvider
 from zope.contentprovider.interfaces import ContentProviderLookupError
+from zope.traversing.interfaces import ITraversable
 
 try:
     from zope.contentprovider.interfaces import BeforeUpdateEvent
@@ -53,9 +54,11 @@ class ZopeTraverser(object):
                 if ns is True:
                     namespace, name = name.split(':', 1)
                     base = namespaces.function_namespaces[namespace](base)
-                # XXX Need to check for ITraversable on 'base' here
-                # and use traversePathElement instead of getattr. See
-                # failing test.
+                    if ITraversable.providedBy(base):
+                        base = self.proxify(traversePathElement(
+                            base, name, path_items, request=request))
+                        continue
+                    
                 next = getattr(base, name, _marker)
                 if next is not _marker:
                     base = next

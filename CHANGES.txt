@@ -3,6 +3,9 @@ Changelog
 
 In next release
 
+- If a namespace-acquired object provides ``ITraversable``, use path
+  traversal. [malthe]
+
 - Implemented TALES function namespaces. [sidnei, malthe]
 
 - Catch ``NameError`` in exists-traverser (return false). [malthe]
