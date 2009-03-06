@@ -4,47 +4,27 @@
 z3c.pt
 ======
 
-Python template compiler which supports the `Genshi
-<http://genshi.edgewall.org/wiki/Documentation/xml-templates.html>`_
-and `ZPT <http://wiki.zope.org/ZPT/TAL>`_ template language syntaxes
-including macro extensions and i18n internationalization.
+This package provides a fast implementation of the Zope Page Templates (ZPT) language which aims to be fully compatible with the reference implementation. The template engine is based on Chameleon.
 
-The compiler is developed by Malthe Borch and other contributors as
-part of the `Zope <http://zope.org>`_ project.  It is written and
-distributed under the `ZPL license
-<http://www.zope.org/Resources/ZPL>`_.
+.. note:: If you're looking to use Chameleon outside a Zope 2 or 3 environment, the `chameleon.zpt <http://pypi.python.org/pypi/chameleon.zpt>`_ package provides a light-weight implementation of the ZPT language.
 
 Zope Page Templates (ZPT) is a system which can generate HTML and XML.
-ZPT is formed by the *Template Attribute Language* (*TAL*) and the
-*TAL Expression Syntax* (*TALES*), and the *Macro Expansion Template
-Attribute Language* (*METAL*).
+ZPT is formed by the *Template Attribute Language* (*TAL*), the
+*Expression Syntax* (*TALES*), *Intertionalization*  (*I18N*) and the *Macro Expansion Template Attribute Language* (*METAL*).
 
-Genshi provides an XML-based template language that is heavily inspired
-by `Kid <http://kid-templating.org/>`_, which in turn was inspired by
-a number of existing template languages, namely XSLT, TAL, and PHP.
+The package also implementation a text-mode which supports non-structural content like JavaScript.
 
-:mod:`z3c.pt` provides support for both ZPT and Genshi syntax.
+Language Reference
+==================
 
-TAL Support Documentation
-=========================
+For a general reference, see the `documentation <http://chameleon.repoze.org/docs/zpt>`_ for the :mod:`chameleon.zpt` package. In the present reference, the language details that are specific to this implementation are described.
 
-Documentation related to TAL support in :mod:`z3c.pt`.
 
 .. toctree::
    :maxdepth: 2
 
-   narr/refimpls
-   narr/tal
    narr/tales
-   narr/metal
    narr/i18n
-
-Genshi Support Documentation
-============================
-
-Documentation related to Genshi support in :mod:`z3c.pt`.
-
-.. warning:: Need Genshi-related documentation.
 
 API documentation
 =================
@@ -59,7 +39,9 @@ API documentation
 Support and Development
 =======================
 
-To report bugs, use the `bug tracker <http://code.google.com/p/z3c-pt>`_.
+This package is developed and maintained by `Malthe Borch <mailto:mborch@gmail.com>`_ and the Zope Community.
+
+To report bugs, use the `bug tracker <https://bugs.launchpad.net/z3c.pt/>`_.
 
 If you've got questions that aren't answered by this documentation,
 please contact the `maillist

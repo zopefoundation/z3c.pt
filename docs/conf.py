@@ -31,7 +31,7 @@ master_doc = 'index'
 
 # General substitutions.
 project = 'z3c.pt'
-copyright = '2008 The Zope Community'
+copyright = '2007-2009 The Zope Community'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
@@ -39,7 +39,7 @@ copyright = '2008 The Zope Community'
 # The short X.Y version.
 version = '1.0'
 # The full version, including alpha/beta/rc tags.
-release = '1.0dev'
+release = '1.0beta'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:

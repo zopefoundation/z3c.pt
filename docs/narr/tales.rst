@@ -1,14 +1,15 @@
 .. _tales_chapter:
 
-Template Attribute Language Expression Syntax (TALES)
-=====================================================
+TALES Expressions
+=================
 
 The *Template Attribute Language Expression Syntax* (TALES) standard
-describes expressions that supply :ref:`tal_chapter` and
-:ref:`metal_chapter` with data.  TALES is *one* possible expression
-syntax for these languages, but they are not bound to this definition.
-Similarly, TALES could be used in a context having nothing to do with
-TAL or METAL.
+describes expressions that supply :term:`TAL` and :term:`METAL` with
+data. TALES is *one* possible expression syntax for these languages,
+but they are not bound to this definition.  Similarly, TALES could be
+used in a context having nothing to do with TAL or METAL.
+
+.. note:: The TALES expression components used by the reference implementation are incompatible with :mod:`z3c.pt` and will not work. This :mod:`z3c.pt` package provides its own implementations.
 
 TALES expressions are described below with any delimiter or quote
 markup from higher language layers removed.  Here is the basic
@@ -20,9 +21,8 @@ definition of TALES syntax::
 Here are some simple examples::
 
       a.b.c
-      path:a/b/c
+      a/b/c
       nothing
-      path:nothing
       python: 1 + 2
       string:Hello, ${user/getUserName}
 
@@ -31,9 +31,6 @@ The optional *type prefix* determines the semantics and syntax of the
 can define any number of expression types, with whatever syntax you
 like. It also determines which expression type is indicated by
 omitting the prefix.
-
-TALES Expression Types
-----------------------
 
 These are the TALES expression types supported by :mod:`z3c.pt`:
 
@@ -48,31 +45,40 @@ These are the TALES expression types supported by :mod:`z3c.pt`:
 * ``string`` - format a string
 
 .. note:: if you do not specify a prefix within an expression context,
-   :mod:`z3c.pt`` assumes that the expression is a *python*
+   :mod:`z3c.pt`` assumes that the expression is a *path*
    expression.
-
-.. warning:: The reference implementation of ZPT has an expression type ``exists``.  :mod:`z3c.pt` has no such expression type.
 
 .. _tales_built_in_names:
 
 Built-in Names
 --------------
 
-These are the names always available to TALES expressions in
+In addition to ``default`` and ``repeat``, the following names are always available to TALES expressions in
 :mod:`z3c.pt`:
 
-- ``nothing`` - special value used by to represent a *non-value*
-  (Python ``None``).
+- ``nothing`` - equal to the Python null-value ``None``.
 
-- ``default`` - special value used to specify that existing text
-   should not be replaced. See the documentation for individual TAL
-   statements for details on how they interpret *default*.
+The following names are available in TALES expressions when evaluated inside page templates:
 
-- ``repeat`` - the *repeat* variables; see :ref:`tal_repeat` for more
-  information.
+- ``options`` - contains the keyword arguments passed to the render-method.
 
-- ``attrs`` - a dictionary containing the initial values of the
-  attributes of the current statement tag.
+- ``context`` - the template context
+
+- ``request`` - the current request
+
+- ``template`` - the template instance
+
+- ``path`` - a method which will evaluate a path-expression, expressed as a string.
+
+- ``exists`` - a method which will evaluate an exists-expression, expressed as a string.
+
+- ``modules`` - provides access to previously imported system modules; using this variable is not recommended.
+
+- ``econtext`` - dynamic variable scope dictionary which keeps track of global variables brought into scope using macros; used internally by the engine, relying on this variable is not recommended (although some legacy applications do so).
+
+Finally, view page templates provide the following names:
+
+- ``view`` - the view instance
 
 ``nocall`` expressions
 ----------------------
@@ -147,7 +153,7 @@ Examples
 
 Testing a sequence::
 
-        <p tal:condition="not:context.keys()">
+        <p tal:condition="not:context/keys">
           There are no keys.
         </p>
 
@@ -195,11 +201,9 @@ traverse the path, from left to right, until it succeeds or runs out
 of paths segments.  To traverse a path, it first fetches the object
 stored in the variable.  For each path segment, it traverses from the
 current object to the subobject named by the path segment. Subobjects
-are located according to standard :mod:`z3c.pt` traversal rules
+are located according to standard traversal rules.
 
-.. warning:: need to describe traversal rules here.  I'd suggest we
-   make them pluggable and not require zope.traversal or
-   zope.security.
+.. note:: The Zope 3 traversal API is used to traverse to subobjects. The `five.pt <http://pypi.python.org/pypi/five.pt>`_ package provides a Zope 2-compatible path expression.
 
 Once a path has been successfully traversed, the resulting object is
 the value of the expression.  If it is a callable object, such as a
@@ -210,7 +214,7 @@ specified, an error results.  Otherwise, the alternate expression is
 evaluated.
 
 The alternate expression can be any TALES expression. For example,
-``path:request/name | string:Anonymous Coward`` is a valid path
+``request/name | string:Anonymous Coward`` is a valid path
 expression.  This is useful chiefly for providing default values, such
 as strings and numbers, which are not expressable as path expressions.
 Since the alternate expression can be a path expression, it is
@@ -255,51 +259,37 @@ Python expression syntax::
 Description
 ~~~~~~~~~~~
 
-Python expressions evaluate Python code in a security-restricted
-environment. Python expressions offer the same facilities as those
+Python expressions evaluate Python code in a restricted
+environment (no access to variables starting with an underscore). Python expressions offer the same facilities as those
 available in Python-based Scripts and DTML variable expressions.
 
-.. warning: Security restrictions?
-
-Built-in Functions
-~~~~~~~~~~~~~~~~~~
-
-You can use any name passed in to the ``render`` method of a template
-within a Python expression.
-
-These functions are also available in Python expressions:
-
-``path(string)`` -- Evaluate a TALES path expression.
-
-``string(string)`` -- Evaluate a TALES string expression.
-
-``nocall(string)`` -- Evaluates a TALES nocall expression.
+.. warning: Zope 2 page templates may be executed in a security-restricted environment which ties in with the Zope 2 security model. This is not supported by :mod:`z3c.pt`.
 
 Examples
 ~~~~~~~~
 
 Using a module usage (pick a random choice from a list)::
 
-    <span tal:replace="random.choice(['one', 
-                         'two', 'three', 'four', 'five'])">
-      a random number between one and five
+    <span tal:replace="python:random.choice([
+                       'one', 'two', 'three', 'four', 'five'])">
+      A random number between one and five
     </span>
 
 String processing (capitalize the user name)::
 
-    <p tal:content="user.getUserName().capitalize()">
+    <p tal:content="python:user.getUserName().capitalize()">
       User Name
     </p>
 
 Basic math (convert an image size to megabytes)::
 
-    <p tal:content="image.getSize() / 1048576.0">
+    <p tal:content="python:image.getSize() / 1048576.0">
       12.2323
     </p>
 
 String formatting (format a float to two decimal places)::
 
-    <p tal:content="'%0.2f' % size">
+    <p tal:content="python:'%0.2f' % size">
       13.56
     </p>
 
