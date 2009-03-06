@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+In next release
+
+- Insert initial variable context into dynamic scope. The presence of
+  these is expected by many application. [malthe]
+
 1.0b11 (2009/03/05)
 ~~~~~~~~~~~~~~~~~~~
 

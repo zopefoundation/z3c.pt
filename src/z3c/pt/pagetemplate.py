@@ -10,6 +10,7 @@ from chameleon.core import config
 from chameleon.core import codegen
 from chameleon.core import clauses
 from chameleon.core import generation
+from chameleon.core import utils
 
 from chameleon.zpt import template
 from chameleon.zpt.interfaces import IExpressionTranslator
@@ -81,7 +82,6 @@ class BaseTemplate(template.PageTemplate):
     def bind(self, ob, request=None, macro=None, global_scope=True):
         def render(target_language=None, **kwargs):
             context = self._pt_get_context(ob, request, kwargs)
-
             if target_language is None:
                 try:
                     target_language = i18n.negotiate(
@@ -90,6 +90,7 @@ class BaseTemplate(template.PageTemplate):
                     target_language = None
 
             context['target_language'] = target_language
+            context["econtext"] = utils.econtext(context)
 
             if macro is None:
                 return self.render(**context)
