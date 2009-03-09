@@ -9,7 +9,7 @@ install_requires = [
     'zope.i18n >= 3.5',
     'zope.traversing',
     'zope.contentprovider',
-    'chameleon.core >= 1.0b21',
+    'chameleon.core >= 1.0b22',
     'chameleon.zpt >= 1.0b11',
     ]
 
