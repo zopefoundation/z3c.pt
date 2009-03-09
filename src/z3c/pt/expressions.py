@@ -58,17 +58,17 @@ class ZopeTraverser(object):
                         base = self.proxify(traversePathElement(
                             base, name, path_items, request=request))
                         continue
-                    
-                next = getattr(base, name, _marker)
-                if next is not _marker:
-                    base = next
-                    if ns is True and isinstance(base, MethodType):
-                        base = base()
-                    continue
+
+                # special-case dicts for performance reasons
+                if isinstance(base, dict):
+                    base = base[name]
                 else:
-                    # special-case dicts for performance reasons
-                    if isinstance(base, dict):
-                        base = base[name]
+                    next = getattr(base, name, _marker)
+                    if next is not _marker:
+                        base = next
+                        if ns is True and isinstance(base, MethodType):
+                            base = base()
+                        continue
                     else:
                         base = traversePathElement(
                             base, name, path_items, request=request)

@@ -283,6 +283,22 @@ Using 'exists:' in conjunction with a negation:
     <span>I don't exist?</span>
   </div>
 
+path expression with dictionaries
+---------------------------------
+
+Path expressions give preference to dictionary items instead of
+dictionary attributes.
+
+  >>> print PageTemplate("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      tal:define="links python:{'copy':'XXX', 'delete':'YYY'}">
+  ...   <span tal:content="links/copy"
+  ...         >ZZZ</span>
+  ... </div>""")()
+  <div xmlns="http://www.w3.org/1999/xhtml">
+    <span>XXX</span>
+  </div>
+
 TALES Function Namespaces
 -------------------------
 
