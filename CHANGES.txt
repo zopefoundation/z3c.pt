@@ -1,7 +1,8 @@
 Changelog
 ---------
 
-In next release
+1.0b12 (2009/03/09)
+~~~~~~~~~~~~~~~~~~~
 
 - Insert initial variable context into dynamic scope. The presence of
   these is expected by many application. [malthe]
