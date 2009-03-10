@@ -62,9 +62,6 @@ class ZopeTraverser(object):
                 # special-case dicts for performance reasons
                 if isinstance(base, dict):
                     next = base.get(name, _marker)
-
-                    if next is _marker:
-                        next = getattr(base, name, _marker)
                 else:
                     next = getattr(base, name, _marker)
                 
