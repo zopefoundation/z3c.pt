@@ -1,11 +1,10 @@
 Changelog
 ---------
 
-1.0b13 (Unreleased)
-~~~~~~~~~~~~~~~~~~~
+In next release
 
 - Path expressions give preference to dictionary items instead of
-  dictionary attributes. [sidnei]
+  dictionary attributes. [sidnei, malthe]
 
 1.0b12 (2009/03/09)
 ~~~~~~~~~~~~~~~~~~~

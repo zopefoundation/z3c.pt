@@ -61,17 +61,21 @@ class ZopeTraverser(object):
 
                 # special-case dicts for performance reasons
                 if isinstance(base, dict):
-                    base = base[name]
+                    next = base.get(name, _marker)
+
+                    if next is _marker:
+                        next = getattr(base, name, _marker)
                 else:
                     next = getattr(base, name, _marker)
-                    if next is not _marker:
-                        base = next
-                        if ns is True and isinstance(base, MethodType):
-                            base = base()
-                        continue
-                    else:
-                        base = traversePathElement(
-                            base, name, path_items, request=request)
+                
+                if next is not _marker:
+                    base = next
+                    if ns is True and isinstance(base, MethodType):
+                        base = base()
+                    continue
+                else:
+                    base = traversePathElement(
+                        base, name, path_items, request=request)
 
                 if not isinstance(base, (basestring, tuple, list)):
                     base = self.proxify(base)
