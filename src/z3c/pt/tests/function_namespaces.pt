@@ -8,4 +8,5 @@
   <span tal:content="context/ns4:page/yet/another|nothing" />
   <span tal:content="context/ns4:zope.Public" />
   <span tal:content="context/ns4:text-to-html" />
+  <span tal:content="context/ns5:page/yet/even/another" />
 </div>

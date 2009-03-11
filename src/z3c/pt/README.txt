@@ -117,6 +117,7 @@ alternative context and request.
     <span>test</span>
   </div>
 
+
 Dollar-Interpolation
 --------------------
 
@@ -348,7 +349,7 @@ Namespace Adapter doesn't have a callable function but traverses the
 remaining path instead::
 
   >>> from zope.traversing.interfaces import TraversalError
-  
+
   >>> class ns4(object):
   ...     zope.interface.implements(ITraversable)
   ...
@@ -373,6 +374,20 @@ remaining path instead::
 
   >>> zope.component.getGlobalSiteManager().registerAdapter(
   ...     ns4, [zope.interface.Interface], IPathAdapter, 'ns4')
+
+  >>> class ns5(object):
+  ...     zope.interface.implements(ITraversable)
+  ...
+  ...     def __init__(self, context):
+  ...         self.context = context
+  ...
+  ...     def traverse(self, name, furtherPath):
+  ...	      name = '/'.join([name] + furtherPath[::-1])
+  ...	      del furtherPath[:]
+  ...	      return 'traversed: ' + name
+
+  >>> zope.component.getGlobalSiteManager().registerAdapter(
+  ...     ns5, [zope.interface.Interface], IPathAdapter, 'ns5')
 
   >>> class Ob(object):
   ...     def __init__(self, title, date, parent=None, child=None):
@@ -408,4 +423,5 @@ remaining path instead::
     <span>called page: another</span>
     <span>traversed: zope.Public</span>
     <span>traversed: text-to-html</span>
+    <span>traversed: page/yet/even/another</span>
   </div>

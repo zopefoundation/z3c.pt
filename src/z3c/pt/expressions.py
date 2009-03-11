@@ -47,9 +47,10 @@ class ZopeTraverser(object):
 
         if bool(path_items):
             path_items = list(path_items)
+            path_items.reverse()
 
             while len(path_items):
-                name = path_items.pop(0)
+                name = path_items.pop()
                 ns = ':' in name
                 if ns is True:
                     namespace, name = name.split(':', 1)
@@ -64,7 +65,7 @@ class ZopeTraverser(object):
                     next = base.get(name, _marker)
                 else:
                     next = getattr(base, name, _marker)
-                
+
                 if next is not _marker:
                     base = next
                     if ns is True and isinstance(base, MethodType):

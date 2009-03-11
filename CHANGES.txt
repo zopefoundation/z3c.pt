@@ -6,6 +6,9 @@ In next release
 - Path expressions give preference to dictionary items instead of
   dictionary attributes. [sidnei, malthe]
 
+- Path expressions need to pass further path items in reverse order to
+  traversePathElement, because that's what it expects. [sidnei]
+
 1.0b12 (2009/03/09)
 ~~~~~~~~~~~~~~~~~~~
 
