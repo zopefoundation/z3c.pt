@@ -90,7 +90,7 @@ class BenchmarkTestCase(BaseTestCase):
     xmlns:tal="http://xml.zope.org/namespaces/tal"
     tal:default-expression="path">
     <tr tal:repeat="row options/table">
-    <td tal:repeat="c row/values">
+    <td tal:repeat="c python: row.values()">
     <span tal:define="d python: c + 1"
     tal:attributes="class string:column-${d}"
     tal:content="d" />
