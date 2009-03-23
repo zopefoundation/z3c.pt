@@ -1,10 +1,11 @@
 Changelog
 ---------
 
-In next release
+1.0b13 (2009/03/23)
+~~~~~~~~~~~~~~~~~~~
 
-- Path expressions give preference to dictionary items instead of
-  dictionary attributes. [sidnei, malthe]
+- When traversing on dictionaries, only exposes dictionary items
+  (never attributes); this is to avoid ambiguity. [sidnei, malthe]
 
 - Path expressions need to pass further path items in reverse order to
   traversePathElement, because that's what it expects. [sidnei]
