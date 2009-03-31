@@ -77,7 +77,7 @@ def evaluate_exists(expr):
 
 class BaseTemplate(template.PageTemplate):
     default_parser = language.Parser()
-    version = 1
+    version = 2
     
     def bind(self, ob, request=None, macro=None, global_scope=True):
         def render(target_language=None, **kwargs):
