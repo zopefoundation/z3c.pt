@@ -70,12 +70,14 @@ if __name__ == '__main__':
     which = None
     if '-p' in sys.argv:
         which = True
-        import hotshot, hotshot.stats
-        prof = hotshot.Profile("template.prof")
+        from cProfile import Profile
+        import pstats
+        profiler = Profile()
         setup()
         test_z3c()
-        benchtime = prof.runcall(test_z3c)
-        stats = hotshot.stats.load("template.prof")
+        profiler.runcall(test_z3c)
+        profiler.dump_stats('template.prof')
+        stats = pstats.Stats(profiler)
         stats.strip_dirs()
         stats.sort_stats('time', 'calls')
         stats.print_stats()
