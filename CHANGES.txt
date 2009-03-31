@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+In next release
+
+- Updated language adapter to work with 'structure' meta
+  attribute. [malthe]
+
 1.0b13 (2009/03/23)
 ~~~~~~~~~~~~~~~~~~~
 

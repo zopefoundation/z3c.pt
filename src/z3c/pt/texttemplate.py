@@ -10,7 +10,7 @@ class Parser(chameleon.zpt.language.Parser):
     default_expression = "path"
 
     element_mapping = {
-        config.XHTML_NS: {None: XHTMLElement},
+        config.META_NS: {None: XHTMLElement},
         }
     
 class TextTemplate(pagetemplate.PageTemplate):
