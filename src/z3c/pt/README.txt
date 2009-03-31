@@ -170,6 +170,9 @@ Text templates
       background: #ccc;
   }
 
+  >>> template = ViewTextTemplate('print "<html>${options/color}</html>";')
+  >>> print template.bind(view)(color=u'#ccc')
+  print "<html>#ccc</html>";
 
 Global 'path' Function
 ----------------------
