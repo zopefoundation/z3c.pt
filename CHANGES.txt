@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+In the next release
+
+- Set Content-Type header, for backwards compatibility with
+  zope.app.pagetemplate. [sidnei]
+
 1.0b14 (2009/03/31)
 ~~~~~~~~~~~~~~~~~~~
 

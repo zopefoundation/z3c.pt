@@ -76,21 +76,28 @@ def evaluate_exists(expr):
         return False
 
 class BaseTemplate(template.PageTemplate):
+    content_type = None
     default_parser = language.Parser()
     version = 2
     
     def bind(self, ob, request=None, macro=None, global_scope=True):
-        def render(target_language=None, **kwargs):
+        def render(target_language=None, request=request, **kwargs):
             context = self._pt_get_context(ob, request, kwargs)
+            request = request or context.get('request')
             if target_language is None:
                 try:
-                    target_language = i18n.negotiate(
-                        request or context.get('request'))
+                    target_language = i18n.negotiate(request)
                 except:
                     target_language = None
 
             context['target_language'] = target_language
             context["econtext"] = utils.econtext(context)
+
+            if request is not None and not isinstance(request, basestring):
+                content_type = self.content_type or 'text/html'
+                if not request.response.getHeader("Content-Type"):
+                    request.response.setHeader(
+                        "Content-Type", content_type)
 
             if macro is None:
                 return self.render(**context)
@@ -141,6 +148,10 @@ class BaseTemplateFile(BaseTemplate, template.PageTemplateFile):
 
         template.PageTemplateFile.__init__(
             self, filename, **kwargs)
+
+        # Set content-type last, so that we can override whatever was
+        # magically sniffed from the source template.
+        self.content_type = content_type
 
 class PageTemplate(BaseTemplate):
     """Page Templates using TAL, TALES, and METAL.

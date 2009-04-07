@@ -22,6 +22,7 @@ The ``PageTemplate`` class is initialized with a string.
     Hello World!
   </div>
 
+
 The ``PageTemplateFile`` class is initialized with an absolute
 path to a template file on disk.
 
@@ -36,6 +37,68 @@ path to a template file on disk.
   >>> import os
   >>> template_file.filename.startswith(os.sep)
   True
+
+If a ``content_type`` is not informed and one is not present in the
+request, it will be set to 'text/html'.
+
+  >>> class Response(object):
+  ...     def __init__(self):
+  ...         self.headers = {}
+  ...         self.getHeader = self.headers.get
+  ...         self.setHeader = self.headers.__setitem__
+
+  >>> class Request(object):
+  ...     def __init__(self):
+  ...         self.response = Response()
+
+  >>> template_file = PageTemplateFile(path+'/helloworld.pt')
+  >>> request = Request()
+  >>> print request.response.getHeader('Content-Type')
+  None
+
+  >>> template = template_file.bind(None, request=request)
+  >>> print template()
+  <div xmlns="http://www.w3.org/1999/xhtml">
+    Hello World!
+  </div>
+
+  >>> print request.response.getHeader('Content-Type')
+  text/html
+
+If a ``content_type`` is present in the request, then we don't override it.
+
+  >>> request = Request()
+  >>> request.response.setHeader('Content-Type', 'text/xml')
+  >>> print request.response.getHeader('Content-Type')
+  text/xml
+
+  >>> template = template_file.bind(None, request=request)
+  >>> print template()
+  <div xmlns="http://www.w3.org/1999/xhtml">
+    Hello World!
+  </div>
+
+  >>> print request.response.getHeader('Content-Type')
+  text/xml
+
+A ``content_type`` can be also set at instantiation time, and it will
+be respected.
+
+  >>> template_file = PageTemplateFile(path+'/helloworld.pt',
+  ...                                  content_type='application/rdf+xml')
+
+  >>> request = Request()
+  >>> print request.response.getHeader('Content-Type')
+  None
+
+  >>> template = template_file.bind(None, request=request)
+  >>> print template()
+  <div xmlns="http://www.w3.org/1999/xhtml">
+    Hello World!
+  </div>
+
+  >>> print request.response.getHeader('Content-Type')
+  application/rdf+xml
 
 Both may be used as class attributes (properties).
 
