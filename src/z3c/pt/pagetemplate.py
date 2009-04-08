@@ -115,7 +115,6 @@ class BaseTemplate(template.PageTemplate):
         return dict(
             options=kwargs,
             request=request,
-            template=self,
             path=evaluate_path,
             exists=evaluate_exists,
             nothing=None,
@@ -193,7 +192,6 @@ class ViewPageTemplate(PageTemplate):
             view=view,
             context=context,
             request=request,
-            template=self,
             path=evaluate_path,
             exists=evaluate_exists,
             options=kwargs,
