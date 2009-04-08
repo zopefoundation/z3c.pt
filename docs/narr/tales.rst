@@ -53,8 +53,7 @@ These are the TALES expression types supported by :mod:`z3c.pt`:
 Built-in Names
 --------------
 
-In addition to ``default`` and ``repeat``, the following names are always available to TALES expressions in
-:mod:`z3c.pt`:
+In addition to ``template``, ``macros``, ``default`` and ``repeat``, the following names are always available to TALES expressions in :mod:`z3c.pt`:
 
 - ``nothing`` - equal to the Python null-value ``None``.
 
@@ -65,8 +64,6 @@ The following names are available in TALES expressions when evaluated inside pag
 - ``context`` - the template context
 
 - ``request`` - the current request
-
-- ``template`` - the template instance
 
 - ``path`` - a method which will evaluate a path-expression, expressed as a string.
 
