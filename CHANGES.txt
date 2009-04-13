@@ -3,7 +3,11 @@ Changelog
 
 In the next release
 
-- The ``template`` symbol is already set by the template base class. [malthe]
+- Detect path prefix properly for ViewPageTemplateFile usage in
+  doctests. [sidnei]
+
+- The ``template`` symbol is already set by the template base
+  class. [malthe]
 
 - Set Content-Type header, for backwards compatibility with
   zope.app.pagetemplate. [sidnei]
