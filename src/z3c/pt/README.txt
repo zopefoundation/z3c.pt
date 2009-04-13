@@ -26,9 +26,7 @@ The ``PageTemplate`` class is initialized with a string.
 The ``PageTemplateFile`` class is initialized with an absolute
 path to a template file on disk.
 
-  >>> from z3c.pt import tests
-  >>> path = tests.__path__[0]
-  >>> template_file = PageTemplateFile(path+'/helloworld.pt')
+  >>> template_file = PageTemplateFile('tests/helloworld.pt')
   >>> print template_file()
   <div xmlns="http://www.w3.org/1999/xhtml">
     Hello World!
@@ -51,7 +49,7 @@ request, it will be set to 'text/html'.
   ...     def __init__(self):
   ...         self.response = Response()
 
-  >>> template_file = PageTemplateFile(path+'/helloworld.pt')
+  >>> template_file = PageTemplateFile('tests/helloworld.pt')
   >>> request = Request()
   >>> print request.response.getHeader('Content-Type')
   None
@@ -84,7 +82,7 @@ If a ``content_type`` is present in the request, then we don't override it.
 A ``content_type`` can be also set at instantiation time, and it will
 be respected.
 
-  >>> template_file = PageTemplateFile(path+'/helloworld.pt',
+  >>> template_file = PageTemplateFile('tests/helloworld.pt',
   ...                                  content_type='application/rdf+xml')
 
   >>> request = Request()
@@ -108,7 +106,7 @@ Both may be used as class attributes (properties).
   ...          Hello World!
   ...       </div>""")
   ...
-  ...     template_file = PageTemplateFile(path+'/helloworld.pt')
+  ...     template_file = PageTemplateFile('tests/helloworld.pt')
 
   >>> instance = MyClass()
   >>> print instance.template()
@@ -139,8 +137,10 @@ View page templates
 As before, we can initialize view page templates with a string (here
 incidentally loaded from disk).
 
+  >>> from z3c.pt import tests
+  >>> path = tests.__path__[0]
   >>> template = ViewPageTemplate(
-  ...     open(path+'/view.pt').read())
+  ...     open(path + '/view.pt').read())
 
 To render the template in the context of a view, we bind the template
 passing the view as an argument (view page templates derive from the
@@ -158,7 +158,7 @@ class).
 
 The exercise is similar for the file-based variant.
 
-  >>> template = ViewPageTemplateFile(path+'/view.pt')
+  >>> template = ViewPageTemplateFile('tests/view.pt')
   >>> print template.bind(view)(test=u'test')
   <div xmlns="http://www.w3.org/1999/xhtml">
     <span>view</span>
@@ -221,13 +221,13 @@ Text templates
   >>> from z3c.pt.texttemplate import ViewTextTemplate
   >>> from z3c.pt.texttemplate import ViewTextTemplateFile
 
-  >>> template = ViewTextTemplate(open(path+'/view.css').read())
+  >>> template = ViewTextTemplate(open(path + '/view.css').read())
   >>> print template.bind(view)(color=u'#ccc')
   #region {
       background: #ccc;
   }
 
-  >>> template = ViewTextTemplateFile(path+'/view.css')
+  >>> template = ViewTextTemplateFile('tests/view.css')
   >>> print template.bind(view)(color=u'#ccc')
   #region {
       background: #ccc;
@@ -479,7 +479,7 @@ remaining path instead::
   ...         return 'view'
 
   >>> view = View()
-  >>> template = ViewPageTemplateFile(path+'/function_namespaces.pt')
+  >>> template = ViewPageTemplateFile('tests/function_namespaces.pt')
   >>> print template.bind(view)()
   <div xmlns="http://www.w3.org/1999/xhtml">
     <span>GRANDPA</span>

@@ -128,22 +128,26 @@ class BaseTemplateFile(BaseTemplate, template.PageTemplateFile):
         if path is not None:
             filename = os.path.join(path, filename)
 
-        if not os.path.isabs(filename):	       
-            for depth in (1, 2):	       
-                frame = sys._getframe(depth)	 
-                package_name = frame.f_globals['__name__']	 
- 	 
-                if package_name != self.__module__:	 
-                    break	 
- 	 
-            module = sys.modules[package_name]
-            try:	 
-                path = module.__path__[0]	 
-            except AttributeError:	 
-                path = module.__file__	 
-                path = path[:path.rfind(os.sep)]	 
- 	 
-            filename = path + os.sep + filename
+        if not os.path.isabs(filename):
+            for depth in (1, 2):
+                frame = sys._getframe(depth)
+                package_name = frame.f_globals.get('__name__', None)
+                if package_name is not None and package_name != self.__module__:
+                    module = sys.modules[package_name]
+                    try:
+                        path = module.__path__[0]
+                    except AttributeError:
+                        path = module.__file__
+                        path = path[:path.rfind(os.sep)]
+                    break
+                else:
+                    package_path = frame.f_globals.get('__file__', None)
+                    if package_path is not None:
+                        path = os.path.dirname(package_path)
+                        break
+
+            if path is not None:
+                filename = os.path.join(path, filename)
 
         template.PageTemplateFile.__init__(
             self, filename, **kwargs)
