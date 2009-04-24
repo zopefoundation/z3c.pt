@@ -186,7 +186,7 @@ class PathTranslator(expressions.ExpressionTranslator):
                 component = "%s %% (%s,)" % (
                     repr(part), ", ".join(interpolation_args))
             else:
-                component = repr(part)
+                component = repr(str(part))
 
             components.append(component)
 

@@ -3,6 +3,9 @@ Changelog
 
 In the next release
 
+- Make sure the path expression is a simple string, not
+  unicode. [malthe]
+
 - Detect path prefix properly for ViewPageTemplateFile usage in
   doctests. [sidnei]
 
