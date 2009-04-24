@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 import sys
-version = '1.0b14'
+version = '1.0b15'
 
 install_requires = [
     'setuptools',
@@ -9,8 +9,7 @@ install_requires = [
     'zope.i18n >= 3.5',
     'zope.traversing',
     'zope.contentprovider',
-    'chameleon.core >= 1.0b25',
-    'chameleon.zpt >= 1.0b12',
+    'chameleon.zpt >= 1.0b16',
     ]
 
 if sys.version_info[:3] < (2,5,0):
@@ -39,5 +38,4 @@ setup(name='z3c.pt',
       include_package_data=True,
       zip_safe=False,
       install_requires=install_requires,
-      extras_require={'lxml':['lxml>=2.1.1']},
       )
