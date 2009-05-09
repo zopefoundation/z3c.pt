@@ -16,6 +16,9 @@ from z3c.pt import pagetemplate
 
 from lxml import etree
 
+class test_request:
+    response = None
+
 def benchmark(title):
     def decorator(f):
         def wrapper(*args):
@@ -153,7 +156,7 @@ class BenchmarkTestCase(BaseTestCase):
     def testBigTablePath(self):
         table = self.table
 
-        t_z3c = timing(self.bigtable_path_z3c, table=table, request=object())
+        t_z3c = timing(self.bigtable_path_z3c, table=table, request=test_request)
         t_zope = timing(self.bigtable_path_zope, table=table)
 
         print "z3c.pt:            %.2f" % t_z3c
@@ -239,8 +242,8 @@ class FileBenchmarkTestCase(BaseTestCase):
         zopefile = zope.pagetemplate.pagetemplatefile.PageTemplateFile(
             self._testfile('bigtable_path_zope.pt'))
 
-        t_z3c = timing(z3cfile.render, table=table, request=object())
-        t_zope = timing(zopefile, table=table, request=object())
+        t_z3c = timing(z3cfile.render, table=table, request=test_request)
+        t_zope = timing(zopefile, table=table, request=test_request)
 
         print "z3c.pt:            %.2f" % t_z3c
         print "zope.pagetemplate: %.2f" % t_zope
