@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+- Wrap ``sys.modules`` dictionary in an "opaque" dictionary class,
+  such that the representation string does not list all loaded
+  modules. [malthe]
+
 1.0b15 (2009/04/24)
 ~~~~~~~~~~~~~~~~~~~
 

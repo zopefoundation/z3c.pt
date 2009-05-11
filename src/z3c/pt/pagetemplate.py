@@ -20,6 +20,18 @@ from z3c.pt import language
 _marker = object()
 _expr_cache = {}
 
+class opaque_dict(dict):
+    def __new__(cls, dictionary):
+        inst = dict.__new__(cls)
+        inst.__getitem__ = dictionary.__getitem__
+        inst.__len__ = dictionary.__len__
+        return inst
+
+    def __repr__(self):
+        return "{...} (%d entries)" % len(self)
+
+sys_modules = opaque_dict(sys.modules)
+
 def evaluate_expression(pragma, expr):
     key = "%s(%s)" % (pragma, expr)
     try:
@@ -118,7 +130,7 @@ class BaseTemplate(template.PageTemplate):
             path=evaluate_path,
             exists=evaluate_exists,
             nothing=None,
-            modules=sys.modules)
+            modules=sys_modules)
 
 class BaseTemplateFile(BaseTemplate, template.PageTemplateFile):
     """If ``filename`` is a relative path, the module path of the
@@ -200,7 +212,7 @@ class ViewPageTemplate(PageTemplate):
             exists=evaluate_exists,
             options=kwargs,
             nothing=None,
-            modules=sys.modules)
+            modules=sys_modules)
 
     def __call__(self, _ob=None, context=None, request=None, **kwargs):
         kwargs.setdefault('context', context)
