@@ -107,8 +107,9 @@ class BaseTemplate(template.PageTemplate):
 
             if request is not None and not isinstance(request, basestring):
                 content_type = self.content_type or 'text/html'
-                if not request.response.getHeader("Content-Type"):
-                    request.response.setHeader(
+                response = request.response
+                if response and not response.getHeader("Content-Type"):
+                    response.setHeader(
                         "Content-Type", content_type)
 
             if macro is None:
