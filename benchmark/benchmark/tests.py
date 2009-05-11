@@ -203,8 +203,7 @@ class FileBenchmarkTestCase(BaseTestCase):
 
         # save registry
         assert len(z3cfile.registry) == 1
-        z3cfile.registry.save()
-
+        
         t_cached_z3c = timing(z3cfile.registry.load)
         t_cook_z3c = timing(z3cfile.cook, parameters=('table',))
         t_zope = timing(zopefile._cook)
