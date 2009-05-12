@@ -23,9 +23,16 @@ _expr_cache = {}
 class opaque_dict(dict):
     def __new__(cls, dictionary):
         inst = dict.__new__(cls)
-        inst.__getitem__ = dictionary.__getitem__
-        inst.__len__ = dictionary.__len__
+        inst.dictionary = dictionary
         return inst
+    
+    @property
+    def __getitem__(self):
+        return self.dictionary.__getitem__
+
+    @property
+    def __len__(self):
+        return self.dictionary.__len__
 
     def __repr__(self):
         return "{...} (%d entries)" % len(self)
