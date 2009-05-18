@@ -19,5 +19,6 @@ setup(name='benchmark',
          'zope.pagetemplate',
          'zope.tales',
          'z3c.pt',
+         'lxml',
       ],
       )

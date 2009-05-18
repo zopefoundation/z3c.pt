@@ -11,6 +11,8 @@ Changelog
 1.0b15 (2009/04/24)
 ~~~~~~~~~~~~~~~~~~~
 
+- Removed lxml extra, as we do no longer depend on it. [malthe]
+
 - Make sure the path expression is a simple string, not
   unicode. [malthe]
 
