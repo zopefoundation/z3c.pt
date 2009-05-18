@@ -127,6 +127,41 @@ class BenchmarkTestCase(BaseTestCase):
     </tr>
     </table>""", 'text/xhtml')
 
+    bigtable_python_macros_z3c = pagetemplate.PageTemplate("""\
+    <metal:rows
+    xmlns:tal="http://xml.zope.org/namespaces/tal"
+    xmlns:metal="http://xml.zope.org/namespaces/metal"
+    define-macro="rows">
+    <tr tal:repeat="row table">
+      <td metal:define-slot="columns" />
+    </tr>
+    </metal:rows>""")
+
+    bigtable_python_macro_version_z3c = pagetemplate.PageTemplate("""\
+    <table xmlns="http://www.w3.org/1999/xhtml"
+           xmlns:tal="http://xml.zope.org/namespaces/tal"
+           xmlns:metal="http://xml.zope.org/namespaces/metal"
+    tal:define="table python: options['table'];
+                macros python: options['macros']">
+    <tr metal:use-macro="python: macros['rows']">
+    <metal:columns fill-slot="columns">
+    <td tal:repeat="c python: row.values()">
+    <span tal:define="d python: c + 1"
+          tal:attributes="class python: 'column-' + str(d)"
+          tal:content="python: d" />
+    </td>
+    </metal:columns>
+    </tr>
+    </table>""")
+
+    bigtable_python_macros_zope = zope.pagetemplate.pagetemplate.PageTemplate()
+    bigtable_python_macros_zope.pt_edit(
+        bigtable_python_macros_z3c.body, 'text/xhtml')
+
+    bigtable_python_macro_version_zope = zope.pagetemplate.pagetemplate.PageTemplate()
+    bigtable_python_macro_version_zope.pt_edit(
+        bigtable_python_macro_version_z3c.body, 'text/xhtml')
+
     @benchmark(u"Hello World")
     def testHelloWorld(self):
         t_z3c = timing(self.helloworld_z3c)
@@ -163,17 +198,34 @@ class BenchmarkTestCase(BaseTestCase):
         print "zope.pagetemplate: %.2f" % t_zope
         print "                   %.2fX" % (t_zope/t_z3c)
 
+    @benchmark(u"Big table (macro)")
+    def testBigTableMacro(self):
+        table = self.table
+
+        t_z3c = timing(
+            self.bigtable_python_macro_version_z3c,
+            table=table,
+            macros=self.bigtable_python_macros_z3c.macros)
+        t_zope = timing(
+            self.bigtable_python_macro_version_zope,
+            table=table,
+            macros=self.bigtable_python_macros_zope.macros)
+
+        print "z3c.pt:            %.2f" % t_z3c
+        print "zope.pagetemplate: %.2f" % t_zope
+        print "--------------------------"
+        print "ratio to zpt:      %.2fX" % (t_zope/t_z3c)
+
     @benchmark(u"Compilation")
     def testCompilation(self):
         table = self.table
 
-        t_z3c = timing(self.bigtable_python_z3c.cook, parameters=('table',))
+        t_z3c = timing(self.bigtable_python_z3c.compiler, ('table',), None, True)
         t_zope = timing(self.bigtable_python_zope._cook)
 
         print "z3c.pt:            %.2f" % t_z3c
         print "zope.pagetemplate: %.2f" % t_zope
         print "                   %.2fX" % (t_zope/t_z3c)
-
 
 class FileBenchmarkTestCase(BaseTestCase):
 
@@ -205,7 +257,7 @@ class FileBenchmarkTestCase(BaseTestCase):
         assert len(z3cfile.registry) == 1
         
         t_cached_z3c = timing(z3cfile.registry.load)
-        t_cook_z3c = timing(z3cfile.cook, parameters=('table',))
+        t_cook_z3c = timing(z3cfile.compiler, ('table',), None, True)
         t_zope = timing(zopefile._cook)
                 
         print "z3c.pt cooking:    %.3f" % t_cook_z3c
