@@ -1,7 +1,8 @@
 Changelog
 ---------
 
-In next release...
+1.0b16 (2009/05/20)
+~~~~~~~~~~~~~~~~~~~
 
 - Updated run-time expression evaluator method to work after a recent
   architectural change in Chameleon. [malthe]
