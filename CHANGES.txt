@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+In next release...
+
+- Updated run-time expression evaluator method to work after a recent
+  architectural change in Chameleon. [malthe]
+
 - Check that we have a non-trivial response-object before trying to
   set the content type. [malthe]
 
