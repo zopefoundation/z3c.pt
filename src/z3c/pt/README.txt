@@ -366,6 +366,46 @@ dictionary attributes.
     <span>XXX</span>
   </div>
 
+
+Variable from one tag never leak into another
+---------------------------------------------
+
+  >>> body = """\
+  ... <div xmlns="http://www.w3.org/1999/xhtml"
+  ...      xmlns:tal="http://xml.zope.org/namespaces/tal"
+  ...      xmlns:metal="http://xml.zope.org/namespaces/metal">
+  ...   <div class="macro" metal:define-macro="greeting"
+  ...        tal:define="greeting greeting|string:'Hey'">
+  ...       <span tal:replace="greeting" />
+  ...   </div>
+  ...   <div tal:define="greeting string:'Hello'">
+  ...	  <metal:block metal:use-macro="python:template.macros['greeting']" />
+  ...   </div>
+  ...   <div>
+  ...	  <metal:block metal:use-macro="python:template.macros['greeting']" />
+  ...   </div>
+  ... </div>"""
+  >>> print PageTemplate(body)()
+  <div xmlns="http://www.w3.org/1999/xhtml">
+    <div class="macro">
+        'Hey'
+    </div>
+    <div>
+      <div class="macro">
+        'Hello'
+    </div>
+  <BLANKLINE>
+  </div>
+    <div>
+      <div class="macro">
+        'Hey'
+    </div>
+  <BLANKLINE>
+  </div>
+  </div>
+
+
+
 TALES Function Namespaces
 -------------------------
 
