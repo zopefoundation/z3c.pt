@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+1.0b17 (unreleased)
+~~~~~~~~~~~~~~~~~~~
+
+- Made the Zope security declaration for the repeat dictionary be conditional
+  on the presence of zope.app.security instead of zope.app.component.
+
 1.0b16 (2009/05/20)
 ~~~~~~~~~~~~~~~~~~~
 
@@ -104,7 +110,7 @@ Changelog
   support for global ``path()`` and ``exists()`` functions for use in
   ``python:`` expressions (LP #317967).
 
-- Added Zope security  declaration for  the repeat dictionary (tales
+- Added Zope security declaration for the repeat dictionary (tales
   iterator). [malthe]
 
 1.0b6 (2008/12/18)

@@ -23,11 +23,11 @@
      name="exists"
      component=".expressions.exists_translator" />
 
-  <configure zcml:condition="installed zope.app.component">
-    
+  <configure zcml:condition="installed zope.app.security">
+
     <include package="zope.app.component" file="meta.zcml" />
     <include package="zope.app.security" file="meta.zcml" />
-    
+
     <class class="chameleon.core.utils.repeatitem">
       <allow interface="chameleon.core.interfaces.ITALESIterator" />
     </class>
