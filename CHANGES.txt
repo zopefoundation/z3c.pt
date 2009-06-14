@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-1.0b17 (unreleased)
+1.0b17 (2009/06/14)
 ~~~~~~~~~~~~~~~~~~~
 
 - Made the Zope security declaration for the repeat dictionary be conditional
