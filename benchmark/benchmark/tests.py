@@ -220,7 +220,7 @@ class BenchmarkTestCase(BaseTestCase):
     def testCompilation(self):
         table = self.table
 
-        t_z3c = timing(self.bigtable_python_z3c.compiler, ('table',), None, True)
+        t_z3c = timing(self.bigtable_python_z3c.compiler, None, True)
         t_zope = timing(self.bigtable_python_zope._cook)
 
         print "z3c.pt:            %.2f" % t_z3c
@@ -257,7 +257,7 @@ class FileBenchmarkTestCase(BaseTestCase):
         assert len(z3cfile.registry) == 1
         
         t_cached_z3c = timing(z3cfile.registry.load)
-        t_cook_z3c = timing(z3cfile.compiler, ('table',), None, True)
+        t_cook_z3c = timing(z3cfile.compiler, None, True)
         t_zope = timing(zopefile._cook)
                 
         print "z3c.pt cooking:    %.3f" % t_cook_z3c
