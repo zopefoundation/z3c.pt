@@ -1,6 +1,7 @@
 from setuptools import setup, find_packages
 import sys
-version = '1.0b18'
+
+version = '1.0.0'
 
 install_requires = [
     'setuptools',
@@ -9,7 +10,7 @@ install_requires = [
     'zope.i18n >= 3.5',
     'zope.traversing',
     'zope.contentprovider',
-    'chameleon.zpt >= 1.0b17',
+    'chameleon.zpt >= 1.0.0',
     ]
 
 if sys.version_info[:3] < (2,5,0):
@@ -17,9 +18,7 @@ if sys.version_info[:3] < (2,5,0):
 
 setup(name='z3c.pt',
       version=version,
-      description="Python template compiler which supports the Genshi and "
-                  "ZPT template languages including macro extensions and "
-                  "internationalization.",
+      description="Fast ZPT template engine.",
       long_description=open("README.txt").read() + open("CHANGES.txt").read(),
       classifiers=[
         "Programming Language :: Python",
