@@ -527,6 +527,7 @@ remaining path instead::
     <span>traversed: link:main</span>
     <span>called page: default</span>
     <span>called page: another</span>
+    <span></span>
     <span>traversed: zope.Public</span>
     <span>traversed: text-to-html</span>
     <span>traversed: page/yet/even/another</span>
