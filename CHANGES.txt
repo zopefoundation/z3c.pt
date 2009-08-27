@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+1.0.1 (unreleased)
+~~~~~~~~~~~~~~~~~~
+
+- Declare zope security settings for classes when zope.security is present
+  as the "class" ZCML directive was moved there.
+
 1.0.0 (2009/07/06)
 ~~~~~~~~~~~~~~~~~~
 
