@@ -1,8 +1,13 @@
 Changelog
 ---------
 
-1.1 (unreleased)
-~~~~~~~~~~~~~~~~
+In next release...
+~~~~~~~~~~~~~~~~~~
+
+- Bind translation context (request) to translation method. Although
+  not required in newer versions of the translation machinery, some
+  versions will ask for a translation context in order to negotiate
+  language even when a language is explicitly passed in.
 
 - Declare zope security settings for classes when zope.security is present
   as the "class" ZCML directive was moved there.

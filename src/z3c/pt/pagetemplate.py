@@ -11,7 +11,7 @@ from chameleon.core import codegen
 from chameleon.core import clauses
 from chameleon.core import generation
 from chameleon.core import utils
-
+from chameleon.core.i18n import fast_translate
 from chameleon.zpt import template
 from chameleon.zpt.interfaces import IExpressionTranslator
 
@@ -100,7 +100,7 @@ class BaseTemplate(template.PageTemplate):
     content_type = None
     default_parser = language.Parser()
     version = 2
-    
+
     def bind(self, ob, request=None, macro=None, global_scope=True):
         def render(target_language=None, request=request, **kwargs):
             context = self._pt_get_context(ob, request, kwargs)
@@ -112,7 +112,14 @@ class BaseTemplate(template.PageTemplate):
                     target_language = None
 
             context['target_language'] = target_language
-            context["econtext"] = utils.econtext(context)
+            context['econtext'] = utils.econtext(context)
+
+            # bind translation-method to request
+            def translate(
+                msgid, domain=None, mapping=None, target_language=None, default=None):
+                return fast_translate(
+                    msgid, domain, mapping, request, target_language, default)
+            context[config.SYMBOLS.translate] = translate
 
             if request is not None and not isinstance(request, basestring):
                 content_type = self.content_type or 'text/html'
