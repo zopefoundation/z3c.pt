@@ -14,7 +14,10 @@ from chameleon.core import filecache
 
 from z3c.pt import pagetemplate
 
-from lxml import etree
+try:
+    from lxml import etree
+except ImportError:
+    etree = None
 
 class test_request:
     response = None
@@ -177,7 +180,11 @@ class BenchmarkTestCase(BaseTestCase):
 
         t_z3c = timing(self.bigtable_python_z3c, table=table)
         t_zope = timing(self.bigtable_python_zope, table=table)
-        t_lxml = timing(bigtable_python_lxml, table=table)
+
+        if etree:
+            t_lxml = timing(bigtable_python_lxml, table=table)
+        else:
+            t_lxml = 0.0
 
         print "zope.pagetemplate: %.2f" % t_zope
         print "lxml:              %.2f" % t_lxml
