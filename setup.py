@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys
 
-version = '1.1.0dev'
+version = '1.1.0'
 
 install_requires = [
     'setuptools',
@@ -24,7 +24,6 @@ setup(name='z3c.pt',
         "Programming Language :: Python",
         "Topic :: Text Processing :: Markup :: HTML",
         "Topic :: Text Processing :: Markup :: XML",
-        "Topic :: Software Development :: Libraries :: Python Modules",
         ],
       keywords='',
       author='Malthe Borch and the Zope Community',
