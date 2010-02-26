@@ -78,7 +78,14 @@ def evaluate_expression(pragma, expr):
     try:
         code = _expr_cache[code_cache_key]
     except KeyError:
-        suite = codegen.Suite(source, _locals)
+        suite = None
+        try:
+            # Backwards compatibility (Chameleon < 1.1)
+            suite = codegen.Suite(source, _locals)
+        except TypeError:
+            # Chameleon >= 1.1 does not support a second parameter on
+            # Suite()
+            suite = codegen.Suite(source)
         code = compiler.compile(
             suite.source, 'dynamic_path_expression.py', 'exec')
         _expr_cache[code_cache_key] = code
