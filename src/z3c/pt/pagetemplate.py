@@ -88,6 +88,13 @@ def evaluate_expression(pragma, expr):
             suite = codegen.Suite(source)
         code = compiler.compile(
             suite.source, 'dynamic_path_expression.py', 'exec')
+        
+        ## XXX: The following code (making suites above senseless)
+        ##      lets tests pass again but skips the AST handling done
+        ##      in Chameleon.core.codegen.Suite.
+        ##
+        ## code = compiler.compile(
+        ##     source, 'dynamic_path_expression.py', 'exec')
         _expr_cache[code_cache_key] = code
 
     # execute code and return evaluation
