@@ -54,6 +54,64 @@ def bigtable_python_lxml(table=None):
         root.append(row)
     return etree.tostring(root, encoding='utf-8')
 
+START = 0
+EMPTY = 1
+END = 2
+TEXT = 3
+
+def yield_stream(table=None):
+    yield START, ("html", ()), None
+    for r in table:
+        yield START, ("tr", ()), None
+        for c in r.values():
+            d = c + 1
+            yield START, ("td", ()), None
+            yield START, ("span", (('class', 'column-%d' % d),)), None
+            if d.__class__ not in (str, unicode, int, float) and hasattr(d, '__html__'):
+                raise
+            yield TEXT, str(d), None
+            yield END, "span", None
+            yield END, "td", None
+        yield END, "tr", None
+    yield END, "html", None
+
+def list_stream(table=None):
+    l = []
+    a = l.append
+    a((START, ("html", ()), None))
+    for r in table:
+        a((START, ("tr", ()), None))
+        for c in r.values():
+            d = c + 1
+            a((START, ("td", ()), None))
+            a((START, ("span", (('class', 'column-%d' % d),)), None))
+            if d.__class__ not in (str, unicode, int, float) and hasattr(d, '__html__'):
+                raise
+            a((TEXT, str(d), None))
+            a((END, "span", None))
+            a((END, "td", None))
+        a((END, "tr", None))
+    a((END, "html", None))
+    return l
+
+def bigtable_python_stream(table=None, renderer=None):
+    stream = renderer(table=table)
+    return "".join(stream_output(stream))
+
+def stream_output(stream):
+    for kind, data, pos in stream:
+        if kind is START or kind is EMPTY:
+            tag, attrib = data
+            yield "<%s " % tag
+            for attr, value in attrib:
+                yield '%s="%s" ' % (attr, value)
+            if kind is EMPTY:
+                yield "/>"
+        elif kind is END:
+            yield "</%s" % data
+        elif kind is TEXT:
+            yield data
+
 class BaseTestCase(unittest.TestCase):
 
     table = [dict(a=1,b=2,c=3,d=4,e=5,f=6,g=7,h=8,i=9,j=10) \
@@ -186,13 +244,22 @@ class BenchmarkTestCase(BaseTestCase):
         else:
             t_lxml = 0.0
 
+        t_stream1 = timing(bigtable_python_stream, table=table, renderer=yield_stream)
+        t_stream2 = timing(bigtable_python_stream, table=table, renderer=list_stream)
+
         print "zope.pagetemplate: %.2f" % t_zope
-        print "lxml:              %.2f" % t_lxml
+        if t_lxml:
+            print "lxml:              %.2f" % t_lxml
+        print "stream (yield)     %.2f" % t_stream1
+        print "stream (list)      %.2f" % t_stream2
         print "--------------------------"
         print "z3c.pt:            %.2f" % t_z3c
         print "--------------------------"
         print "ratio to zpt:      %.2fX" % (t_zope/t_z3c)
-        print "ratio to lxml:     %.2fX" % (t_lxml/t_z3c)
+        print "ratio to stream:   %.2fX" % (t_stream1/t_z3c)
+        print "stream to zpt:     %.2fX" % (t_zope/t_stream1)
+        if t_lxml:
+            print "ratio to lxml:     %.2fX" % (t_lxml/t_z3c)
 
     @benchmark(u"Big table (path)")
     def testBigTablePath(self):
