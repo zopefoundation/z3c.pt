@@ -1,7 +1,8 @@
 Changelog
 ---------
 
-In next release...
+1.1.1 (2010/04/06)
+------------------
 
 - Fixed issue where arguments were not passed on to template as
   ``args``.
