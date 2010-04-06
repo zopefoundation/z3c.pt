@@ -25,7 +25,7 @@ class opaque_dict(dict):
         inst = dict.__new__(cls)
         inst.dictionary = dictionary
         return inst
-    
+
     @property
     def __getitem__(self):
         return self.dictionary.__getitem__
@@ -136,9 +136,9 @@ class BaseTemplate(template.PageTemplate):
 
         return BoundPageTemplate(self, render)
 
-    def __call__(self, _ob=None, **kwargs):
+    def __call__(self, _ob=None, *args, **kwargs):
         bound_pt = self.bind(_ob)
-        return bound_pt(**kwargs)
+        return bound_pt(*args, **kwargs)
 
     def _pt_get_context(self, instance, request, kwargs):
         return dict(
@@ -194,12 +194,12 @@ class PageTemplate(BaseTemplate):
     Initialize with a template string."""
 
     version = 1
-    
+
     def __get__(self, instance, type):
         if instance is not None:
             return self.bind(instance)
         return self
-    
+
 class PageTemplateFile(BaseTemplateFile, PageTemplate):
     """Page Templates using TAL, TALES, and METAL.
 
@@ -215,7 +215,7 @@ class ViewPageTemplate(PageTemplate):
     keyword arguments are passed in through the ``options``
     dictionary. Note that the default expression type for this class
     is 'path' (standard Zope traversal)."""
-    
+
     def _pt_get_context(self, view, request, kwargs):
         context = kwargs.get('context')
         if context is None:
@@ -245,16 +245,16 @@ class BoundPageTemplate(object):
     """When a page template class is used as a property, it's bound to
     the class instance on access, which is implemented using this
     helper class."""
-    
+
     def __init__(self, pt, render):
         object.__setattr__(self, 'im_self', pt)
         object.__setattr__(self, 'im_func', render)
-        
+
     macros = property(lambda self: self.im_self.macros)
     filename = property(lambda self: self.im_self.filename)
 
     def __call__(self, *args, **kw):
-        return self.im_func(**kw)
+        return self.im_func(args=args, **kw)
 
     def __setattr__(self, name, v):
         raise AttributeError("Can't set attribute", name)
