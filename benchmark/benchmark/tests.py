@@ -11,6 +11,7 @@ import z3c.pt
 from chameleon import zpt
 from chameleon.core import config
 from chameleon.core import filecache
+from chameleon.core.utils import re_amp
 
 from z3c.pt import pagetemplate
 
@@ -60,39 +61,58 @@ END = 2
 TEXT = 3
 
 def yield_stream(table=None):
-    yield START, ("html", ()), None
+    _re_amp = re_amp
+    yield START, ("html",), None
     for r in table:
-        yield START, ("tr", ()), None
+        yield START, ("tr",), None
         for c in r.values():
             d = c + 1
-            yield START, ("td", ()), None
-            yield START, ("span", (('class', 'column-%d' % d),)), None
-            if d.__class__ not in (str, unicode, int, float) and hasattr(d, '__html__'):
-                raise
-            yield TEXT, str(d), None
+            yield START, ("td",), None
+
+            _tmp5 = d
+            if not isinstance(_tmp5, unicode):
+                _tmp5 = str(_tmp5)
+            if ('&' in _tmp5):
+                if (';' in _tmp5):
+                    _tmp5 = _re_amp.sub('&amp;', _tmp5)
+                else:
+                    _tmp5 = _tmp5.replace('&', '&amp;')
+            if ('<' in _tmp5):
+                _tmp5 = _tmp5.replace('<', '&lt;')
+            if ('>' in _tmp5):
+                _tmp5 = _tmp5.replace('>', '&gt;')
+            if ('"' in _tmp5):
+                _tmp5 = _tmp5.replace('"', '&quot;')
+            yield START, ("span", "class", "column-%s" % _tmp5), None
+
+            _tmp = d
+            if (_tmp.__class__ not in (str, unicode, int, float, )):
+                try:
+                    _tmp = _tmp.__html__
+                except:
+                    raise
+                else:
+                    _tmp = _tmp()
+                    yield TEXT, _tmp, None
+                    _tmp = None
+            if (_tmp is not None):
+                if not isinstance(_tmp, unicode):
+                    _tmp = str(_tmp)
+                if ('&' in _tmp):
+                    if (';' in _tmp):
+                        _tmp = _re_amp.sub('&amp;', _tmp)
+                    else:
+                        _tmp = _tmp.replace('&', '&amp;')
+                if ('<' in _tmp):
+                    _tmp = _tmp.replace('<', '&lt;')
+                if ('>' in _tmp):
+                    _tmp = _tmp.replace('>', '&gt;')
+                yield TEXT, _tmp, None
+
             yield END, "span", None
             yield END, "td", None
         yield END, "tr", None
     yield END, "html", None
-
-def list_stream(table=None):
-    l = []
-    a = l.append
-    a((START, ("html", ()), None))
-    for r in table:
-        a((START, ("tr", ()), None))
-        for c in r.values():
-            d = c + 1
-            a((START, ("td", ()), None))
-            a((START, ("span", (('class', 'column-%d' % d),)), None))
-            if d.__class__ not in (str, unicode, int, float) and hasattr(d, '__html__'):
-                raise
-            a((TEXT, str(d), None))
-            a((END, "span", None))
-            a((END, "td", None))
-        a((END, "tr", None))
-    a((END, "html", None))
-    return l
 
 def bigtable_python_stream(table=None, renderer=None):
     stream = renderer(table=table)
@@ -100,13 +120,24 @@ def bigtable_python_stream(table=None, renderer=None):
 
 def stream_output(stream):
     for kind, data, pos in stream:
-        if kind is START or kind is EMPTY:
-            tag, attrib = data
+        if kind is START:
+            tag = data[0]
             yield "<%s " % tag
-            for attr, value in attrib:
-                yield '%s="%s" ' % (attr, value)
-            if kind is EMPTY:
-                yield "/>"
+            l = len(data)
+
+            # optimize for common cases
+            if l == 1:
+                pass
+            elif l == 3:
+                yield '%s="%s" ' % (data[1], data[2])
+            else:
+                i = 1
+                while i < l:
+                    yield '%s="%s" ' % (data[i], data[i+1])
+                    i += 2
+        elif kind is EMPTY:
+            raise
+            yield "/>"
         elif kind is END:
             yield "</%s" % data
         elif kind is TEXT:
@@ -244,20 +275,18 @@ class BenchmarkTestCase(BaseTestCase):
         else:
             t_lxml = 0.0
 
-        t_stream1 = timing(bigtable_python_stream, table=table, renderer=yield_stream)
-        t_stream2 = timing(bigtable_python_stream, table=table, renderer=list_stream)
+        t_stream = timing(bigtable_python_stream, table=table, renderer=yield_stream)
 
         print "zope.pagetemplate: %.2f" % t_zope
         if t_lxml:
             print "lxml:              %.2f" % t_lxml
-        print "stream (yield)     %.2f" % t_stream1
-        print "stream (list)      %.2f" % t_stream2
+        print "stream (yield)     %.2f" % t_stream
         print "--------------------------"
         print "z3c.pt:            %.2f" % t_z3c
         print "--------------------------"
         print "ratio to zpt:      %.2fX" % (t_zope/t_z3c)
-        print "ratio to stream:   %.2fX" % (t_stream1/t_z3c)
-        print "stream to zpt:     %.2fX" % (t_zope/t_stream1)
+        print "ratio to stream:   %.2fX" % (t_stream/t_z3c)
+        print "stream to zpt:     %.2fX" % (t_zope/t_stream)
         if t_lxml:
             print "ratio to lxml:     %.2fX" % (t_lxml/t_z3c)
 
@@ -436,7 +465,7 @@ class I18NBenchmarkTestCase(BaseTestCase):
         zopefile.pt_getEngineContext = _pt_getEngineContext
 
         assert config.SYMBOLS.i18n_context=='_i18n_context'
-        
+
         t_z3c = timing(z3cfile, table=table, target_language='klingon')
         t_zope = timing(zopefile, table=table, env=self.env)
 
