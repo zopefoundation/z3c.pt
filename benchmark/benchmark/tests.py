@@ -109,10 +109,10 @@ def yield_stream(table=None):
                     _tmp = _tmp.replace('>', '&gt;')
                 yield TEXT, _tmp, None
 
-            yield END, "span", None
-            yield END, "td", None
-        yield END, "tr", None
-    yield END, "html", None
+            yield END, ("span", "\n"), None
+            yield END, ("td", "\n"), None
+        yield END, ("tr", "\n"), None
+    yield END, ("html", "\n"), None
 
 def bigtable_python_stream(table=None, renderer=None):
     stream = renderer(table=table)
@@ -139,7 +139,7 @@ def stream_output(stream):
             raise
             yield "/>"
         elif kind is END:
-            yield "</%s" % data
+            yield "</%s>%s" % data
         elif kind is TEXT:
             yield data
 
