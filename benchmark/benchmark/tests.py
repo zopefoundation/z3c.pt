@@ -56,18 +56,17 @@ def bigtable_python_lxml(table=None):
     return etree.tostring(root, encoding='utf-8')
 
 START = 0
-EMPTY = 1
-END = 2
-TEXT = 3
+END = 1
+TAG = 2
 
 def yield_stream(table=None):
     _re_amp = re_amp
-    yield START, ("html",), None
+    yield START, ("html", "\n"), None
     for r in table:
-        yield START, ("tr",), None
+        yield START, ("tr", "\n"), None
         for c in r.values():
             d = c + 1
-            yield START, ("td",), None
+            yield START, ("td", "\n"), None
 
             _tmp5 = d
             if not isinstance(_tmp5, unicode):
@@ -83,18 +82,11 @@ def yield_stream(table=None):
                 _tmp5 = _tmp5.replace('>', '&gt;')
             if ('"' in _tmp5):
                 _tmp5 = _tmp5.replace('"', '&quot;')
-            yield START, ("span", "class", "column-%s" % _tmp5), None
+            _tmp5 = "column-%s" % _tmp5
 
             _tmp = d
             if (_tmp.__class__ not in (str, unicode, int, float, )):
-                try:
-                    _tmp = _tmp.__html__
-                except:
-                    raise
-                else:
-                    _tmp = _tmp()
-                    yield TEXT, _tmp, None
-                    _tmp = None
+                raise
             if (_tmp is not None):
                 if not isinstance(_tmp, unicode):
                     _tmp = str(_tmp)
@@ -107,7 +99,7 @@ def yield_stream(table=None):
                     _tmp = _tmp.replace('<', '&lt;')
                 if ('>' in _tmp):
                     _tmp = _tmp.replace('>', '&gt;')
-                yield TEXT, _tmp, None
+            yield START, ("span", _tmp, "class", _tmp5), None
 
             yield END, ("span", "\n"), None
             yield END, ("td", "\n"), None
@@ -118,30 +110,42 @@ def bigtable_python_stream(table=None, renderer=None):
     stream = renderer(table=table)
     return "".join(stream_output(stream))
 
+def bigtable_python_stream_with_filter(table=None, renderer=None):
+    stream = renderer(table=table)
+    return "".join(stream_output(uppercase_filter(stream)))
+
+def uppercase_filter(stream):
+    for kind, data, pos in stream:
+        if kind is START:
+            data = (data[0], data[1].upper(),) + data[2:]
+        elif kind is END:
+            data = (data[0], data[1].upper())
+        elif kind is TAG:
+            raise NotImplemented
+        yield kind, data, pos
+
 def stream_output(stream):
     for kind, data, pos in stream:
         if kind is START:
             tag = data[0]
-            yield "<%s " % tag
+            yield "<%s" % tag
             l = len(data)
 
             # optimize for common cases
-            if l == 1:
+            if l == 2:
                 pass
-            elif l == 3:
-                yield '%s="%s" ' % (data[1], data[2])
+            elif l == 4:
+                yield ' %s="%s"' % (data[2], data[3])
             else:
-                i = 1
+                i = 2
                 while i < l:
-                    yield '%s="%s" ' % (data[i], data[i+1])
+                    yield ' %s="%s"' % (data[i], data[i+1])
                     i += 2
-        elif kind is EMPTY:
-            raise
-            yield "/>"
+            yield ">" + data[1]
         elif kind is END:
             yield "</%s>%s" % data
-        elif kind is TEXT:
-            yield data
+        elif kind is TAG:
+            raise NotImplemented
 
 class BaseTestCase(unittest.TestCase):
 
@@ -276,11 +280,13 @@ class BenchmarkTestCase(BaseTestCase):
             t_lxml = 0.0
 
         t_stream = timing(bigtable_python_stream, table=table, renderer=yield_stream)
+        t_stream_filter = timing(bigtable_python_stream_with_filter, table=table, renderer=yield_stream)
 
         print "zope.pagetemplate: %.2f" % t_zope
         if t_lxml:
             print "lxml:              %.2f" % t_lxml
-        print "stream (yield)     %.2f" % t_stream
+        print "stream             %.2f" % t_stream
+        print "stream (filter)    %.2f" % t_stream_filter
         print "--------------------------"
         print "z3c.pt:            %.2f" % t_z3c
         print "--------------------------"
