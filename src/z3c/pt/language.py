@@ -6,23 +6,23 @@ import chameleon.zpt.language
 
 class ZopePageTemplateElement(chameleon.zpt.language.ZopePageTemplateElement):
     meta_interpolation = utils.attribute(
-        utils.meta_attr('interpolation'), default="false")
+        utils.meta_attr('interpolation'), default="false", recursive=True)
 
 class XHTMLElement(chameleon.zpt.language.XHTMLElement):
     meta_interpolation = utils.attribute(
-        utils.meta_attr('interpolation'), default="false")
+        utils.meta_attr('interpolation'), default="false", recursive=True)
 
 class TALElement(chameleon.zpt.language.TALElement):
     meta_interpolation = utils.attribute(
-        utils.meta_attr('interpolation'), default="false")
+        utils.meta_attr('interpolation'), default="false", recursive=True)
 
 class METALElement(chameleon.zpt.language.METALElement):
     meta_interpolation = utils.attribute(
-        utils.meta_attr('interpolation'), default="false")
+        utils.meta_attr('interpolation'), default="false", recursive=True)
 
 class MetaElement(chameleon.zpt.language.MetaElement):
     meta_interpolation = utils.attribute(
-        utils.meta_attr('interpolation'), default="false")
+        utils.meta_attr('interpolation'), default="false", recursive=True)
 
 class Parser(chameleon.zpt.language.Parser):
     """Zope Page Template parser."""
