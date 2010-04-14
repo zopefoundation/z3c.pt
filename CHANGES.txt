@@ -1,7 +1,13 @@
 Changelog
 ---------
 
-1.1.2 (unreleased)
+1.1.3 (unreleased)
+------------------
+
+- Your change here..
+
+
+1.1.2 (2010/04/14)
 ------------------
 
 - Make sure the interpolation flag is recursive.
