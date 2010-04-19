@@ -214,7 +214,6 @@ But we can **enable** this in a template::
     </div>
   </div>
 
-
 Text templates
 --------------
 
@@ -236,6 +235,30 @@ Text templates
   >>> template = ViewTextTemplate('print "<html>${options/color}</html>";')
   >>> print template.bind(view)(color=u'#ccc')
   print "<html>#ccc</html>";
+
+Non-keyword arguments
+---------------------
+
+These are passed in as ``options/args``, when using the ``__call__`` method.
+
+  >>> print PageTemplate("""\
+  ... <div xmlns="http://www.w3.org/1999/xhtml">
+  ...   <div tal:repeat="arg options/args">
+  ...      <span tal:content="arg" />
+  ...   </div>
+  ... </div>""").__call__(1, 2, 3)
+  <div xmlns="http://www.w3.org/1999/xhtml">
+    <div>
+       <span>1</span>
+    </div>
+    <div>
+       <span>2</span>
+    </div>
+    <div>
+       <span>3</span>
+    </div>
+  </div>
+
 
 Global 'path' Function
 ----------------------

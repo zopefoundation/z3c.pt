@@ -101,7 +101,7 @@ class BaseTemplate(template.PageTemplate):
     default_parser = language.Parser()
     version = 2
 
-    def bind(self, ob, request=None, macro=None, global_scope=True):
+    def bind(self, ob=None, request=None, macro=None, global_scope=True):
         def render(target_language=None, request=request, **kwargs):
             context = self._pt_get_context(ob, request, kwargs)
             request = request or context.get('request')
@@ -136,8 +136,8 @@ class BaseTemplate(template.PageTemplate):
 
         return BoundPageTemplate(self, render)
 
-    def __call__(self, _ob=None, *args, **kwargs):
-        bound_pt = self.bind(_ob)
+    def __call__(self, *args, **kwargs):
+        bound_pt = self.bind()
         return bound_pt(*args, **kwargs)
 
     def _pt_get_context(self, instance, request, kwargs):
@@ -234,8 +234,8 @@ class ViewPageTemplate(PageTemplate):
     def __call__(self, _ob=None, context=None, request=None, **kwargs):
         kwargs.setdefault('context', context)
         kwargs.setdefault('request', request)
-        return super(ViewPageTemplate, self).__call__(
-            _ob=_ob, **kwargs)
+        bound_pt = self.bind(_ob)
+        return bound_pt(**kwargs)
 
 class ViewPageTemplateFile(ViewPageTemplate, PageTemplateFile):
     """If ``filename`` is a relative path, the module path of the
@@ -254,7 +254,8 @@ class BoundPageTemplate(object):
     filename = property(lambda self: self.im_self.filename)
 
     def __call__(self, *args, **kw):
-        return self.im_func(args=args, **kw)
+        kw.setdefault('args', args)
+        return self.im_func(**kw)
 
     def __setattr__(self, name, v):
         raise AttributeError("Can't set attribute", name)
