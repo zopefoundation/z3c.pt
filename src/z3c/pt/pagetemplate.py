@@ -69,12 +69,12 @@ def evaluate_expression(pragma, expr):
     _locals = frame.f_locals
     _locals.update(symbol_mapping)
     _locals.update(_locals['econtext'])
-    
+
     # to support dynamic scoping (like in templates), we must
     # transform the code to take the scope locals into account; for
     # efficiency, this is cached for reuse
     code_cache_key = key, tuple(_locals)
-    
+
     try:
         code = _expr_cache[code_cache_key]
     except KeyError:
@@ -84,7 +84,8 @@ def evaluate_expression(pragma, expr):
         _expr_cache[code_cache_key] = code
 
     # execute code and return evaluation
-    exec code in codegen.lookup_globals.copy(), _locals
+    _locals[config.SYMBOLS.lookup_attr] = codegen.lookup_attr
+    exec code in _locals
     return _locals['result']
 
 def evaluate_path(expr):

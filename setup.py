@@ -10,7 +10,7 @@ install_requires = [
     'zope.i18n >= 3.5',
     'zope.traversing',
     'zope.contentprovider',
-    'Chameleon >= 1.2.0',
+    'Chameleon >= 1.2.3',
     ]
 
 if sys.version_info[:3] < (2,5,0):
