@@ -59,14 +59,20 @@ START = 0
 END = 1
 TAG = 2
 
-def yield_stream(table=None):
+def yield_tokens(table=None):
+    index = []
+    tag = index.append
     _re_amp = re_amp
-    yield START, ("html", "\n"), None
+    tag(START)
+    yield "<", "html", "", ">\n"
     for r in table:
-        yield START, ("tr", "\n"), None
+        tag(START)
+        yield "<", "tr", "", ">\n"
+
         for c in r.values():
             d = c + 1
-            yield START, ("td", "\n"), None
+            tag(START)
+            yield "<", "td", "", ">\n"
 
             _tmp5 = d
             if not isinstance(_tmp5, unicode):
@@ -99,12 +105,71 @@ def yield_stream(table=None):
                     _tmp = _tmp.replace('<', '&lt;')
                 if ('>' in _tmp):
                     _tmp = _tmp.replace('>', '&gt;')
-            yield START, ("span", _tmp, "class", _tmp5), None
+            tag(START)
+            yield "<", "span", " ", "class", '="', _tmp5, '"', ">\n"
+            tag(END)
+            yield "</", "span", ">\n"
+            tag(END)
+            yield "</", "td", ">\n"
+        tag(END)
+        yield "</", "tr", ">\n"
+    tag(END)
+    yield "</", "html", ">\n"
 
-            yield END, ("span", "\n"), None
-            yield END, ("td", "\n"), None
-        yield END, ("tr", "\n"), None
-    yield END, ("html", "\n"), None
+def yield_stream(table=None):
+    _re_amp = re_amp
+    yield START, ("html", "", "\n"), None
+    for r in table:
+        yield START, ("tr", "", "\n"), None
+
+        for c in r.values():
+            d = c + 1
+            yield START, ("td", "", "\n"), None
+
+            _tmp5 = d
+            if not isinstance(_tmp5, unicode):
+                _tmp5 = str(_tmp5)
+            if ('&' in _tmp5):
+                if (';' in _tmp5):
+                    _tmp5 = _re_amp.sub('&amp;', _tmp5)
+                else:
+                    _tmp5 = _tmp5.replace('&', '&amp;')
+            if ('<' in _tmp5):
+                _tmp5 = _tmp5.replace('<', '&lt;')
+            if ('>' in _tmp5):
+                _tmp5 = _tmp5.replace('>', '&gt;')
+            if ('"' in _tmp5):
+                _tmp5 = _tmp5.replace('"', '&quot;')
+            _tmp5 = "column-%s" % _tmp5
+
+            _tmp = d
+            if (_tmp.__class__ not in (str, unicode, int, float, )):
+                raise
+            if (_tmp is not None):
+                if not isinstance(_tmp, unicode):
+                    _tmp = str(_tmp)
+                if ('&' in _tmp):
+                    if (';' in _tmp):
+                        _tmp = _re_amp.sub('&amp;', _tmp)
+                    else:
+                        _tmp = _tmp.replace('&', '&amp;')
+                if ('<' in _tmp):
+                    _tmp = _tmp.replace('<', '&lt;')
+                if ('>' in _tmp):
+                    _tmp = _tmp.replace('>', '&gt;')
+            yield START, ("span", "", _tmp, " ", "class", _tmp5), None
+
+            yield END, ("span", "", "\n"), None
+            yield END, ("td", "", "\n"), None
+        yield END, ("tr", "", "\n"), None
+    yield END, ("html", "", "\n"), None
+
+from itertools import chain
+
+def bigtable_python_tokens(table=None, renderer=None):
+    iterable = renderer(table=table)
+    stream = chain(*iterable)
+    return "".join(stream)
 
 def bigtable_python_stream(table=None, renderer=None):
     stream = renderer(table=table)
@@ -117,9 +182,9 @@ def bigtable_python_stream_with_filter(table=None, renderer=None):
 def uppercase_filter(stream):
     for kind, data, pos in stream:
         if kind is START:
-            data = (data[0], data[1].upper(),) + data[2:]
+            data = (data[0], data[1], data[2].upper(),) + data[3:]
         elif kind is END:
-            data = (data[0], data[1].upper())
+            data = (data[0], data[1], data[2].upper())
         elif kind is TAG:
             raise NotImplemented
         yield kind, data, pos
@@ -132,18 +197,18 @@ def stream_output(stream):
             l = len(data)
 
             # optimize for common cases
-            if l == 2:
+            if l == 3:
                 pass
-            elif l == 4:
-                yield ' %s="%s"' % (data[2], data[3])
+            elif l == 6:
+                yield '%s%s="%s"' % (data[3], data[4], data[5])
             else:
-                i = 2
+                i = 3
                 while i < l:
-                    yield ' %s="%s"' % (data[i], data[i+1])
-                    i += 2
-            yield ">" + data[1]
+                    yield '%s%s="%s"' % (data[i], data[i+1], data[i+2])
+                    i += 3
+            yield "%s>%s" % (data[1], data[2])
         elif kind is END:
-            yield "</%s>%s" % data
+            yield "</%s%s>%s" % data
         elif kind is TAG:
             raise NotImplemented
 
@@ -279,12 +344,14 @@ class BenchmarkTestCase(BaseTestCase):
         else:
             t_lxml = 0.0
 
+        t_tokens = timing(bigtable_python_tokens, table=table, renderer=yield_tokens)
         t_stream = timing(bigtable_python_stream, table=table, renderer=yield_stream)
         t_stream_filter = timing(bigtable_python_stream_with_filter, table=table, renderer=yield_stream)
 
         print "zope.pagetemplate: %.2f" % t_zope
         if t_lxml:
             print "lxml:              %.2f" % t_lxml
+        print "tokens             %.2f" % t_tokens
         print "stream             %.2f" % t_stream
         print "stream (filter)    %.2f" % t_stream_filter
         print "--------------------------"
@@ -292,6 +359,7 @@ class BenchmarkTestCase(BaseTestCase):
         print "--------------------------"
         print "ratio to zpt:      %.2fX" % (t_zope/t_z3c)
         print "ratio to stream:   %.2fX" % (t_stream/t_z3c)
+        print "ratio to tokens:   %.2fX" % (t_tokens/t_z3c)
         print "stream to zpt:     %.2fX" % (t_zope/t_stream)
         if t_lxml:
             print "ratio to lxml:     %.2fX" % (t_lxml/t_z3c)
