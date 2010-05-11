@@ -9,6 +9,9 @@ In next release...
   in. Incidentally, the name ``args`` was used as the star argument
   name.
 
+- Look at language set on request before invoking the zope.i18n
+  negotiator. This makes i18n work again on Zope2.
+
 1.1.1 (2010/04/06)
 ------------------
 

@@ -107,10 +107,12 @@ class BaseTemplate(template.PageTemplate):
             context = self._pt_get_context(ob, request, kwargs)
             request = request or context.get('request')
             if target_language is None:
-                try:
-                    target_language = i18n.negotiate(request)
-                except:
-                    target_language = None
+                target_language = request.get("LANGUAGE", None)
+                if target_language is None:
+                    try:
+                        target_language = i18n.negotiate(request)
+                    except:
+                        target_language = None
 
             context['target_language'] = target_language
             context['econtext'] = utils.econtext(context)
