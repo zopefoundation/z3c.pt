@@ -1,7 +1,8 @@
 Changelog
----------
+=========
 
-In next release...
+1.2 (2010/05/12)
+------------------
 
 - Fixed compatibility issue with recent change in Chameleon.
 
