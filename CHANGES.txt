@@ -3,6 +3,12 @@ Changelog
 
 In next release...
 
+- ...
+
+
+1.2.1 (2010/05/13)
+------------------
+
 - Bind template to the template object in the general case.
 
 1.2 (2010/05/12)
