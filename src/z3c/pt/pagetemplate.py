@@ -141,7 +141,7 @@ class BaseTemplate(template.PageTemplate):
         return BoundPageTemplate(self, render)
 
     def __call__(self, *args, **kwargs):
-        bound_pt = self.bind()
+        bound_pt = self.bind(self)
         return bound_pt(*args, **kwargs)
 
     def _pt_get_context(self, instance, request, kwargs):
