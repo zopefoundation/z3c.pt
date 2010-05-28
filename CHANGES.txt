@@ -3,7 +3,8 @@ Changelog
 
 In next release...
 
-- ...
+- The exists expression evaluator should ignore KeyError exceptions
+  as well.
 
 
 1.2.1 (2010/05/13)

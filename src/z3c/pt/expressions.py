@@ -84,7 +84,7 @@ class ZopeTraverser(object):
         return base
 
 class ZopeExistsTraverser(ZopeTraverser):
-    exceptions = AttributeError, LookupError, TypeError
+    exceptions = AttributeError, LookupError, TypeError, KeyError
 
     def __call__(self, base, request, call, *args, **kwargs):
         try:
