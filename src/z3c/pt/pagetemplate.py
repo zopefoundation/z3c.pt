@@ -121,6 +121,8 @@ class BaseTemplate(template.PageTemplate):
             # bind translation-method to request
             def translate(
                 msgid, domain=None, mapping=None, target_language=None, default=None):
+                if not msgid:
+                    msgid = None
                 return fast_translate(
                     msgid, domain, mapping, request, target_language, default)
             context[config.SYMBOLS.translate] = translate
