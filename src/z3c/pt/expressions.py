@@ -51,8 +51,8 @@ class ZopeTraverser(object):
 
             while len(path_items):
                 name = path_items.pop()
-                ns = ':' in name
-                if ns is True:
+                ns_used = ':' in name
+                if ns_used:
                     namespace, name = name.split(':', 1)
                     base = namespaces.function_namespaces[namespace](base)
                     if ITraversable.providedBy(base):
@@ -68,7 +68,7 @@ class ZopeTraverser(object):
 
                 if next is not _marker:
                     base = next
-                    if ns is True and isinstance(base, MethodType):
+                    if ns_used and isinstance(base, MethodType):
                         base = base()
                     continue
                 else:
