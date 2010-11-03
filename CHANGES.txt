@@ -6,6 +6,9 @@ In next release...
 - The exists expression evaluator should ignore KeyError exceptions
   as well.
 
+- Special-case handling of Zope2's Missing.MV as used by
+  Products.ZCatalog for LP#649343.
+  [rossp]
 
 1.2.1 (2010/05/13)
 ------------------
