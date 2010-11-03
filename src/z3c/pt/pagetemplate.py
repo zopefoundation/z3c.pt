@@ -17,6 +17,12 @@ from chameleon.zpt.interfaces import IExpressionTranslator
 
 from z3c.pt import language
 
+try:
+    from Missing import MV
+    MV  # pyflakes
+except ImportError:
+    MV = object()
+
 _marker = object()
 _expr_cache = {}
 
@@ -121,6 +127,11 @@ class BaseTemplate(template.PageTemplate):
             # bind translation-method to request
             def translate(
                 msgid, domain=None, mapping=None, target_language=None, default=None):
+                if msgid is MV:
+                    # Special case handling of Zope2's Missing.MV
+                    # (Missing.Value) used by the ZCatalog but is
+                    # unhashable
+                    return
                 return fast_translate(
                     msgid, domain, mapping, request, target_language, default)
             context[config.SYMBOLS.translate] = translate
