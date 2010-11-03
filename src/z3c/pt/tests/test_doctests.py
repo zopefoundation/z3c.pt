@@ -1,8 +1,8 @@
-import zope.testing
+import doctest
 import unittest
 
-OPTIONFLAGS = (zope.testing.doctest.ELLIPSIS |
-               zope.testing.doctest.NORMALIZE_WHITESPACE)
+OPTIONFLAGS = (doctest.ELLIPSIS |
+               doctest.NORMALIZE_WHITESPACE)
 
 import zope.component.testing
 import zope.configuration.xmlconfig
@@ -21,15 +21,15 @@ def test_suite():
     config.DISK_CACHE = False
 
     return unittest.TestSuite(
-        [zope.testing.doctest.DocFileSuite(
-        doctest, optionflags=OPTIONFLAGS,
+        [doctest.DocFileSuite(
+        filesuite, optionflags=OPTIONFLAGS,
         setUp=setUp, tearDown=zope.component.testing.tearDown,
-        package="z3c.pt") for doctest in filesuites] + \
+        package="z3c.pt") for filesuite in filesuites] + \
 
-        [zope.testing.doctest.DocTestSuite(
-        doctest, optionflags=OPTIONFLAGS,
+        [doctest.DocTestSuite(
+        testsuite, optionflags=OPTIONFLAGS,
         setUp=setUp, tearDown=zope.component.testing.tearDown) \
-         for doctest in testsuites]
+         for testsuite in testsuites]
 
         )
 
