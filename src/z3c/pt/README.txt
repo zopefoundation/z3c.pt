@@ -22,7 +22,6 @@ The ``PageTemplate`` class is initialized with a string.
     Hello World!
   </div>
 
-
 The ``PageTemplateFile`` class is initialized with an absolute
 path to a template file on disk.
 
@@ -181,61 +180,6 @@ alternative context and request.
   </div>
 
 
-Dollar-Interpolation
---------------------
-
-As ``z3c.pt` **should** be as compatible as possible to it's original,
-we don't allow $-interpolation like in ``chameleon.zpt``::
-
-  >>> template = PageTemplate("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml">
-  ...   ${this does not break}
-  ... </div>""")
-
-  >>> print template()
-  <div xmlns="http://www.w3.org/1999/xhtml">
-    ${this does not break}
-  </div>
-
-But we can **enable** this in a template::
-
-  >>> template = PageTemplate("""\
-  ... <div xmlns="http://www.w3.org/1999/xhtml"
-  ...      xmlns:meta="http://xml.zope.org/namespaces/meta">
-  ...   <div meta:interpolation="true">
-  ...     ${options/foo}
-  ...   </div>
-  ... </div>""")
-
-  >>> print template(foo=u'bar')
-  <div xmlns="http://www.w3.org/1999/xhtml">
-    <div>
-      bar
-    </div>
-  </div>
-
-Text templates
---------------
-
-  >>> from z3c.pt.texttemplate import ViewTextTemplate
-  >>> from z3c.pt.texttemplate import ViewTextTemplateFile
-
-  >>> template = ViewTextTemplate(open(path + '/view.css').read())
-  >>> print template.bind(view)(color=u'#ccc')
-  #region {
-      background: #ccc;
-  }
-
-  >>> template = ViewTextTemplateFile('tests/view.css')
-  >>> print template.bind(view)(color=u'#ccc')
-  #region {
-      background: #ccc;
-  }
-
-  >>> template = ViewTextTemplate('print "<html>${options/color}</html>";')
-  >>> print template.bind(view)(color=u'#ccc')
-  print "<html>#ccc</html>";
-
 Non-keyword arguments
 ---------------------
 
@@ -316,8 +260,7 @@ And also for contents:
 
   >>> template = PageTemplate("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml">
-  ...   <span tal:content="options/not-existing | default"
-  ...         >default content</span>
+  ...   <span tal:content="options/not-existing | default">default content</span>
   ... </div>""")
 
   >>> print template()
@@ -332,10 +275,8 @@ Using 'exists()' function on non-global name and global name:
 
   >>> template = PageTemplate("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml">
-  ...   <span tal:content="python: exists('options/nope') and 'Yes' or 'No'"
-  ...         >do I exist?</span>
-  ...   <span tal:content="python: exists('nope') and 'Yes' or 'No'"
-  ...         >do I exist?</span>
+  ...   <span tal:content="python: exists('options/nope') and 'Yes' or 'No'">do I exist?</span>
+  ...   <span tal:content="python: exists('nope') and 'Yes' or 'No'">do I exist?</span>
   ... </div>""")
 
   >>> print template()
@@ -349,11 +290,9 @@ Using 'exists:' expression on non-global name and global name
   >>> template = PageTemplate("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml">
   ...   <span tal:define="yup exists:options/nope" 
-  ...         tal:content="python: yup and 'Yes' or 'No'"
-  ...         >do I exist?</span>
+  ...         tal:content="python: yup and 'Yes' or 'No'">do I exist?</span>
   ...   <span tal:define="yup exists:nope" 
-  ...         tal:content="python: yup and 'Yes' or 'No'"
-  ...         >do I exist?</span>
+  ...         tal:content="python: yup and 'Yes' or 'No'">do I exist?</span>
   ... </div>""")
 
   >>> print template()
@@ -366,8 +305,7 @@ Using 'exists:' in conjunction with a negation:
 
   >>> print PageTemplate("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml">
-  ...   <span tal:condition="not:exists:options/nope"
-  ...         >I don't exist?</span>
+  ...   <span tal:condition="not:exists:options/nope">I don't exist?</span>
   ... </div>""")()
   <div xmlns="http://www.w3.org/1999/xhtml">
     <span>I don't exist?</span>
@@ -382,8 +320,7 @@ dictionary attributes.
   >>> print PageTemplate("""\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
   ...      tal:define="links python:{'copy':'XXX', 'delete':'YYY'}">
-  ...   <span tal:content="links/copy"
-  ...         >ZZZ</span>
+  ...   <span tal:content="links/copy">ZZZ</span>
   ... </div>""")()
   <div xmlns="http://www.w3.org/1999/xhtml">
     <span>XXX</span>

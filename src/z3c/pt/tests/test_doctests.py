@@ -8,17 +8,15 @@ import zope.component.testing
 import zope.configuration.xmlconfig
 import z3c.pt
 
-from chameleon.core import config
 
 def setUp(suite):
     zope.component.testing.setUp(suite)
     zope.configuration.xmlconfig.XMLConfig('configure.zcml', z3c.pt)()
 
+
 def test_suite():
     filesuites = 'README.txt',
     testsuites = 'z3c.pt.expressions', 'z3c.pt.namespaces'
-
-    config.DISK_CACHE = False
 
     return unittest.TestSuite(
         [doctest.DocFileSuite(

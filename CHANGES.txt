@@ -3,6 +3,34 @@ Changelog
 
 In next release...
 
+- Update to Chameleon 2.0.
+
+  This release includes many changes and is a complete rewrite of the
+  1.x series.
+
+  Platform:
+
+  * Python 2.7+ now required.
+
+  Notable changes:
+
+  * Expression interpolation is always enabled.
+
+  * Whitespace output is different, now closely aligned to the
+    template input.
+
+  * New language constructs:
+
+    1) tal:on-error
+    2) tal:switch
+    3) tal:case
+
+  Incompatibilities:
+
+  * The expression translation interface has been replaced with an
+    expression engine. This means that all expressions must be
+    rewritten.
+
 - The exists expression evaluator should ignore KeyError exceptions
   as well.
 

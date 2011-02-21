@@ -1,3 +1,4 @@
+import ast
 import re
 import namespaces
 import zope.event
@@ -12,17 +13,23 @@ try:
 except ImportError:
     BeforeUpdateEvent = None
 
-from chameleon.core import types
-from chameleon.zpt import expressions
-from chameleon.zpt.interfaces import IExpressionTranslator
-
 from types import MethodType
+
+from chameleon.tales import PathExpr as BasePathExpr
+from chameleon.tales import ExistsExpr as BaseExistsExpr
+from chameleon.codegen import template
+from chameleon.astutil import load
+from chameleon.astutil import Symbol
+from chameleon.astutil import Static
+from chameleon.exc import ExpressionError
 
 _marker = object()
 _valid_name = re.compile(r"[a-zA-Z][a-zA-Z0-9_]*$").match
 
+
 def identity(x):
     return x
+
 
 class ContentProviderTraverser(object):
     def __call__(self, context, request, view, name):
@@ -37,6 +44,7 @@ class ContentProviderTraverser(object):
             zope.event.notify(BeforeUpdateEvent(cp, request))
         cp.update()
         return cp.render()
+
 
 class ZopeTraverser(object):
     def __init__(self, proxify=identity):
@@ -83,89 +91,43 @@ class ZopeTraverser(object):
 
         return base
 
-class ZopeExistsTraverser(ZopeTraverser):
-    exceptions = AttributeError, LookupError, TypeError, KeyError
 
-    def __call__(self, base, request, call, *args, **kwargs):
-        try:
-            return ZopeTraverser.__call__(
-                self, base, request, False, *args, **kwargs) is not None
-        except self.exceptions:
-            return False
-        return True
+class ExistsExpr(BaseExistsExpr):
+    exceptions = AttributeError, LookupError, TypeError, KeyError, NameError
 
-class PathTranslator(expressions.ExpressionTranslator):
+
+class PathExpr(BasePathExpr):
     path_regex = re.compile(
-        r'^((nocall|not):\s*)*([A-Za-z_][A-Za-z0-9_:]*)'+
-        r'(/[?A-Za-z_@\-+][?A-Za-z0-9_@\-\.+/:]*)*$')
+        r'^(?:(nocall|not):\s*)*((?:[A-Za-z_][A-Za-z0-9_:]*)' +
+        r'(?:/[?A-Za-z_@\-+][?A-Za-z0-9_@\-\.+/:]*)*)$')
 
     interpolation_regex = re.compile(
         r'\?[A-Za-z][A-Za-z0-9_]+')
 
-    path_traverse = ZopeTraverser()
-    scope = 'request'
+    traverser = Static(
+        template("cls()", cls=Symbol(ZopeTraverser), mode="eval")
+        )
 
-    symbol = '_path'
-
-    def translate(self, string, escape=None):
+    def translate(self, string, target):
         """
-        >>> translate = PathTranslator().translate
-
-        >>> translate("") is None
+        >>> from chameleon.tales import test
+        >>> test(PathExpr('')) is None
         True
-
-        >>> translate("nocall: a")
-        value('a')
-
-        >>> translate("nothing")
-        value('None')
-
-        >>> translate("a/b")
-        value("_path(a, request, True, 'b')")
-
-        Verify allowed character set.
-
-        >>> translate("image_path/++res++/@@hello.html")
-        value("_path(image_path, request, True, '++res++', '@@hello.html')")
-
-        >>> translate("context/@@view")
-        value("_path(context, request, True, '@@view')")
-
-        >>> translate("nocall: context/@@view")
-        value("_path(context, request, False, '@@view')")
-
-        >>> translate("context/?view")
-        value("_path(context, request, True, '%s' % (view,))")
-
-        >>> translate("context/@@?view")
-        value("_path(context, request, True, '@@%s' % (view,))")
         """
+
+        string = string.strip()
 
         if not string:
-            return None
+            return template("target = None", target=target)
 
-        if not self.path_regex.match(string.strip()):
-            raise SyntaxError("Not a valid path-expression: %s." % string)
+        m = self.path_regex.match(string)
+        if m is None:
+            raise ExpressionError("Not a valid path-expression.", string)
 
-        nocall = False
+        nocall, path = m.groups()
 
-        while string:
-            m = self.re_pragma.match(string)
-            if m is None:
-                break
-
-            string = string[m.end():]
-            pragma = m.group('pragma').lower()
-
-            if pragma == 'nocall':
-                nocall = True
-            else:
-                raise ValueError("Invalid pragma: %s" % pragma)
-
-        parts = string.strip().split('/')
-
-        # map 'nothing' to 'None'
-        parts = map(lambda part: part == 'nothing' and 'None' or part, parts)
+        # note that unicode paths are not allowed
+        parts = str(path).split('/')
 
         components = []
         for part in parts[1:]:
@@ -174,7 +136,7 @@ class PathTranslator(expressions.ExpressionTranslator):
             def replace(match):
                 start, end = match.span()
                 interpolation_args.append(
-                    part[start+1:end])
+                    part[start + 1:end])
                 return "%s"
 
             while True:
@@ -183,10 +145,15 @@ class PathTranslator(expressions.ExpressionTranslator):
                     break
 
             if len(interpolation_args):
-                component = "%s %% (%s,)" % (
-                    repr(part), ", ".join(interpolation_args))
+                component = template(
+                    "format % args", format=ast.Str(part),
+                    args=ast.Tuple(
+                        list(map(load, interpolation_args)),
+                        ast.Load()
+                        ),
+                    mode="eval")
             else:
-                component = repr(str(part))
+                component = ast.Str(part)
 
             components.append(component)
 
@@ -194,98 +161,51 @@ class PathTranslator(expressions.ExpressionTranslator):
 
         if not components:
             if len(parts) == 1 and (nocall or base == 'None'):
-                value = types.value('%s' % base)
-                return value
+                return template("target = base", base=base, target=target)
             else:
                 components = ()
 
-        value = types.value(
-            '%s(%s, %s, %s, %s)' % \
-            (self.symbol, base, self.scope, not nocall, ', '.join(components)))
+        call = template(
+            "traverse(base, request, call)",
+            traverse=self.traverser,
+            base=load(base),
+            call=not nocall,
+            mode="eval",
+            )
 
-        value.symbol_mapping[self.symbol] = self.path_traverse
+        if components:
+            call.args.extend(components)
 
-        return value
+        return template("target = value", target=target, value=call)
 
-class NotTranslator(expressions.ExpressionTranslator):
-    zope.component.adapts(IExpressionTranslator)
 
-    recursive = True
+class NocallExpr(PathExpr):
+    """A path-expression which does not call the resolved object."""
 
-    def __init__(self, translator):
-        self.translator = translator
+    def translate(self, expression, engine):
+        return super(NocallExpr, self).translate(
+            "nocall:%s" % expression, engine)
 
-    def tales(self, string, escape=None):
-        """
-        >>> tales = NotTranslator(path_translator).tales
 
-        >>> tales("abc/def/ghi")
-        value("not(_path(abc, request, True, 'def', 'ghi'))")
-
-        >>> tales("abc | def")
-        parts(value('not(_path(abc, request, True, ))'),
-              value('not(_path(def, request, True, ))'))
-
-        >>> tales("abc | not: def")
-        parts(value('not(_path(abc, request, True, ))'),
-              value('not(not(_path(def, request, True, )))'))
-
-        >>> tales("abc | not: def | ghi")
-        parts(value('not(_path(abc, request, True, ))'),
-              value('not(not(_path(def, request, True, )))'),
-              value('not(not(_path(ghi, request, True, )))'))
-        """
-
-        value = self.translator.tales(string, escape=escape)
-        if isinstance(value, types.value):
-            value = (value,)
-
-        parts = []
-        for part in value:
-            factory = type(part)
-            value = factory("not(%s)" % part)
-            value.symbol_mapping.update(part.symbol_mapping)
-            parts.append(value)
-
-        if len(parts) == 1:
-            return parts[0]
-
-        return types.parts(parts)
-
-class ProviderTranslator(expressions.ExpressionTranslator):
+class ProviderExpr(object):
     provider_regex = re.compile(r'^[A-Za-z][A-Za-z0-9_\.-]*$')
 
-    symbol = '_get_content_provider'
-    content_provider_traverser = ContentProviderTraverser()
+    traverser = Static(
+        template("cls()", cls=Symbol(ContentProviderTraverser), mode="eval")
+        )
 
-    def translate(self, string, escape=None):
+    def __init__(self, expression):
+        self.expression = expression
+
+    def __call__(self, target, engine):
+        string = self.expression.strip()
         if self.provider_regex.match(string) is None:
             raise SyntaxError(
                 "%s is not a valid content provider name." % string)
 
-        value = types.value("%s(context, request, view, '%s')" % \
-                            (self.symbol, string))
-        value.symbol_mapping[self.symbol] = self.content_provider_traverser
-        return value
-
-class ExistsTranslator(PathTranslator):
-    """Implements string translation expression."""
-
-    symbol = '_path_exists'
-
-    path_traverse = ZopeExistsTraverser()
-
-    def translate(self, *args, **kwargs):
-        value = super(ExistsTranslator, self).translate(*args, **kwargs)
-        if value is None:
-            return
-
-        assert isinstance(value, types.value)
-        parts = types.parts(
-            (value, types.value('False')))
-        parts.exceptions = NameError,
-        return parts
-
-exists_translator = ExistsTranslator()
-path_translator = PathTranslator()
-provider_translator = ProviderTranslator()
+        return template(
+            "target = traverse(context, request, view, name)",
+            target=target,
+            traverse=self.traverser,
+            name=ast.Str(string),
+            )

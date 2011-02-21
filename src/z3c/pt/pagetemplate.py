@@ -1,21 +1,23 @@
 import os
+import ast
 import sys
-import compiler
 
+from functools import partial
 from zope import i18n
-from zope import component
 
-from chameleon.core import types
-from chameleon.core import config
-from chameleon.core import codegen
-from chameleon.core import clauses
-from chameleon.core import generation
-from chameleon.core import utils
-from chameleon.core.i18n import fast_translate
+from chameleon.i18n import fast_translate
 from chameleon.zpt import template
-from chameleon.zpt.interfaces import IExpressionTranslator
+from chameleon.tales import PythonExpr
+from chameleon.tales import StringExpr
+from chameleon.tales import NotExpr
+from chameleon.astutil import store
+from chameleon.astutil import param
+from chameleon.astutil import load
+from chameleon.codegen import TemplateCodeGenerator
+from chameleon.compiler import ExpressionCompiler
+from chameleon.tales import TalesEngine
 
-from z3c.pt import language
+from z3c.pt import expressions
 
 try:
     from Missing import MV
@@ -26,7 +28,8 @@ except ImportError:
 _marker = object()
 _expr_cache = {}
 
-class opaque_dict(dict):
+
+class OpaqueDict(dict):
     def __new__(cls, dictionary):
         inst = dict.__new__(cls)
         inst.dictionary = dictionary
@@ -43,70 +46,24 @@ class opaque_dict(dict):
     def __repr__(self):
         return "{...} (%d entries)" % len(self)
 
-sys_modules = opaque_dict(sys.modules)
+sys_modules = OpaqueDict(sys.modules)
 
-def evaluate_expression(pragma, expr):
-    key = "%s(%s)" % (pragma, expr)
-    try:
-        symbol_mapping, parts, source = _expr_cache[key]
-    except KeyError:
-        translator = component.getUtility(IExpressionTranslator, name=pragma)
-        parts = translator.tales(expr)
-        stream = generation.CodeIO(symbols=config.SYMBOLS)
-        assign = clauses.Assign(parts, 'result')
-        assign.begin(stream)
-        assign.end(stream)
-        source = stream.getvalue()
-
-        symbol_mapping = parts.symbol_mapping.copy()
-        if isinstance(parts, types.parts):
-            for value in parts:
-                symbol_mapping.update(value.symbol_mapping)    
-
-        _expr_cache[key] = symbol_mapping, parts, source
-
-    # acquire template locals and update with symbol mapping
-    frame = sys._getframe()
-    while frame.f_locals.get('econtext', _marker) is _marker:
-        frame = frame.f_back
-        if frame is None:
-            raise RuntimeError, "Can't locate template frame."
-
-    _locals = frame.f_locals
-    _locals.update(symbol_mapping)
-    _locals.update(_locals['econtext'])
-
-    # to support dynamic scoping (like in templates), we must
-    # transform the code to take the scope locals into account; for
-    # efficiency, this is cached for reuse
-    code_cache_key = key, tuple(_locals)
-
-    try:
-        code = _expr_cache[code_cache_key]
-    except KeyError:
-        suite = codegen.Suite(source, _locals)
-        code = compiler.compile(
-            suite.source, 'dynamic_path_expression.py', 'exec')
-        _expr_cache[code_cache_key] = code
-
-    # execute code and return evaluation
-    _locals[config.SYMBOLS.lookup_attr] = codegen.lookup_attr
-    exec code in _locals
-    return _locals['result']
-
-def evaluate_path(expr):
-    return evaluate_expression('path', expr)
-
-def evaluate_exists(expr):
-    try:
-        return evaluate_expression('exists', expr)
-    except NameError:
-        return False
 
 class BaseTemplate(template.PageTemplate):
     content_type = None
-    default_parser = language.Parser()
     version = 2
+
+    expression_types = {
+        'python': PythonExpr,
+        'string': StringExpr,
+        'not': NotExpr,
+        'exists': expressions.ExistsExpr,
+        'path': expressions.PathExpr,
+        'provider': expressions.ProviderExpr,
+        'nocall': expressions.NocallExpr,
+        }
+
+    default_expression = "path"
 
     def bind(self, ob=None, request=None, macro=None, global_scope=True):
         def render(target_language=None, request=request, **kwargs):
@@ -122,11 +79,13 @@ class BaseTemplate(template.PageTemplate):
                         target_language = None
 
             context['target_language'] = target_language
-            context['econtext'] = utils.econtext(context)
+            context['path'] = partial(self.evaluate_path, econtext=context)
+            context['exists'] = partial(self.evaluate_exists, econtext=context)
 
             # bind translation-method to request
             def translate(
-                msgid, domain=None, mapping=None, target_language=None, default=None):
+                msgid, domain=None, mapping=None,
+                target_language=None, default=None):
                 if msgid is MV:
                     # Special case handling of Zope2's Missing.MV
                     # (Missing.Value) used by the ZCatalog but is
@@ -134,7 +93,7 @@ class BaseTemplate(template.PageTemplate):
                     return
                 return fast_translate(
                     msgid, domain, mapping, request, target_language, default)
-            context[config.SYMBOLS.translate] = translate
+            context["translate"] = translate
 
             if request is not None and not isinstance(request, basestring):
                 content_type = self.content_type or 'text/html'
@@ -143,11 +102,7 @@ class BaseTemplate(template.PageTemplate):
                     response.setHeader(
                         "Content-Type", content_type)
 
-            if macro is None:
-                return self.render(**context)
-            else:
-                return self.render_macro(
-                    macro, global_scope=global_scope, parameters=context)
+            return "".join(self.render(**context))
 
         return BoundPageTemplate(self, render)
 
@@ -159,14 +114,60 @@ class BaseTemplate(template.PageTemplate):
         return dict(
             options=kwargs,
             request=request,
-            path=evaluate_path,
-            exists=evaluate_exists,
             nothing=None,
-            modules=sys_modules)
+            modules=sys_modules
+            )
+
+    def evaluate_expression(self, pragma, expr, econtext):
+        key = "%s(%s)" % (pragma, expr)
+
+        try:
+            function = _expr_cache[key]
+        except KeyError:
+            compiler = ExpressionCompiler(self.engine, {})
+            target = store("_result")
+            body = compiler("%s:%s" % (pragma, expr), target)
+            body.append(ast.Return(load("_result")))
+
+            fdef = ast.FunctionDef("_evaluate", ast.arguments(
+                [param("econtext")], None, None, []), body, [])
+
+            module = ast.Module([fdef])
+            ast.fix_missing_locations(module)
+
+            generator = TemplateCodeGenerator(module)
+
+            d = {}
+            exec generator.code in d
+            function = _expr_cache[key] = d[fdef.name]
+
+        if econtext is None:
+            # acquire template locals and update with symbol mapping
+            frame = sys._getframe()
+            while frame.f_locals.get('econtext', _marker) is _marker:
+                frame = frame.f_back
+                if frame is None:
+                    raise RuntimeError("Can't locate template frame.")
+
+            econtext = frame.f_locals
+
+        return function(econtext)
+
+    def evaluate_path(self, expr, econtext=None):
+        return self.evaluate_expression('path', expr, econtext)
+
+    def evaluate_exists(self, expr, econtext=None):
+        try:
+            return self.evaluate_expression('exists', expr, econtext)
+        except NameError:
+            return False
+
 
 class BaseTemplateFile(BaseTemplate, template.PageTemplateFile):
     """If ``filename`` is a relative path, the module path of the
     class where the instance is used to get an absolute path."""
+
+    cache = {}
 
     def __init__(self, filename, path=None, content_type=None, **kwargs):
         if path is not None:
@@ -176,7 +177,8 @@ class BaseTemplateFile(BaseTemplate, template.PageTemplateFile):
             for depth in (1, 2):
                 frame = sys._getframe(depth)
                 package_name = frame.f_globals.get('__name__', None)
-                if package_name is not None and package_name != self.__module__:
+                if package_name is not None and \
+                       package_name != self.__module__:
                     module = sys.modules[package_name]
                     try:
                         path = module.__path__[0]
@@ -200,6 +202,7 @@ class BaseTemplateFile(BaseTemplate, template.PageTemplateFile):
         # magically sniffed from the source template.
         self.content_type = content_type
 
+
 class PageTemplate(BaseTemplate):
     """Page Templates using TAL, TALES, and METAL.
 
@@ -215,6 +218,7 @@ class PageTemplate(BaseTemplate):
             return self.bind(instance)
         return self
 
+
 class PageTemplateFile(BaseTemplateFile, PageTemplate):
     """Page Templates using TAL, TALES, and METAL.
 
@@ -222,6 +226,9 @@ class PageTemplateFile(BaseTemplateFile, PageTemplate):
     property. Keyword-arguments are passed into the template as-is.
 
     Initialize with a filename."""
+
+    cache = {}
+
 
 class ViewPageTemplate(PageTemplate):
     """Template class suitable for use with a Zope browser view; the
@@ -240,11 +247,10 @@ class ViewPageTemplate(PageTemplate):
             view=view,
             context=context,
             request=request,
-            path=evaluate_path,
-            exists=evaluate_exists,
             options=kwargs,
             nothing=None,
-            modules=sys_modules)
+            modules=sys_modules
+            )
 
     def __call__(self, _ob=None, context=None, request=None, **kwargs):
         kwargs.setdefault('context', context)
@@ -252,9 +258,13 @@ class ViewPageTemplate(PageTemplate):
         bound_pt = self.bind(_ob)
         return bound_pt(**kwargs)
 
+
 class ViewPageTemplateFile(ViewPageTemplate, PageTemplateFile):
     """If ``filename`` is a relative path, the module path of the
     class where the instance is used to get an absolute path."""
+
+    cache = {}
+
 
 class BoundPageTemplate(object):
     """When a page template class is used as a property, it's bound to

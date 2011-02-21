@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys
 
-version = '1.2.2dev'
+version = '2.0-dev'
 
 install_requires = [
     'setuptools',
@@ -10,11 +10,8 @@ install_requires = [
     'zope.i18n >= 3.5',
     'zope.traversing',
     'zope.contentprovider',
-    'Chameleon >= 1.2.3',
+    'Chameleon >= 2.0-dev',
     ]
-
-if sys.version_info[:3] < (2,5,0):
-    install_requires.append('elementtree')
 
 setup(name='z3c.pt',
       version=version,

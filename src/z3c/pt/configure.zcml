@@ -4,31 +4,32 @@
 
   <include package="zope.component" file="meta.zcml" />
 
-  <include package="chameleon.core" />
-  <include package="chameleon.zpt" />
-  
-  <utility
-     name="path"
-     component=".expressions.path_translator" />
+  <!--
 
-  <adapter
-     name="not"
-     factory=".expressions.NotTranslator" />
+      <utility
+         name="path"
+         component=".expressions.path_translator" />
 
-  <utility
-     name="provider"
-     component=".expressions.provider_translator" />
+      <adapter
+         name="not"
+         factory=".expressions.NotTranslator" />
 
-  <utility
-     name="exists"
-     component=".expressions.exists_translator" />
+      <utility
+         name="provider"
+         component=".expressions.provider_translator" />
+
+      <utility
+         name="exists"
+         component=".expressions.exists_translator" />
+
+  -->
 
   <configure zcml:condition="installed zope.security">
 
     <include package="zope.security" file="meta.zcml" />
 
-    <class class="chameleon.core.utils.repeatitem">
-      <allow interface="chameleon.core.interfaces.ITALESIterator" />
+    <class class="chameleon.tal.RepeatItem">
+      <allow interface="chameleon.interfaces.ITALESIterator" />
     </class>
 
     <class class=".pagetemplate.BoundPageTemplate">
@@ -38,4 +39,4 @@
   </configure>
 
 </configure>
- 
+
