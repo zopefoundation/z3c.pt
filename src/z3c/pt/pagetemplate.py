@@ -1,8 +1,6 @@
 import os
-import ast
 import sys
 
-from functools import partial
 from zope import i18n
 
 from chameleon.i18n import fast_translate
@@ -10,12 +8,9 @@ from chameleon.zpt import template
 from chameleon.tales import PythonExpr
 from chameleon.tales import StringExpr
 from chameleon.tales import NotExpr
-from chameleon.astutil import store
-from chameleon.astutil import param
-from chameleon.astutil import load
-from chameleon.codegen import TemplateCodeGenerator
-from chameleon.compiler import ExpressionCompiler
-from chameleon.tales import TalesEngine
+from chameleon.nodes import Assignment
+from chameleon.nodes import Macro
+from chameleon.compiler import Compiler
 
 from z3c.pt import expressions
 
@@ -79,8 +74,8 @@ class BaseTemplate(template.PageTemplate):
                         target_language = None
 
             context['target_language'] = target_language
-            context['path'] = partial(self.evaluate_path, econtext=context)
-            context['exists'] = partial(self.evaluate_exists, econtext=context)
+            context['path'] = self.evaluate_path
+            context['exists'] = self.evaluate_exists
 
             # bind translation-method to request
             def translate(
@@ -118,47 +113,42 @@ class BaseTemplate(template.PageTemplate):
             modules=sys_modules
             )
 
-    def evaluate_expression(self, pragma, expr, econtext):
+    def evaluate_expression(self, pragma, expr):
         key = "%s(%s)" % (pragma, expr)
 
         try:
             function = _expr_cache[key]
         except KeyError:
-            compiler = ExpressionCompiler(self.engine, {})
-            target = store("_result")
-            body = compiler("%s:%s" % (pragma, expr), target)
-            body.append(ast.Return(load("_result")))
-
-            fdef = ast.FunctionDef("_evaluate", ast.arguments(
-                [param("econtext")], None, None, []), body, [])
-
-            module = ast.Module([fdef])
-            ast.fix_missing_locations(module)
-
-            generator = TemplateCodeGenerator(module)
+            expression = "%s:%s" % (pragma, expr)
+            assignment = Assignment(["_expr_result"], expression, True)
+            macro = Macro(None, [assignment])
+            compiler = Compiler(self.engine, macro)
 
             d = {}
-            exec generator.code in d
-            function = _expr_cache[key] = d[fdef.name]
+            exec compiler.code in d
+            function = _expr_cache[key] = d['render']
 
-        if econtext is None:
-            # acquire template locals and update with symbol mapping
-            frame = sys._getframe()
-            while frame.f_locals.get('econtext', _marker) is _marker:
-                frame = frame.f_back
-                if frame is None:
-                    raise RuntimeError("Can't locate template frame.")
+        # acquire template locals and update with symbol mapping
+        frame = sys._getframe()
+        while True:
+            l = frame.f_locals
+            econtext = l.get('econtext')
+            if econtext is not None:
+                break
 
-            econtext = frame.f_locals
+            frame = frame.f_back
+            if frame is None:
+                raise RuntimeError("Can't locate template frame.")
 
-        return function(econtext)
+        function([], econtext, None)
+        return econtext['_expr_result']
 
-    def evaluate_path(self, expr, econtext=None):
-        return self.evaluate_expression('path', expr, econtext)
+    def evaluate_path(self, expr):
+        return self.evaluate_expression('path', expr)
 
-    def evaluate_exists(self, expr, econtext=None):
+    def evaluate_exists(self, expr):
         try:
-            return self.evaluate_expression('exists', expr, econtext)
+            return self.evaluate_expression('exists', expr)
         except NameError:
             return False
 
