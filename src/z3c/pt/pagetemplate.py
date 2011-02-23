@@ -44,9 +44,19 @@ class OpaqueDict(dict):
 sys_modules = OpaqueDict(sys.modules)
 
 
+class DummyRegistry(object):
+    """This class is for B/W with Chameleon 1.x API."""
+
+    @staticmethod
+    def purge():
+        pass
+
+
 class BaseTemplate(template.PageTemplate):
     content_type = None
     version = 2
+
+    registry = DummyRegistry()
 
     expression_types = {
         'python': PythonExpr,
