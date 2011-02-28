@@ -9,7 +9,7 @@ from chameleon.tales import PythonExpr
 from chameleon.tales import StringExpr
 from chameleon.tales import NotExpr
 from chameleon.nodes import Assignment
-from chameleon.nodes import Macro
+from chameleon.nodes import Program
 from chameleon.compiler import Compiler
 
 from z3c.pt import expressions
@@ -131,7 +131,7 @@ class BaseTemplate(template.PageTemplate):
         except KeyError:
             expression = "%s:%s" % (pragma, expr)
             assignment = Assignment(["_expr_result"], expression, True)
-            macro = Macro(None, [assignment])
+            macro = Program(None, [assignment])
             compiler = Compiler(self.engine, macro)
 
             d = {}
