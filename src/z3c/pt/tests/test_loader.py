@@ -1,9 +1,9 @@
 import unittest
 
 class LoadTests:
-    def _makeOne(self, search_path=None, auto_reload=False, cachedir=None):
+    def _makeOne(self, search_path=None, **kwargs):
         klass = self._getTargetClass()
-        return klass(search_path, auto_reload, cachedir)
+        return klass(search_path, **kwargs)
 
     def _getTargetClass(self):
         from z3c.pt.loader import TemplateLoader
@@ -13,7 +13,7 @@ class LoadTests:
         import os
         here = os.path.dirname(__file__)
         loader = self._makeOne(search_path = [here])
-        
+
         result = self._load(loader, 'view.pt')
         self.assertEqual(result.filename, os.path.join(here, 'view.pt'))
 
@@ -21,7 +21,7 @@ class LoadTests:
         import os
         here = os.path.dirname(__file__)
         loader = self._makeOne(search_path = [here])
-        
+
         self.assertTrue(
             self._load(loader, 'view.pt') is self._load(loader, 'view.pt'))
 
@@ -43,10 +43,6 @@ class LoadTests:
 class LoadPageTests(unittest.TestCase, LoadTests):
     def _load(self, loader, filename):
         return loader.load_page(filename)
-
-# class LoadTextTests(unittest.TestCase, LoadTests):
-#     def _load(self, loader, filename):
-#         return loader.load_text(filename)
 
 def test_suite():
     import sys
