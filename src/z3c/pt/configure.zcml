@@ -4,26 +4,6 @@
 
   <include package="zope.component" file="meta.zcml" />
 
-  <!--
-
-      <utility
-         name="path"
-         component=".expressions.path_translator" />
-
-      <adapter
-         name="not"
-         factory=".expressions.NotTranslator" />
-
-      <utility
-         name="provider"
-         component=".expressions.provider_translator" />
-
-      <utility
-         name="exists"
-         component=".expressions.exists_translator" />
-
-  -->
-
   <configure zcml:condition="installed zope.security">
 
     <include package="zope.security" file="meta.zcml" />
