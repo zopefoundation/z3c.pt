@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys
 
-version = '2.0-rc1'
+version = '2.0-rc2'
 
 install_requires = [
     'setuptools',
@@ -10,12 +10,12 @@ install_requires = [
     'zope.i18n >= 3.5',
     'zope.traversing',
     'zope.contentprovider',
-    'Chameleon >= 2.0-rc1',
+    'Chameleon >= 2.0-rc6',
     ]
 
 setup(name='z3c.pt',
       version=version,
-      description="Fast ZPT template engine.",
+      description="Fast ZPT engine.",
       long_description=open("README.txt").read() + open("CHANGES.txt").read(),
       classifiers=[
         "Programming Language :: Python",

@@ -1,7 +1,8 @@
 Changelog
 =========
 
-In next release...
+2.0-rc2 (2011-03-24)
+~~~~~~~~~~~~~~~~~~~~
 
 - Fixed an issue with ``"exists:"`` expression where a callable would
   be attempted called. It is meanwhile implied with this expression
