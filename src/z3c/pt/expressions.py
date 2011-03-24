@@ -92,10 +92,6 @@ class ZopeTraverser(object):
         return base
 
 
-class ExistsExpr(BaseExistsExpr):
-    exceptions = AttributeError, LookupError, TypeError, KeyError, NameError
-
-
 class PathExpr(BasePathExpr):
     path_regex = re.compile(
         r'^(?:(nocall|not):\s*)*((?:[A-Za-z_][A-Za-z0-9_:]*)' +
@@ -185,6 +181,13 @@ class NocallExpr(PathExpr):
     def translate(self, expression, engine):
         return super(NocallExpr, self).translate(
             "nocall:%s" % expression, engine)
+
+
+class ExistsExpr(BaseExistsExpr):
+    exceptions = AttributeError, LookupError, TypeError, KeyError, NameError
+
+    def __init__(self, expression):
+        super(ExistsExpr, self).__init__("nocall:" + expression)
 
 
 class ProviderExpr(object):
