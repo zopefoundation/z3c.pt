@@ -70,7 +70,7 @@ class BaseTemplate(template.PageTemplate):
 
     default_expression = "path"
 
-    def bind(self, ob=None, request=None, macro=None, global_scope=True):
+    def bind(self, ob, request=None):
         def render(target_language=None, request=request, **kwargs):
             context = self._pt_get_context(ob, request, kwargs)
             request = request or context.get('request')
