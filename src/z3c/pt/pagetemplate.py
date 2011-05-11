@@ -117,6 +117,8 @@ class BaseTemplate(template.PageTemplate):
 
     def _pt_get_context(self, instance, request, kwargs):
         return dict(
+            context=instance,
+            here=instance,
             options=kwargs,
             request=request,
             nothing=None,
