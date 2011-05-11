@@ -150,7 +150,8 @@ class BaseTemplate(template.PageTemplate):
             if frame is None:
                 raise RuntimeError("Can't locate template frame.")
 
-        function([], econtext, None)
+        rcontext = l.get('rcontext')
+        function([], econtext, rcontext)
         return econtext['_expr_result']
 
     def evaluate_path(self, expr):
