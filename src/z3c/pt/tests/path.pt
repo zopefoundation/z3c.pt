@@ -1,0 +1,4 @@
+<div tal:define="editor options/editor"
+     tal:condition="python: path('nocall:here/%s_wysiwyg_support|here/%s/wysiwyg_support|here/portal_skins/plone_wysiwyg/wysiwyg_support' % (editor, editor))">
+  WYSWIWYG supported.
+</div>

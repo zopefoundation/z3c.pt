@@ -29,6 +29,19 @@ class TestPageTemplateFile(unittest.TestCase):
         result = template(callable=dont_call)
         self.failUnless('ok' in result)
 
+    def test_path(self):
+        from z3c.pt.pagetemplate import PageTemplateFile
+        template = PageTemplateFile("path.pt")
+
+        class Context(object):
+            dummy_wysiwyg_support = True
+
+        context = Context()
+        template = template.__get__(context, Context)
+
+        result = template(editor="dummy")
+        self.failUnless("supported" in result)
+
 
 def test_suite():
     import sys

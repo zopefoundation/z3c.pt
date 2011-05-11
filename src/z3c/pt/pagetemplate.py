@@ -5,7 +5,6 @@ from zope import i18n
 
 from chameleon.i18n import fast_translate
 from chameleon.zpt import template
-from chameleon.tales import PythonExpr
 from chameleon.tales import StringExpr
 from chameleon.tales import NotExpr
 from chameleon.nodes import Assignment
@@ -59,7 +58,7 @@ class BaseTemplate(template.PageTemplate):
     registry = DummyRegistry()
 
     expression_types = {
-        'python': PythonExpr,
+        'python': expressions.PythonExpr,
         'string': StringExpr,
         'not': NotExpr,
         'exists': expressions.ExistsExpr,

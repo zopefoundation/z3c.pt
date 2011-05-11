@@ -1,5 +1,5 @@
-import ast
 import re
+import ast
 import namespaces
 import zope.event
 
@@ -17,6 +17,7 @@ from types import MethodType
 
 from chameleon.tales import PathExpr as BasePathExpr
 from chameleon.tales import ExistsExpr as BaseExistsExpr
+from chameleon.tales import PythonExpr as BasePythonExpr
 from chameleon.codegen import template
 from chameleon.astutil import load
 from chameleon.astutil import Symbol
@@ -212,3 +213,11 @@ class ProviderExpr(object):
             traverse=self.traverser,
             name=ast.Str(string),
             )
+
+
+class PythonExpr(BasePythonExpr):
+    def __init__(self, expression):
+        self.expression = expression
+
+    def __call__(self, target, engine):
+        return self.translate(self.expression, target)

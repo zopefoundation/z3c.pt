@@ -1,6 +1,20 @@
 Changelog
 =========
 
+In next release...
+
+- Python-expressions are no longer TALES-expressions; previously, the
+  pipe operator would split Python expression clauses, allowing
+  fallbacks even for Python expressions, but this is not the standard
+  behavior of ZPT.
+
+- Fixed an issue where an error which occurred inside a dynamic
+  ``path`` or ``exists`` evaluation would fail to propagate due to a
+  missing remote context.
+
+- Set variables ``here`` and ``context`` to the bound instance value
+  on ``PageTemplate`` instances.
+
 2.0-rc2 (2011-03-24)
 ~~~~~~~~~~~~~~~~~~~~
 
