@@ -70,45 +70,53 @@ class BaseTemplate(template.PageTemplate):
     default_expression = "path"
 
     def bind(self, ob, request=None):
-        def render(target_language=None, request=request, **kwargs):
+        def render(request=request, **kwargs):
             context = self._pt_get_context(ob, request, kwargs)
-            request = request or context.get('request')
-            if target_language is None:
-                if hasattr(request, "get"):
-                    target_language = request.get("LANGUAGE", None)
-                if target_language is None:
-                    try:
-                        target_language = i18n.negotiate(request)
-                    except:
-                        target_language = None
-
-            context['target_language'] = target_language
-            context['path'] = self.evaluate_path
-            context['exists'] = self.evaluate_exists
-
-            # bind translation-method to request
-            def translate(
-                msgid, domain=None, mapping=None,
-                target_language=None, default=None):
-                if msgid is MV:
-                    # Special case handling of Zope2's Missing.MV
-                    # (Missing.Value) used by the ZCatalog but is
-                    # unhashable
-                    return
-                return fast_translate(
-                    msgid, domain, mapping, request, target_language, default)
-            context["translate"] = translate
-
-            if request is not None and not isinstance(request, basestring):
-                content_type = self.content_type or 'text/html'
-                response = request.response
-                if response and not response.getHeader("Content-Type"):
-                    response.setHeader(
-                        "Content-Type", content_type)
-
-            return "".join(self.render(**context))
+            return self.render(**context)
 
         return BoundPageTemplate(self, render)
+
+    def render(self, target_language=None, **context):
+        # We always include a ``request`` variable; it is (currently)
+        # depended on in various expression types and must be defined
+        request = context.setdefault('request', None)
+
+        if target_language is None:
+            if hasattr(request, "get"):
+                target_language = request.get("LANGUAGE", None)
+            if target_language is None:
+                try:
+                    target_language = i18n.negotiate(request)
+                except:
+                    target_language = None
+
+        context['target_language'] = target_language
+        context['path'] = self.evaluate_path
+        context['exists'] = self.evaluate_exists
+
+        # bind translation-method to request
+        def translate(
+            msgid, domain=None, mapping=None,
+            target_language=None, default=None):
+            if msgid is MV:
+                # Special case handling of Zope2's Missing.MV
+                # (Missing.Value) used by the ZCatalog but is
+                # unhashable
+                return
+            return fast_translate(
+                msgid, domain, mapping, request, target_language, default)
+        context["translate"] = translate
+
+        if request is not None and not isinstance(request, basestring):
+            content_type = self.content_type or 'text/html'
+            response = request.response
+            if response and not response.getHeader("Content-Type"):
+                response.setHeader(
+                    "Content-Type", content_type)
+
+        base_renderer = super(BaseTemplate, self).render
+        return base_renderer(**context)
+
 
     def __call__(self, *args, **kwargs):
         bound_pt = self.bind(self)
