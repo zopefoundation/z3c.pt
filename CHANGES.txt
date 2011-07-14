@@ -1,6 +1,10 @@
 Changelog
 =========
 
+In next release ...
+
+- Fixed issue with the call flag on the Zope traverser compiler.
+
 2.0-rc3 (2011-07-11)
 ~~~~~~~~~~~~~~~~~~~~
 

@@ -166,7 +166,7 @@ class PathExpr(BasePathExpr):
             "traverse(base, request, call)",
             traverse=self.traverser,
             base=load(base),
-            call=not nocall,
+            call=load(str(not nocall)),
             mode="eval",
             )
 
