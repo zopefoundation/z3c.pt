@@ -1,6 +1,11 @@
 Changelog
 =========
 
+2.0 (2011-07-14)
+~~~~~~~~~~~~~~~~
+
+- Point release.
+
 - Move implementation-specific context setup to ``render``
   method. This allows use of template class with an already prepared
   context.
