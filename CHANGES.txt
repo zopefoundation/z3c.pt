@@ -1,6 +1,11 @@
 Changelog
 =========
 
+In next release ...
+
+- Use dynamic expression evaluation framework that comes included with
+  Chameleon.
+
 2.0 (2011-07-14)
 ~~~~~~~~~~~~~~~~
 

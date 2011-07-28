@@ -7,9 +7,7 @@ from chameleon.i18n import fast_translate
 from chameleon.zpt import template
 from chameleon.tales import StringExpr
 from chameleon.tales import NotExpr
-from chameleon.nodes import Assignment
-from chameleon.nodes import Program
-from chameleon.compiler import Compiler
+from chameleon.compiler import ExpressionEvaluator
 
 from z3c.pt import expressions
 
@@ -20,7 +18,6 @@ except ImportError:
     MV = object()
 
 _marker = object()
-_expr_cache = {}
 
 
 class OpaqueDict(dict):
@@ -69,6 +66,18 @@ class BaseTemplate(template.PageTemplate):
 
     default_expression = "path"
 
+    @property
+    def builtins(self):
+        builtins = {
+            'nothing': None,
+            'modules': sys_modules,
+            }
+
+        tales = ExpressionEvaluator(self.engine, builtins)
+        builtins['tales'] = tales
+
+        return builtins
+
     def bind(self, ob, request=None):
         def render(request=request, **kwargs):
             context = self._pt_get_context(ob, request, kwargs)
@@ -91,8 +100,6 @@ class BaseTemplate(template.PageTemplate):
                     target_language = None
 
         context['target_language'] = target_language
-        context['path'] = self.evaluate_path
-        context['exists'] = self.evaluate_exists
 
         # bind translation-method to request
         def translate(
@@ -117,7 +124,6 @@ class BaseTemplate(template.PageTemplate):
         base_renderer = super(BaseTemplate, self).render
         return base_renderer(**context)
 
-
     def __call__(self, *args, **kwargs):
         bound_pt = self.bind(self)
         return bound_pt(*args, **kwargs)
@@ -128,49 +134,8 @@ class BaseTemplate(template.PageTemplate):
             here=instance,
             options=kwargs,
             request=request,
-            nothing=None,
-            modules=sys_modules
+            template=self,
             )
-
-    def evaluate_expression(self, pragma, expr):
-        key = "%s(%s)" % (pragma, expr)
-
-        try:
-            function = _expr_cache[key]
-        except KeyError:
-            expression = "%s:%s" % (pragma, expr)
-            assignment = Assignment(["_expr_result"], expression, True)
-            macro = Program(None, [assignment])
-            compiler = Compiler(self.engine, macro)
-
-            d = {}
-            exec compiler.code in d
-            function = _expr_cache[key] = d['render']
-
-        # acquire template locals and update with symbol mapping
-        frame = sys._getframe()
-        while True:
-            l = frame.f_locals
-            econtext = l.get('econtext')
-            if econtext is not None:
-                break
-
-            frame = frame.f_back
-            if frame is None:
-                raise RuntimeError("Can't locate template frame.")
-
-        rcontext = l.get('rcontext')
-        function([], econtext, rcontext)
-        return econtext['_expr_result']
-
-    def evaluate_path(self, expr):
-        return self.evaluate_expression('path', expr)
-
-    def evaluate_exists(self, expr):
-        try:
-            return self.evaluate_expression('exists', expr)
-        except NameError:
-            return False
 
 
 class BaseTemplateFile(BaseTemplate, template.PageTemplateFile):
@@ -258,8 +223,7 @@ class ViewPageTemplate(PageTemplate):
             context=context,
             request=request,
             options=kwargs,
-            nothing=None,
-            modules=sys_modules
+            template=self,
             )
 
     def __call__(self, _ob=None, context=None, request=None, **kwargs):

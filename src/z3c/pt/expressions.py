@@ -22,6 +22,7 @@ from chameleon.codegen import template
 from chameleon.astutil import load
 from chameleon.astutil import Symbol
 from chameleon.astutil import Static
+from chameleon.astutil import NameLookupRewriteVisitor
 from chameleon.exc import ExpressionError
 
 _marker = object()
@@ -216,8 +217,20 @@ class ProviderExpr(object):
 
 
 class PythonExpr(BasePythonExpr):
+    builtins = {
+        'path': template("tales(econtext, rcontext, 'path')", mode="eval"),
+        'exists': template("tales(econtext, rcontext, 'exists')", mode="eval"),
+        }
+
     def __init__(self, expression):
         self.expression = expression
 
     def __call__(self, target, engine):
         return self.translate(self.expression, target)
+
+    def rewrite(self, node):
+        return self.builtins.get(node.id, node)
+
+    @property
+    def transform(self):
+        return NameLookupRewriteVisitor(self.rewrite)
