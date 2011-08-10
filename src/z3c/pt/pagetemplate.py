@@ -2,6 +2,7 @@ import os
 import sys
 
 from zope import i18n
+from zope.security.proxy import ProxyFactory
 
 from chameleon.i18n import fast_translate
 from chameleon.zpt import template
@@ -37,7 +38,7 @@ class OpaqueDict(dict):
     def __repr__(self):
         return "{...} (%d entries)" % len(self)
 
-sys_modules = OpaqueDict(sys.modules)
+sys_modules = ProxyFactory(OpaqueDict(sys.modules))
 
 
 class DummyRegistry(object):

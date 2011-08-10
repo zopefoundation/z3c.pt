@@ -1,6 +1,11 @@
 Changelog
 =========
 
+In next release ...
+
+- Guard ``sys.modules`` (mapped to the builtin variable "modules")
+  against import-time side effects using ``ProxyFactory``.
+
 2.1 (2011-07-28)
 ~~~~~~~~~~~~~~~~
 
