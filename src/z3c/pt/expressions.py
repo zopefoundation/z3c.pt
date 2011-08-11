@@ -22,6 +22,7 @@ from chameleon.codegen import template
 from chameleon.astutil import load
 from chameleon.astutil import Symbol
 from chameleon.astutil import Static
+from chameleon.astutil import Builtin
 from chameleon.astutil import NameLookupRewriteVisitor
 from chameleon.exc import ExpressionError
 
@@ -217,10 +218,14 @@ class ProviderExpr(object):
 
 
 class PythonExpr(BasePythonExpr):
-    builtins = {
-        'path': template("tales(econtext, rcontext, 'path')", mode="eval"),
-        'exists': template("tales(econtext, rcontext, 'exists')", mode="eval"),
-        }
+    builtins = dict(
+        (name, template(
+            "tales(econtext, rcontext, name)",
+            tales=Builtin("tales"),
+            name=ast.Str(s=name),
+            mode="eval"))
+         for name in ('path', 'exists')
+        )
 
     def __init__(self, expression):
         self.expression = expression
@@ -229,7 +234,15 @@ class PythonExpr(BasePythonExpr):
         return self.translate(self.expression, target)
 
     def rewrite(self, node):
-        return self.builtins.get(node.id, node)
+        builtin = self.builtins.get(node.id)
+        if builtin is not None:
+            return template(
+                "get(name) if get(name) is not None else builtin",
+                get=Builtin("get"),
+                name=ast.Str(s=node.id),
+                builtin=builtin,
+                mode="eval"
+                )
 
     @property
     def transform(self):

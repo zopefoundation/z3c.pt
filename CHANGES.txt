@@ -3,6 +3,8 @@ Changelog
 
 In next release ...
 
+- Make sure the builtin names 'path' and 'exists' can be redefined.
+
 - Guard ``sys.modules`` (mapped to the builtin variable "modules")
   against import-time side effects using ``ProxyFactory``.
 

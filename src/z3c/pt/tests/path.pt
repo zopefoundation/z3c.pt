@@ -3,3 +3,7 @@
      tal:condition="support">
   WYSWIWYG supported.
 </div>
+
+<div tal:define="path string:some path">
+  <span tal:content="path" />
+</div>

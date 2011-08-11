@@ -41,7 +41,7 @@ class TestPageTemplateFile(unittest.TestCase):
 
         result = template(editor="dummy")
         self.failUnless("supported" in result)
-
+        self.failUnless("some path" in result)
 
 def test_suite():
     import sys
