@@ -67,6 +67,8 @@ class BaseTemplate(template.PageTemplate):
 
     default_expression = "path"
 
+    literal_false = True
+
     @property
     def builtins(self):
         builtins = {

@@ -29,6 +29,12 @@ class TestPageTemplateFile(unittest.TestCase):
         result = template(callable=dont_call)
         self.failUnless('ok' in result)
 
+    def test_false(self):
+        from z3c.pt.pagetemplate import PageTemplateFile
+        template = PageTemplateFile("false.pt")
+        result = template()
+        self.failUnless('False' in result)
+
     def test_path(self):
         from z3c.pt.pagetemplate import PageTemplateFile
         template = PageTemplateFile("path.pt")

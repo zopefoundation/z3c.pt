@@ -1,6 +1,11 @@
 Changelog
 =========
 
+In next release ...
+
+- Enable option ``literal_false`` to get the behavior that a value of
+  ``False`` does not drop an attribute.
+
 2.1.1 (2011-08-11)
 ~~~~~~~~~~~~~~~~~~
 
