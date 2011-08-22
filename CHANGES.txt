@@ -1,7 +1,8 @@
 Changelog
 =========
 
-In next release ...
+2.1.3 (2011-08-22)
+~~~~~~~~~~~~~~~~~~
 
 - Configure HTML boolean attributes (in HTML-mode only)::
 
