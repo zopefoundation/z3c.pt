@@ -1,6 +1,14 @@
 Changelog
 =========
 
+In next release ...
+
+- Configure HTML boolean attributes (in HTML-mode only)::
+
+      "compact", "nowrap", "ismap", "declare", "noshade",
+      "checked", "disabled", "readonly", "multiple", "selected",
+      "noresize", "defer"
+
 2.1.2 (2011-08-19)
 ~~~~~~~~~~~~~~~~~~
 

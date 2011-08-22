@@ -29,11 +29,18 @@ class TestPageTemplateFile(unittest.TestCase):
         result = template(callable=dont_call)
         self.failUnless('ok' in result)
 
-    def test_false(self):
+    def test_false_attribute(self):
         from z3c.pt.pagetemplate import PageTemplateFile
         template = PageTemplateFile("false.pt")
         result = template()
         self.failUnless('False' in result)
+
+    def test_boolean_attribute(self):
+        from z3c.pt.pagetemplate import PageTemplateFile
+        template = PageTemplateFile("boolean.pt")
+        result = template()
+        self.failIf('False' in result)
+        self.failUnless('checked="checked"' in result)
 
     def test_path(self):
         from z3c.pt.pagetemplate import PageTemplateFile
