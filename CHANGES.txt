@@ -1,6 +1,15 @@
 Changelog
 =========
 
+In next release ...
+
+- The provider expression is now first evaluated as a string
+  expression, the result of which is used as the content provider
+  name.
+
+  This fixes an issue where (provider-) string expressions would not
+  get evaluated correctly, e.g. ``provider: ${mgr}``.
+
 2.1.3 (2011-08-22)
 ~~~~~~~~~~~~~~~~~~
 

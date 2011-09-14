@@ -18,6 +18,7 @@ from types import MethodType
 from chameleon.tales import PathExpr as BasePathExpr
 from chameleon.tales import ExistsExpr as BaseExistsExpr
 from chameleon.tales import PythonExpr as BasePythonExpr
+from chameleon.tales import StringExpr
 from chameleon.codegen import template
 from chameleon.astutil import load
 from chameleon.astutil import Symbol
@@ -27,7 +28,6 @@ from chameleon.astutil import NameLookupRewriteVisitor
 from chameleon.exc import ExpressionError
 
 _marker = object()
-_valid_name = re.compile(r"[a-zA-Z][a-zA-Z0-9_]*$").match
 
 
 def identity(x):
@@ -193,27 +193,19 @@ class ExistsExpr(BaseExistsExpr):
         super(ExistsExpr, self).__init__("nocall:" + expression)
 
 
-class ProviderExpr(object):
-    provider_regex = re.compile(r'^[A-Za-z][A-Za-z0-9_\.-]*$')
-
+class ProviderExpr(StringExpr):
     traverser = Static(
         template("cls()", cls=Symbol(ContentProviderTraverser), mode="eval")
         )
 
-    def __init__(self, expression):
-        self.expression = expression
-
     def __call__(self, target, engine):
-        string = self.expression.strip()
-        if self.provider_regex.match(string) is None:
-            raise SyntaxError(
-                "%s is not a valid content provider name." % string)
+        assignment = super(ProviderExpr, self).__call__(target, engine)
 
-        return template(
-            "target = traverse(context, request, view, name)",
+        return assignment + \
+               template(
+            "target = traverse(context, request, view, target.strip())",
             target=target,
             traverse=self.traverser,
-            name=ast.Str(string),
             )
 
 
