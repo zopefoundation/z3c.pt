@@ -81,6 +81,8 @@ class BaseTemplate(template.PageTemplate):
 
     literal_false = True
 
+    strict = False
+
     @property
     def boolean_attributes(self):
         if self.content_type == 'text/xml':
