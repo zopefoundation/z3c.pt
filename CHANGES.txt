@@ -1,6 +1,10 @@
 Changelog
 =========
 
+- Use non-strict mode if available for compatibility with the
+  reference engine where expressions are only compiled at evaluation
+  time.
+
 2.1.4 (2011-09-14)
 ~~~~~~~~~~~~~~~~~~
 
