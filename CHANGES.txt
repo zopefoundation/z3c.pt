@@ -1,6 +1,11 @@
 Changelog
 =========
 
+In next release ...
+
+- The ``ZopeTraverser`` class now gets ``econtext`` instead of the
+  name ``request``.
+
 2.1.5 (2011-11-24)
 ~~~~~~~~~~~~~~~~~~
 

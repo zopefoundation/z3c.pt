@@ -53,10 +53,11 @@ class ZopeTraverser(object):
     def __init__(self, proxify=identity):
         self.proxify = proxify
 
-    def __call__(self, base, request, call, *path_items):
+    def __call__(self, base, econtext, call, *path_items):
         """See ``zope.app.pagetemplate.engine``."""
 
         if bool(path_items):
+            request = econtext.get('request')
             path_items = list(path_items)
             path_items.reverse()
 
@@ -165,7 +166,7 @@ class PathExpr(BasePathExpr):
                 components = ()
 
         call = template(
-            "traverse(base, request, call)",
+            "traverse(base, econtext, call)",
             traverse=self.traverser,
             base=load(base),
             call=load(str(not nocall)),
