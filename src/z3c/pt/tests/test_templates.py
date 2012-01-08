@@ -68,7 +68,21 @@ class TestPageTemplateFile(unittest.TestCase):
         class View(object):
             __call__ = ViewPageTemplateFile("provider.pt")
 
+        from zope.interface import Interface
+        from zope.schema import Field
+        from zope.interface import implements
+        from zope.interface import directlyProvides
+        from zope.contentprovider.interfaces import ITALNamespaceData
+
+        class ITestProvider(Interface):
+            context = Field(u"Provider context.")
+
+        directlyProvides(ITestProvider, ITALNamespaceData)
+        assert ITALNamespaceData.providedBy(ITestProvider)
+
         class Provider(object):
+            implements(ITestProvider)
+
             def __init__(self, *args):
                 data.extend(list(args))
 
@@ -76,7 +90,8 @@ class TestPageTemplateFile(unittest.TestCase):
                 data.extend("updated")
 
             def render(self):
-                return """<![CDATA[ %s ]]>""" % repr(data)
+                return """<![CDATA[ %r, %r]]>""" % (
+                    data, self.__dict__)
 
         view = View()
         data = []
@@ -95,8 +110,12 @@ class TestPageTemplateFile(unittest.TestCase):
             name="content"
             )
 
-        result = view(context=Context(), request=Request())
+        context = Context()
+        request = Request()
+
+        result = view(context=context, request=request)
         self.failUnless(repr(data) in result)
+        self.failUnless(repr({'context': context}) in result)
 
 
 def test_suite():
