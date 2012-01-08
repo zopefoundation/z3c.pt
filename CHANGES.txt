@@ -3,8 +3,21 @@ Changelog
 
 In next release ...
 
-- The ``ZopeTraverser`` class now gets ``econtext`` instead of the
-  name ``request``.
+Features:
+
+- The ``request`` symbol is no longer required to evaluate a path
+  expression; it now defaults to ``None`` if not present in the
+  namespace.
+
+Bugfixes:
+
+- The content provider expression now correctly applies TAL namespace
+  data.
+
+Changes:
+
+- The ``ZopeTraverser`` class has been removed and replaced with a
+  simple function.
 
 2.1.5 (2011-11-24)
 ~~~~~~~~~~~~~~~~~~

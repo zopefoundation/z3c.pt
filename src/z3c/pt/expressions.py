@@ -6,7 +6,9 @@ import zope.event
 from zope.traversing.adapters import traversePathElement
 from zope.contentprovider.interfaces import IContentProvider
 from zope.contentprovider.interfaces import ContentProviderLookupError
+from zope.contentprovider.tales import addTALNamespaceData
 from zope.traversing.interfaces import ITraversable
+from zope.location.interfaces import ILocation
 
 try:
     from zope.contentprovider.interfaces import BeforeUpdateEvent
@@ -15,14 +17,13 @@ except ImportError:
 
 from types import MethodType
 
-from chameleon.tales import PathExpr as BasePathExpr
+from chameleon.tales import TalesExpr
 from chameleon.tales import ExistsExpr as BaseExistsExpr
 from chameleon.tales import PythonExpr as BasePythonExpr
 from chameleon.tales import StringExpr
 from chameleon.codegen import template
 from chameleon.astutil import load
 from chameleon.astutil import Symbol
-from chameleon.astutil import Static
 from chameleon.astutil import Builtin
 from chameleon.astutil import NameLookupRewriteVisitor
 from chameleon.exc import ExpressionError
@@ -30,73 +31,100 @@ from chameleon.exc import ExpressionError
 _marker = object()
 
 
-def identity(x):
-    return x
+def render_content_provider(econtext, name):
+    name = name.strip()
+
+    context = econtext.get('context')
+    request = econtext.get('request')
+    view = econtext.get('view')
+
+    cp = zope.component.queryMultiAdapter(
+        (context, request, view), IContentProvider, name=name)
+
+    # provide a useful error message, if the provider was not found.
+    if cp is None:
+        raise ContentProviderLookupError(name)
+
+    # add the __name__ attribute if it implements ILocation
+    if ILocation.providedBy(cp):
+        cp.__name__ = name
+
+    # Insert the data gotten from the context
+    addTALNamespaceData(cp, econtext)
+
+    # Stage 1: Do the state update.
+    if BeforeUpdateEvent is not None:
+        zope.event.notify(BeforeUpdateEvent(cp, request))
+    cp.update()
+
+    # Stage 2: Render the HTML content.
+    return cp.render()
 
 
-class ContentProviderTraverser(object):
-    def __call__(self, context, request, view, name):
-        cp = zope.component.queryMultiAdapter(
-            (context, request, view), IContentProvider, name=name)
+def path_traverse(base, econtext, call, path_items):
+    if path_items:
+        request = econtext.get('request')
+        path_items = list(path_items)
+        path_items.reverse()
 
-        # provide a useful error message, if the provider was not found.
-        if cp is None:
-            raise ContentProviderLookupError(name)
-
-        if BeforeUpdateEvent is not None:
-            zope.event.notify(BeforeUpdateEvent(cp, request))
-        cp.update()
-        return cp.render()
-
-
-class ZopeTraverser(object):
-    def __init__(self, proxify=identity):
-        self.proxify = proxify
-
-    def __call__(self, base, econtext, call, *path_items):
-        """See ``zope.app.pagetemplate.engine``."""
-
-        if bool(path_items):
-            request = econtext.get('request')
-            path_items = list(path_items)
-            path_items.reverse()
-
-            while len(path_items):
-                name = path_items.pop()
-                ns_used = ':' in name
-                if ns_used:
-                    namespace, name = name.split(':', 1)
-                    base = namespaces.function_namespaces[namespace](base)
-                    if ITraversable.providedBy(base):
-                        base = self.proxify(traversePathElement(
-                            base, name, path_items, request=request))
-                        continue
-
-                # special-case dicts for performance reasons
-                if isinstance(base, dict):
-                    next = base.get(name, _marker)
-                else:
-                    next = getattr(base, name, _marker)
-
-                if next is not _marker:
-                    base = next
-                    if ns_used and isinstance(base, MethodType):
-                        base = base()
-                    continue
-                else:
+        while len(path_items):
+            name = path_items.pop()
+            ns_used = ':' in name
+            if ns_used:
+                namespace, name = name.split(':', 1)
+                base = namespaces.function_namespaces[namespace](base)
+                if ITraversable.providedBy(base):
                     base = traversePathElement(
                         base, name, path_items, request=request)
 
-                if not isinstance(base, (basestring, tuple, list)):
-                    base = self.proxify(base)
+                    # base = proxify(base)
 
-        if call and getattr(base, '__call__', _marker) is not _marker:
-            return base()
+                    continue
 
-        return base
+            # special-case dicts for performance reasons
+            if isinstance(base, dict):
+                next = base.get(name, _marker)
+            else:
+                next = getattr(base, name, _marker)
+
+            if next is not _marker:
+                base = next
+                if ns_used and isinstance(base, MethodType):
+                    base = base()
+                continue
+            else:
+                base = traversePathElement(
+                    base, name, path_items, request=request)
+
+            # if not isinstance(base, (basestring, tuple, list)):
+            #    base = proxify(base)
+
+    if call and getattr(base, '__call__', _marker) is not _marker:
+        return base()
+
+    return base
 
 
-class PathExpr(BasePathExpr):
+class ContextExpressionMixin(object):
+    """Mixin-class for expression compilers."""
+
+    transform = None
+
+    def __call__(self, target, engine):
+        # Make call to superclass to assign value to target
+        assignment = super(ContextExpressionMixin, self).\
+                     __call__(target, engine)
+
+        transform = template(
+            "target = transform(econtext, target)",
+            target=target,
+            transform=self.transform,
+            )
+
+        return assignment + transform
+
+
+class PathExpr(TalesExpr):
     path_regex = re.compile(
         r'^(?:(nocall|not):\s*)*((?:[A-Za-z_][A-Za-z0-9_:]*)' +
         r'(?:/[?A-Za-z_@\-+][?A-Za-z0-9_@\-\.+/:]*)*)$')
@@ -104,9 +132,7 @@ class PathExpr(BasePathExpr):
     interpolation_regex = re.compile(
         r'\?[A-Za-z][A-Za-z0-9_]+')
 
-    traverser = Static(
-        template("cls()", cls=Symbol(ZopeTraverser), mode="eval")
-        )
+    traverser = Symbol(path_traverse)
 
     def translate(self, string, target):
         """
@@ -166,15 +192,13 @@ class PathExpr(BasePathExpr):
                 components = ()
 
         call = template(
-            "traverse(base, econtext, call)",
+            "traverse(base, econtext, call, path_items)",
             traverse=self.traverser,
             base=load(base),
             call=load(str(not nocall)),
+            path_items=ast.Tuple(elts=components),
             mode="eval",
             )
-
-        if components:
-            call.args.extend(components)
 
         return template("target = value", target=target, value=call)
 
@@ -194,20 +218,8 @@ class ExistsExpr(BaseExistsExpr):
         super(ExistsExpr, self).__init__("nocall:" + expression)
 
 
-class ProviderExpr(StringExpr):
-    traverser = Static(
-        template("cls()", cls=Symbol(ContentProviderTraverser), mode="eval")
-        )
-
-    def __call__(self, target, engine):
-        assignment = super(ProviderExpr, self).__call__(target, engine)
-
-        return assignment + \
-               template(
-            "target = traverse(context, request, view, target.strip())",
-            target=target,
-            traverse=self.traverser,
-            )
+class ProviderExpr(ContextExpressionMixin, StringExpr):
+    transform = Symbol(render_content_provider)
 
 
 class PythonExpr(BasePythonExpr):
