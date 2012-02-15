@@ -12,6 +12,10 @@ install_requires = [
     'Chameleon >= 2.4',
     ]
 
+tests_require = [
+    'zope.testing',
+    ]
+
 setup(name='z3c.pt',
       version=version,
       description="Fast ZPT engine.",
@@ -32,4 +36,8 @@ setup(name='z3c.pt',
       include_package_data=True,
       zip_safe=False,
       install_requires=install_requires,
+      extras_require=dict(
+          test=tests_require,
+      ),
+      tests_require=tests_require,
       )

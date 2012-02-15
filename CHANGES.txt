@@ -6,6 +6,8 @@ Changelog
 
 - Only require Chameleon >= 2.4, was needlessly bumped in last release.
 
+- Add test extra, remove versions from buildout.cfg.
+
 
 2.2 (2012-01-08)
 ~~~~~~~~~~~~~~~~
