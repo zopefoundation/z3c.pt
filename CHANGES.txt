@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.2.1 (unreleased)
+2.2.1 (2012-02-15)
 ~~~~~~~~~~~~~~~~~~
 
 - Only require Chameleon >= 2.4, was needlessly bumped in last release.
