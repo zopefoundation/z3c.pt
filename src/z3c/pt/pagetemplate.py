@@ -117,13 +117,10 @@ class BaseTemplate(template.PageTemplate):
         request = context.setdefault('request', None)
 
         if target_language is None:
-            if hasattr(request, "get"):
-                target_language = request.get("LANGUAGE", None)
-            if target_language is None:
-                try:
-                    target_language = i18n.negotiate(request)
-                except:
-                    target_language = None
+            try:
+                target_language = i18n.negotiate(request)
+            except:
+                target_language = None
 
         context['target_language'] = target_language
 

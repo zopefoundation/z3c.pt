@@ -1,6 +1,14 @@
 Changelog
 =========
 
+In next release ...
+
+Bugfixes:
+
+- Do not rely on the "LANGUAGE" request key to skip language
+  negotiation. Instead, we assume that negotiation is cheap (and
+  probably cached).
+
 2.2.1 (2012-02-15)
 ~~~~~~~~~~~~~~~~~~
 
