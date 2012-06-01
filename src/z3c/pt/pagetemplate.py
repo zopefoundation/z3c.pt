@@ -127,7 +127,8 @@ class BaseTemplate(template.PageTemplate):
         # bind translation-method to request
         def translate(
             msgid, domain=None, mapping=None,
-            target_language=None, default=None):
+            target_language=None, default=None,
+            context=None):
             if msgid is MV:
                 # Special case handling of Zope2's Missing.MV
                 # (Missing.Value) used by the ZCatalog but is
