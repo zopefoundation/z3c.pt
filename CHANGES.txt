@@ -1,6 +1,14 @@
 Changelog
 =========
 
+2.2.4 (unreleased)
+~~~~~~~~~~~~~~~~~~
+
+Bugfixes:
+
+- Allow segments of path expressions to start with a digit.
+
+
 2.2.3 (2012-06-01)
 ~~~~~~~~~~~~~~~~~~
 

@@ -126,8 +126,8 @@ class ContextExpressionMixin(object):
 
 class PathExpr(TalesExpr):
     path_regex = re.compile(
-        r'^(?:(nocall|not):\s*)*((?:[A-Za-z_][A-Za-z0-9_:]*)' +
-        r'(?:/[?A-Za-z_@\-+][?A-Za-z0-9_@\-\.+/:]*)*)$')
+        r'^(?:(nocall|not):\s*)*((?:[A-Za-z0-9_][A-Za-z0-9_:]*)' +
+        r'(?:/[?A-Za-z0-9_@\-+][?A-Za-z0-9_@\-\.+/:]*)*)$')
 
     interpolation_regex = re.compile(
         r'\?[A-Za-z][A-Za-z0-9_]+')
