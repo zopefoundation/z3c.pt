@@ -1,8 +1,14 @@
 Changelog
 =========
 
-2.2.4 (unreleased)
-~~~~~~~~~~~~~~~~~~
+3.0.0a1 (unreleased)
+~~~~~~~~~~~~~~~~~~~~
+
+Compatibility:
+
+- Added support for Python 3.3.
+
+- Added a small patch to ``chameleon.i18n`` to define ``basestring``.
 
 Bugfixes:
 

@@ -1,4 +1,18 @@
+##############################################################################
+#
+# Copyright (c) 2007 Zope Foundation and Contributors.
+# All Rights Reserved.
+#
+# This software is subject to the provisions of the Zope Public License,
+# Version 2.1 (ZPL).  A copy of the ZPL should accompany this distribution.
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
+# WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
+# FOR A PARTICULAR PURPOSE.
+#
+##############################################################################
 import os
+import six
 import sys
 
 from zope import i18n
@@ -138,7 +152,7 @@ class BaseTemplate(template.PageTemplate):
                 msgid, domain, mapping, request, target_language, default)
         context["translate"] = translate
 
-        if request is not None and not isinstance(request, basestring):
+        if request is not None and not isinstance(request, six.string_types):
             content_type = self.content_type or 'text/html'
             response = request.response
             if response and not response.getHeader("Content-Type"):

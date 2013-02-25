@@ -1,6 +1,19 @@
+##############################################################################
+#
+# Copyright (c) 2007 Zope Foundation and Contributors.
+# All Rights Reserved.
+#
+# This software is subject to the provisions of the Zope Public License,
+# Version 2.1 (ZPL).  A copy of the ZPL should accompany this distribution.
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
+# WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
+# FOR A PARTICULAR PURPOSE.
+#
+##############################################################################
 import re
 import ast
-import namespaces
+import z3c.pt.namespaces
 import zope.event
 
 from zope.traversing.adapters import traversePathElement
@@ -72,7 +85,7 @@ def path_traverse(base, econtext, call, path_items):
             ns_used = ':' in name
             if ns_used:
                 namespace, name = name.split(':', 1)
-                base = namespaces.function_namespaces[namespace](base)
+                base = z3c.pt.namespaces.function_namespaces[namespace](base)
                 if ITraversable.providedBy(base):
                     base = traversePathElement(
                         base, name, path_items, request=request)
@@ -137,10 +150,9 @@ class PathExpr(TalesExpr):
     def translate(self, string, target):
         """
         >>> from chameleon.tales import test
-        >>> test(PathExpr('')) is None
+        >>> test(PathExpr('None')) is None
         True
         """
-
         string = string.strip()
 
         if not string:

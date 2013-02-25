@@ -1,3 +1,16 @@
+##############################################################################
+#
+# Copyright (c) 2007 Zope Foundation and Contributors.
+# All Rights Reserved.
+#
+# This software is subject to the provisions of the Zope Public License,
+# Version 2.1 (ZPL).  A copy of the ZPL should accompany this distribution.
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
+# WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
+# FOR A PARTICULAR PURPOSE.
+#
+##############################################################################
 import unittest
 
 import zope.component.testing
@@ -70,7 +83,7 @@ class TestPageTemplateFile(unittest.TestCase):
 
         from zope.interface import Interface
         from zope.schema import Field
-        from zope.interface import implements
+        from zope.interface import implementer
         from zope.interface import directlyProvides
         from zope.contentprovider.interfaces import ITALNamespaceData
 
@@ -80,8 +93,8 @@ class TestPageTemplateFile(unittest.TestCase):
         directlyProvides(ITestProvider, ITALNamespaceData)
         assert ITALNamespaceData.providedBy(ITestProvider)
 
+        @implementer(ITestProvider)
         class Provider(object):
-            implements(ITestProvider)
 
             def __init__(self, *args):
                 data.extend(list(args))
