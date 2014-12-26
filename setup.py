@@ -15,6 +15,12 @@
 """
 from setuptools import setup, find_packages
 
+
+def read(filename):
+    with open(filename) as f:
+        return f.read()
+
+
 def alltests():
     import os
     import sys
@@ -30,12 +36,13 @@ def alltests():
     suites = list(zope.testrunner.find.find_suites(options))
     return unittest.TestSuite(suites)
 
+
 setup(name='z3c.pt',
       version='3.0.0a2.dev0',
       author='Malthe Borch and the Zope Community',
       author_email='zope-dev@zope.org',
       description='Fast ZPT engine.',
-      long_description=open('README.txt').read() + open('CHANGES.txt').read(),
+      long_description=read('README.txt') + read('CHANGES.txt'),
       license='ZPL',
       keywords='tal tales pagetemplate zope',
       classifiers=[

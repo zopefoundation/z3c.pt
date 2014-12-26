@@ -138,8 +138,8 @@ incidentally loaded from disk).
 
   >>> from z3c.pt import tests
   >>> path = tests.__path__[0]
-  >>> template = ViewPageTemplate(
-  ...     open(path + '/view.pt').read())
+  >>> with open(path + '/view.pt') as f:
+  ...     template = ViewPageTemplate(f.read())
 
 To render the template in the context of a view, we bind the template
 passing the view as an argument (view page templates derive from the
