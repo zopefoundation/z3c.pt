@@ -32,7 +32,7 @@ class TestPageTemplateFile(unittest.TestCase):
         def dont_call():
             raise RuntimeError()
         result = template(callable=dont_call)
-        self.failUnless(repr(dont_call) in result)
+        self.assertTrue(repr(dont_call) in result)
 
     def test_exists(self):
         from z3c.pt.pagetemplate import PageTemplateFile
@@ -40,20 +40,20 @@ class TestPageTemplateFile(unittest.TestCase):
         def dont_call():
             raise RuntimeError()
         result = template(callable=dont_call)
-        self.failUnless('ok' in result)
+        self.assertTrue('ok' in result)
 
     def test_false_attribute(self):
         from z3c.pt.pagetemplate import PageTemplateFile
         template = PageTemplateFile("false.pt")
         result = template()
-        self.failUnless('False' in result)
+        self.assertTrue('False' in result)
 
     def test_boolean_attribute(self):
         from z3c.pt.pagetemplate import PageTemplateFile
         template = PageTemplateFile("boolean.pt")
         result = template()
-        self.failIf('False' in result)
-        self.failUnless('checked="checked"' in result)
+        self.assertFalse('False' in result)
+        self.assertTrue('checked="checked"' in result)
 
     def test_path(self):
         from z3c.pt.pagetemplate import PageTemplateFile
@@ -66,8 +66,8 @@ class TestPageTemplateFile(unittest.TestCase):
         template = template.__get__(context, Context)
 
         result = template(editor="dummy")
-        self.failUnless("supported" in result)
-        self.failUnless("some path" in result)
+        self.assertTrue("supported" in result)
+        self.assertTrue("some path" in result)
 
     def test_provider(self):
         from z3c.pt.pagetemplate import ViewPageTemplateFile
@@ -127,8 +127,8 @@ class TestPageTemplateFile(unittest.TestCase):
         request = Request()
 
         result = view(context=context, request=request)
-        self.failUnless(repr(data) in result)
-        self.failUnless(repr({'context': context}) in result)
+        self.assertTrue(repr(data) in result)
+        self.assertTrue(repr({'context': context}) in result)
 
 
 def test_suite():
