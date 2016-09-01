@@ -4,3 +4,4 @@ Hanno Schlichting
 Philipp von Weitershausen
 Wichert Akkerman
 Stefan Eletzhofer
+Michael Howitz
