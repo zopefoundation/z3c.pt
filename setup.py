@@ -39,7 +39,7 @@ def alltests():
 
 setup(
     name='z3c.pt',
-    version='3.0',
+    version='3.1.dev0',
     author='Malthe Borch and the Zope Community',
     author_email='zope-dev@zope.org',
     description='Fast ZPT engine.',
