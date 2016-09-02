@@ -4,7 +4,7 @@ Changelog
 3.0.0a2 (unreleased)
 ~~~~~~~~~~~~~~~~~~~~
 
-- Added support for Python 3.4, 3.5 and PyPy.
+- Added support for Python 3.4, 3.5, PyPy and PyPy3.
 
 - Dropped support for Python 2.6.
 
