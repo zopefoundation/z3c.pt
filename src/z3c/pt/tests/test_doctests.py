@@ -14,12 +14,12 @@
 import doctest
 import unittest
 
-OPTIONFLAGS = (doctest.ELLIPSIS |
-               doctest.NORMALIZE_WHITESPACE)
-
 import zope.component.testing
 import zope.configuration.xmlconfig
 import z3c.pt
+
+OPTIONFLAGS = (doctest.ELLIPSIS
+               | doctest.NORMALIZE_WHITESPACE)
 
 
 def setUp(suite):
@@ -28,20 +28,20 @@ def setUp(suite):
 
 
 def test_suite():
-    filesuites = 'README.txt',
+    filesuites = ('README.rst',)
     testsuites = 'z3c.pt.expressions', 'z3c.pt.namespaces'
 
     return unittest.TestSuite(
         [doctest.DocFileSuite(
-        filesuite, optionflags=OPTIONFLAGS,
-        setUp=setUp, tearDown=zope.component.testing.tearDown,
-        package="z3c.pt") for filesuite in filesuites] + \
-
+            filesuite, optionflags=OPTIONFLAGS,
+            setUp=setUp, tearDown=zope.component.testing.tearDown,
+            package="z3c.pt")
+         for filesuite in filesuites]
+        +
         [doctest.DocTestSuite(
-        testsuite, optionflags=OPTIONFLAGS,
-        setUp=setUp, tearDown=zope.component.testing.tearDown) \
+            testsuite, optionflags=OPTIONFLAGS,
+            setUp=setUp, tearDown=zope.component.testing.tearDown)
          for testsuite in testsuites]
-
         )
 
 if __name__ == '__main__':

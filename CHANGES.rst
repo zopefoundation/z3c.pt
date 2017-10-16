@@ -1,14 +1,16 @@
-Changelog
-=========
+===========
+ Changelog
+===========
 
-3.1 (unreleased)
-~~~~~~~~~~~~~~~~
+3.1.0 (unreleased)
+===================
 
-- Nothing changed yet.
+- Added support for Python 3.6.
+- Dropped support for Python 3.3.
 
 
 3.0 (2016-09-02)
-~~~~~~~~~~~~~~~~
+================
 
 - Added support for Python 3.4, 3.5, PyPy and PyPy3.
 
@@ -16,7 +18,7 @@ Changelog
 
 
 3.0.0a1 (2013-02-25)
-~~~~~~~~~~~~~~~~~~~~
+====================
 
 Compatibility:
 
@@ -30,7 +32,7 @@ Bugfixes:
 
 
 2.2.3 (2012-06-01)
-~~~~~~~~~~~~~~~~~~
+==================
 
 Compatibility:
 
@@ -38,7 +40,7 @@ Compatibility:
   argument. This fixes a compatibility issue with Chameleon 2.9.x.
 
 2.2.2 (2012-04-24)
-~~~~~~~~~~~~~~~~~~
+==================
 
 Bugfixes:
 
@@ -47,7 +49,7 @@ Bugfixes:
   probably cached).
 
 2.2.1 (2012-02-15)
-~~~~~~~~~~~~~~~~~~
+==================
 
 - Only require Chameleon >= 2.4, was needlessly bumped in last release.
 
@@ -55,7 +57,7 @@ Bugfixes:
 
 
 2.2 (2012-01-08)
-~~~~~~~~~~~~~~~~
+================
 
 Features:
 
@@ -77,14 +79,14 @@ Changes:
   simple function.
 
 2.1.5 (2011-11-24)
-~~~~~~~~~~~~~~~~~~
+==================
 
 - Use non-strict mode if available for compatibility with the
   reference engine where expressions are only compiled at evaluation
   time.
 
 2.1.4 (2011-09-14)
-~~~~~~~~~~~~~~~~~~
+==================
 
 - The provider expression is now first evaluated as a string
   expression, the result of which is used as the content provider
@@ -94,7 +96,7 @@ Changes:
   get evaluated correctly, e.g. ``provider: ${mgr}``.
 
 2.1.3 (2011-08-22)
-~~~~~~~~~~~~~~~~~~
+==================
 
 - Configure HTML boolean attributes (in HTML-mode only)::
 
@@ -103,13 +105,13 @@ Changes:
       "noresize", "defer"
 
 2.1.2 (2011-08-19)
-~~~~~~~~~~~~~~~~~~
+==================
 
 - Enable option ``literal_false`` to get the behavior that a value of
   ``False`` does not drop an attribute.
 
 2.1.1 (2011-08-11)
-~~~~~~~~~~~~~~~~~~
+==================
 
 - Make sure the builtin names 'path' and 'exists' can be redefined.
 
@@ -117,13 +119,13 @@ Changes:
   against import-time side effects using ``ProxyFactory``.
 
 2.1 (2011-07-28)
-~~~~~~~~~~~~~~~~
+================
 
 - Use dynamic expression evaluation framework that comes included with
   Chameleon.
 
 2.0 (2011-07-14)
-~~~~~~~~~~~~~~~~
+================
 
 - Point release.
 
@@ -134,7 +136,7 @@ Changes:
 - Fixed issue with the call flag on the Zope traverser compiler.
 
 2.0-rc3 (2011-07-11)
-~~~~~~~~~~~~~~~~~~~~
+====================
 
 - Python-expressions are no longer TALES-expressions; previously, the
   pipe operator would split Python expression clauses, allowing
@@ -149,7 +151,7 @@ Changes:
   on ``PageTemplate`` instances.
 
 2.0-rc2 (2011-03-24)
-~~~~~~~~~~~~~~~~~~~~
+====================
 
 - Fixed an issue with ``"exists:"`` expression where a callable would
   be attempted called. It is meanwhile implied with this expression
@@ -157,7 +159,7 @@ Changes:
 
 
 2.0-rc1 (2011-02-28)
-~~~~~~~~~~~~~~~~~~~~
+====================
 
 - Update to Chameleon 2.0.
 
@@ -200,7 +202,7 @@ Changes:
 - Bind template to the template object in the general case.
 
 1.2 (2010/05/12)
-------------------
+----------------
 
 - Fixed compatibility issue with recent change in Chameleon.
 
@@ -896,4 +898,3 @@ Changes:
 ----------------
 
 - First public release
-

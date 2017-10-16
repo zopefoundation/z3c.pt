@@ -1,11 +1,12 @@
-z3c.pt
-======
+==========
+ Overview
+==========
 
 This section demonstrates the high-level template classes. All page
 template classes in ``z3c.pt`` use path-expressions by default.
 
 Page templates
---------------
+==============
 
   >>> from z3c.pt.pagetemplate import PageTemplate
   >>> from z3c.pt.pagetemplate import PageTemplateFile
@@ -119,7 +120,7 @@ Both may be used as class attributes (properties).
   </div>
 
 View page templates
--------------------
+===================
 
   >>> from z3c.pt.pagetemplate import ViewPageTemplate
   >>> from z3c.pt.pagetemplate import ViewPageTemplateFile
@@ -181,7 +182,7 @@ alternative context and request.
 
 
 Non-keyword arguments
----------------------
+=====================
 
 These are passed in as ``options/args``, when using the ``__call__`` method.
 
@@ -205,7 +206,7 @@ These are passed in as ``options/args``, when using the ``__call__`` method.
 
 
 Global 'path' Function
-----------------------
+======================
 
 Just like ``zope.pagetemplate``, it is possible to use a globally
 defined ``path()`` function in a ``python:`` expression in ``z3c.pt``:
@@ -223,7 +224,7 @@ defined ``path()`` function in a ``python:`` expression in ``z3c.pt``:
   </div>
 
 Global 'exists' Function
-------------------------
+========================
 
 The same applies to the ``exists()`` function:
 
@@ -238,7 +239,7 @@ The same applies to the ``exists()`` function:
   </div>
 
 'default' and path expressions
-------------------------------
+==============================
 
 Another feature from standard ZPT: using 'default' means whatever the
 the literal HTML contains will be output if the condition is not met.
@@ -269,7 +270,7 @@ And also for contents:
   </div>
 
 'exists'-type expression
-------------------------
+========================
 
 Using 'exists()' function on non-global name and global name:
 
@@ -312,7 +313,7 @@ Using 'exists:' in conjunction with a negation:
   </div>
 
 path expression with dictionaries
----------------------------------
+=================================
 
 Path expressions give preference to dictionary items instead of
 dictionary attributes.
@@ -328,7 +329,7 @@ dictionary attributes.
 
 
 Variable from one tag never leak into another
----------------------------------------------
+=============================================
 
   >>> body = """\
   ... <div xmlns="http://www.w3.org/1999/xhtml"
@@ -367,7 +368,7 @@ Variable from one tag never leak into another
 
 
 TALES Function Namespaces
--------------------------
+=========================
 
 As described on http://wiki.zope.org/zope3/talesns.html, it is
 possible to implement custom TALES Namespace Adapters. We also support
