@@ -30,7 +30,7 @@ class TestPageTemplateFile(unittest.TestCase):
         from z3c.pt.pagetemplate import PageTemplateFile
         template = PageTemplateFile("nocall.pt")
         def dont_call():
-            raise RuntimeError()
+            raise AssertionError("Should not be called")
         result = template(callable=dont_call)
         self.assertTrue(repr(dont_call) in result)
 
@@ -38,7 +38,7 @@ class TestPageTemplateFile(unittest.TestCase):
         from z3c.pt.pagetemplate import PageTemplateFile
         template = PageTemplateFile("exists.pt")
         def dont_call():
-            raise RuntimeError()
+            raise AssertionError("Should not be called")
         result = template(callable=dont_call)
         self.assertTrue('ok' in result)
 
