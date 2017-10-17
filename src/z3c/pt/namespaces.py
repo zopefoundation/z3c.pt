@@ -93,15 +93,21 @@ class AdapterNamespaces(object):
 
 
     def getFunctionNamespace(self, namespacename):
-        """ Returns the function namespace """
+        """
+        Returns the function namespace, if registered.
+
+        Unlike ``__getitem__``, this method will immediately raise a
+        KeyError if no such function is registered.
+        """
         return self.namespaces[namespacename]
 
-try:
-    # If zope.app.pagetemplates is available, use the adapter
-    # registered with the main zope.app.pagetemplates engine so that
-    # we don't need to re-register them.
-    from zope.app.pagetemplates.engine import Engine
-    function_namespaces = Engine.namespaces
-except (ImportError, AttributeError):
-    function_namespaces = AdapterNamespaces()
+function_namespaces = AdapterNamespaces()
 
+try:
+    # If zope.pagetemplate is available, use the adapter
+    # registered with the main zope.pagetemplate engine so that
+    # we don't need to re-register them.
+    from zope.pagetemplate.engine import Engine
+    function_namespaces = Engine.namespaces
+except (ImportError, AttributeError): # pragma: no cover
+    pass

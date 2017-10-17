@@ -37,6 +37,7 @@ def alltests():
     return unittest.TestSuite(suites)
 
 TESTS_REQUIRE = [
+    'zope.pagetemplate',
     'zope.testing',
     'zope.testrunner',
 ]
