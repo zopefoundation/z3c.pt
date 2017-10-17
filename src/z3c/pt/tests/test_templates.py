@@ -238,7 +238,7 @@ class TestBoundPageTemplate(unittest.TestCase):
         bound = pagetemplate.BoundPageTemplate(None, None)
         with self.assertRaisesRegexp(AttributeError,
                                      "Can't set attribute"):
-            setattr(bound, 'im_self', 42)
+            setattr(bound, '__self__', 42)
 
     def test_repr(self):
         # It requires the 'filename' attribute
@@ -248,3 +248,11 @@ class TestBoundPageTemplate(unittest.TestCase):
         bound = pagetemplate.BoundPageTemplate(Template(), 'render')
         self.assertEqual("<z3c.pt.tests.test_templates.BoundTemplate 'file.pt'>",
                          repr(bound))
+
+    def test_attributes(self):
+        func = object()
+        bound = pagetemplate.BoundPageTemplate(self, func)
+        self.assertIs(self, bound.im_self)
+        self.assertIs(self, bound.__self__)
+        self.assertIs(func, bound.im_func)
+        self.assertIs(func, bound.__func__)

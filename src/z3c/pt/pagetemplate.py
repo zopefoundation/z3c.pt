@@ -278,24 +278,26 @@ class BoundPageTemplate(object):
     the class instance on access, which is implemented using this
     helper class."""
 
-    im_self = None
-    im_func = None
+    __self__ = None
+    __func__ = None
 
     def __init__(self, pt, render):
-        object.__setattr__(self, 'im_self', pt)
-        object.__setattr__(self, 'im_func', render)
+        object.__setattr__(self, '__self__', pt)
+        object.__setattr__(self, '__func__', render)
 
-    macros = property(lambda self: self.im_self.macros)
-    filename = property(lambda self: self.im_self.filename)
+    im_self = property(lambda self: self.__self__)
+    im_func = property(lambda self: self.__func__)
+    macros = property(lambda self: self.__self__.macros)
+    filename = property(lambda self: self.__self__.filename)
 
     def __call__(self, *args, **kw):
         kw.setdefault('args', args)
-        return self.im_func(**kw)
+        return self.__func__(**kw)
 
     def __setattr__(self, name, v):
         raise AttributeError("Can't set attribute", name)
 
     def __repr__(self):
         return "<%s.Bound%s %r>" % (
-            type(self.im_self).__module__,
-            type(self.im_self).__name__, self.filename)
+            type(self.__self__).__module__,
+            type(self.__self__).__name__, self.filename)
