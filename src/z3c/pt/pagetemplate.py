@@ -12,8 +12,9 @@
 #
 ##############################################################################
 import os
-import six
 import sys
+
+import six
 
 from zope import i18n
 from zope.security.proxy import ProxyFactory
@@ -28,7 +29,7 @@ from z3c.pt import expressions
 
 try:
     from Missing import MV
-    MV  # pyflakes
+    MV = MV  # pyflakes pragma: no cover
 except ImportError:
     MV = object()
 
@@ -53,13 +54,11 @@ class OpaqueDict(dict):
         inst.dictionary = dictionary
         return inst
 
-    @property
-    def __getitem__(self):
-        return self.dictionary.__getitem__
+    def __getitem__(self, name):
+        return self.dictionary[name]
 
-    @property
     def __len__(self):
-        return self.dictionary.__len__
+        return len(self.dictionary)
 
     def __repr__(self):
         return "{...} (%d entries)" % len(self)
@@ -67,19 +66,9 @@ class OpaqueDict(dict):
 sys_modules = ProxyFactory(OpaqueDict(sys.modules))
 
 
-class DummyRegistry(object):
-    """This class is for B/W with Chameleon 1.x API."""
-
-    @staticmethod
-    def purge():
-        pass
-
-
 class BaseTemplate(template.PageTemplate):
     content_type = None
     version = 2
-
-    registry = DummyRegistry()
 
     expression_types = {
         'python': expressions.PythonExpr,
@@ -133,20 +122,26 @@ class BaseTemplate(template.PageTemplate):
         if target_language is None:
             try:
                 target_language = i18n.negotiate(request)
-            except:
+            except Exception:
                 target_language = None
 
         context['target_language'] = target_language
 
         # bind translation-method to request
         def translate(
-            msgid, domain=None, mapping=None,
-            target_language=None, default=None,
-            context=None):
+                msgid, domain=None, mapping=None,
+                target_language=None, default=None,
+                context=None):
             if msgid is MV:
                 # Special case handling of Zope2's Missing.MV
                 # (Missing.Value) used by the ZCatalog but is
-                # unhashable
+                # unhashable.
+
+                # This case cannot arise in ordinary templates; msgid
+                # comes from i18n:translate attributes, which does not
+                # take a TALES expression, just a literal string.
+                # However, the 'context' argument is available as an implementation
+                # detail for macros
                 return
             return fast_translate(
                 msgid, domain, mapping, request, target_language, default)
@@ -282,6 +277,9 @@ class BoundPageTemplate(object):
     """When a page template class is used as a property, it's bound to
     the class instance on access, which is implemented using this
     helper class."""
+
+    im_self = None
+    im_func = None
 
     def __init__(self, pt, render):
         object.__setattr__(self, 'im_self', pt)

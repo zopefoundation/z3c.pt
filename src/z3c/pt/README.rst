@@ -390,7 +390,7 @@ Adapters build upon).
   ...     def parent(self):
   ...         return self.context.parent
 
-  >>> function_namespaces.registerFunctionNamespace('ns1', ns1)
+  >>> function_namespaces.namespaces['ns1'] = ns1
 
   >>> class ns2(object):
   ...     def __init__(self, context):

@@ -13,7 +13,10 @@
 ##############################################################################
 import re
 import ast
+from types import MethodType
+
 import z3c.pt.namespaces
+
 import zope.event
 
 from zope.traversing.adapters import traversePathElement
@@ -22,13 +25,7 @@ from zope.contentprovider.interfaces import ContentProviderLookupError
 from zope.contentprovider.tales import addTALNamespaceData
 from zope.traversing.interfaces import ITraversable
 from zope.location.interfaces import ILocation
-
-try:
-    from zope.contentprovider.interfaces import BeforeUpdateEvent
-except ImportError:
-    BeforeUpdateEvent = None
-
-from types import MethodType
+from zope.contentprovider.interfaces import BeforeUpdateEvent
 
 from chameleon.tales import TalesExpr
 from chameleon.tales import ExistsExpr as BaseExistsExpr
@@ -55,8 +52,10 @@ def render_content_provider(econtext, name):
         (context, request, view), IContentProvider, name=name)
 
     # provide a useful error message, if the provider was not found.
+    # Be sure to provide the objects in addition to the name so
+    # debugging ZCML registrations is possible
     if cp is None:
-        raise ContentProviderLookupError(name)
+        raise ContentProviderLookupError(name, (context, request, view))
 
     # add the __name__ attribute if it implements ILocation
     if ILocation.providedBy(cp):
@@ -66,8 +65,7 @@ def render_content_provider(econtext, name):
     addTALNamespaceData(cp, econtext)
 
     # Stage 1: Do the state update.
-    if BeforeUpdateEvent is not None:
-        zope.event.notify(BeforeUpdateEvent(cp, request))
+    zope.event.notify(BeforeUpdateEvent(cp, request))
     cp.update()
 
     # Stage 2: Render the HTML content.
@@ -80,7 +78,7 @@ def path_traverse(base, econtext, call, path_items):
         path_items = list(path_items)
         path_items.reverse()
 
-        while len(path_items):
+        while path_items:
             name = path_items.pop()
             ns_used = ':' in name
             if ns_used:
@@ -104,7 +102,7 @@ def path_traverse(base, econtext, call, path_items):
                 base = next
                 if ns_used and isinstance(base, MethodType):
                     base = base()
-                continue
+                continue # pragma: no cover (bytecode peephole optimizer removes this)
             else:
                 base = traversePathElement(
                     base, name, path_items, request=request)
@@ -147,6 +145,37 @@ class PathExpr(TalesExpr):
 
     traverser = Symbol(path_traverse)
 
+    def _find_translation_components(self, parts):
+        components = []
+        for part in parts[1:]:
+            interpolation_args = []
+
+            def replace(match):
+                start, end = match.span()
+                interpolation_args.append(
+                    part[start + 1:end])
+                return "%s"
+
+            while True:
+                part, count = self.interpolation_regex.subn(replace, part)
+                if count == 0:
+                    break
+
+            if interpolation_args:
+                component = template(
+                    "format % args", format=ast.Str(part),
+                    args=ast.Tuple(
+                        list(map(load, interpolation_args)),
+                        ast.Load()
+                        ),
+                    mode="eval")
+            else:
+                component = ast.Str(part)
+
+            components.append(component)
+
+        return components
+
     def translate(self, string, target):
         """
         >>> from chameleon.tales import test
@@ -167,33 +196,7 @@ class PathExpr(TalesExpr):
         # note that unicode paths are not allowed
         parts = str(path).split('/')
 
-        components = []
-        for part in parts[1:]:
-            interpolation_args = []
-
-            def replace(match):
-                start, end = match.span()
-                interpolation_args.append(
-                    part[start + 1:end])
-                return "%s"
-
-            while True:
-                part, count = self.interpolation_regex.subn(replace, part)
-                if count == 0:
-                    break
-
-            if len(interpolation_args):
-                component = template(
-                    "format % args", format=ast.Str(part),
-                    args=ast.Tuple(
-                        list(map(load, interpolation_args)),
-                        ast.Load()
-                        ),
-                    mode="eval")
-            else:
-                component = ast.Str(part)
-
-            components.append(component)
+        components = self._find_translation_components(parts)
 
         base = parts[0]
 
@@ -235,17 +238,14 @@ class ProviderExpr(ContextExpressionMixin, StringExpr):
 
 
 class PythonExpr(BasePythonExpr):
-    builtins = dict(
-        (name, template(
+    builtins = {
+        name: template(
             "tales(econtext, rcontext, name)",
             tales=Builtin("tales"),
             name=ast.Str(s=name),
-            mode="eval"))
-         for name in ('path', 'exists')
-        )
-
-    def __init__(self, expression):
-        self.expression = expression
+            mode="eval")
+        for name in ('path', 'exists')
+    }
 
     def __call__(self, target, engine):
         return self.translate(self.expression, target)
