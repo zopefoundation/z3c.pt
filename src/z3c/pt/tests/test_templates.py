@@ -28,6 +28,26 @@ class Setup(CleanUp):
         import z3c.pt
         zope.configuration.xmlconfig.file('configure.zcml', z3c.pt)
 
+class TestPageTemplate(Setup,
+                       unittest.TestCase):
+
+    def test_string_function(self):
+        template = pagetemplate.PageTemplate('''<div tal:content="python:string('a string')" />''')
+        result = template.render()
+        self.assertEqual(result,
+                         '<div>a string</div>')
+
+    def test_nocall_function(self):
+        class Call(object):
+            def __call__(self):
+                raise AssertionError("Should not be called")
+            def __str__(self):
+                return "Not Called"
+        arg = {'call': Call()}
+        template = pagetemplate.PageTemplate('''<div tal:content="python:nocall('arg/call')" />''')
+        result = template.render(arg=arg)
+        self.assertEqual(result,
+                         '<div>Not Called</div>')
 
 class TestPageTemplateFile(Setup,
                            unittest.TestCase):

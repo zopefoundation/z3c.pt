@@ -5,12 +5,15 @@
 3.1.0 (unreleased)
 ===================
 
-- Added support for Python 3.6.
-- Dropped support for Python 3.3.
+- Add support for Python 3.6.
+- Drop support for Python 3.3.
 - Use the adapter namespace from ``zope.pagetemplate`` if it's
   available, instead of the backwards compatibility shim in
   ``zope.app.pagetemplate``. See `issue 3
   <https://github.com/zopefoundation/z3c.pt/issues/3>`_.
+- Add the ``string`` and ``nocall`` functions for use inside Python
+  expressions. See `issue 2
+  <https://github.com/zopefoundation/z3c.pt/issues/2>`_.
 
 
 3.0 (2016-09-02)
