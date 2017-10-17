@@ -244,7 +244,7 @@ class PythonExpr(BasePythonExpr):
             tales=Builtin("tales"),
             name=ast.Str(s=name),
             mode="eval")
-        for name in ('path', 'exists')
+        for name in ('path', 'exists', 'string', 'nocall')
     }
 
     def __call__(self, target, engine):
