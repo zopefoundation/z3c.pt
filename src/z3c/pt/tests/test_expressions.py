@@ -72,8 +72,7 @@ class TestPathExpr(CleanUp,
         expr = expressions.PathExpr('')
         result = expr.translate('', 'foo')
 
-        self.assertEqual(len(result),
-                         1)
+        self.assertEqual(len(result), 1)
         self.assertIsInstance(result[0], ast.Assign)
 
     def test_translate_invalid_path(self):
