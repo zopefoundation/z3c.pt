@@ -44,7 +44,7 @@ TESTS_REQUIRE = [
 
 setup(
     name='z3c.pt',
-    version='3.1.0.dev0',
+    version='3.1.0',
     author='Malthe Borch and the Zope Community',
     author_email='zope-dev@zope.org',
     description='Fast ZPT engine.',
