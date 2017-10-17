@@ -141,6 +141,10 @@ class TestPathExpr(CleanUp,
         translated = expr.translate("a/?var/?var2", None)
         self.assertEqual(len(translated), 1)
         code = TemplateCodeGenerator(translated[0]).code
+        # XXX: Normally this starts with 'None =', but sometimes on Python 2,
+        # at least in tox, it starts with '__package__ ='. Why
+        # is this?
+        code = code.strip().replace("__package__", 'None')
         self.assertEqual(
-            code.strip(),
+            code,
             "None = _path_traverse(a, econtext, True, (('%s' % (var, )), ('%s' % (var2, )), ))")

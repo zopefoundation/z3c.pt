@@ -11,23 +11,28 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
+import os
 import unittest
 
-import zope.component.testing
+from zope.testing.cleanup import CleanUp
 import zope.configuration.xmlconfig
 
+from z3c.pt import pagetemplate
+from z3c.pt.pagetemplate import PageTemplateFile
+from z3c.pt.pagetemplate import ViewPageTemplateFile
 
-class TestPageTemplateFile(unittest.TestCase):
+class Setup(CleanUp):
+
     def setUp(self):
+        CleanUp.setUp(self)
         import z3c.pt
-        zope.component.testing.setUp(self)
-        zope.configuration.xmlconfig.XMLConfig('configure.zcml', z3c.pt)()
+        zope.configuration.xmlconfig.file('configure.zcml', z3c.pt)
 
-    def tearDown(self):
-        zope.component.testing.tearDown(self)
+
+class TestPageTemplateFile(Setup,
+                           unittest.TestCase):
 
     def test_nocall(self):
-        from z3c.pt.pagetemplate import PageTemplateFile
         template = PageTemplateFile("nocall.pt")
         def dont_call():
             raise AssertionError("Should not be called")
@@ -35,7 +40,6 @@ class TestPageTemplateFile(unittest.TestCase):
         self.assertTrue(repr(dont_call) in result)
 
     def test_exists(self):
-        from z3c.pt.pagetemplate import PageTemplateFile
         template = PageTemplateFile("exists.pt")
         def dont_call():
             raise AssertionError("Should not be called")
@@ -43,20 +47,17 @@ class TestPageTemplateFile(unittest.TestCase):
         self.assertTrue('ok' in result)
 
     def test_false_attribute(self):
-        from z3c.pt.pagetemplate import PageTemplateFile
         template = PageTemplateFile("false.pt")
         result = template()
         self.assertTrue('False' in result)
 
     def test_boolean_attribute(self):
-        from z3c.pt.pagetemplate import PageTemplateFile
         template = PageTemplateFile("boolean.pt")
         result = template()
         self.assertFalse('False' in result)
         self.assertTrue('checked="checked"' in result)
 
     def test_path(self):
-        from z3c.pt.pagetemplate import PageTemplateFile
         template = PageTemplateFile("path.pt")
 
         class Context(object):
@@ -69,8 +70,10 @@ class TestPageTemplateFile(unittest.TestCase):
         self.assertTrue("supported" in result)
         self.assertTrue("some path" in result)
 
+class TestViewPageTemplateFile(Setup,
+                               unittest.TestCase):
+
     def test_provider(self):
-        from z3c.pt.pagetemplate import ViewPageTemplateFile
 
         class Context(object):
             pass
@@ -80,6 +83,9 @@ class TestPageTemplateFile(unittest.TestCase):
 
         class View(object):
             __call__ = ViewPageTemplateFile("provider.pt")
+
+        # Test binding descriptor behaviour.
+        self.assertIsInstance(View.__call__, ViewPageTemplateFile)
 
         from zope.interface import Interface
         from zope.schema import Field
@@ -118,19 +124,107 @@ class TestPageTemplateFile(unittest.TestCase):
                 implementedBy(Context),
                 implementedBy(Request),
                 implementedBy(View)
-                ),
+            ),
             IContentProvider,
             name="content"
-            )
+        )
 
         context = Context()
         request = Request()
 
         result = view(context=context, request=request)
-        self.assertTrue(repr(data) in result)
-        self.assertTrue(repr({'context': context}) in result)
+        self.assertIn(repr(data), result)
+        self.assertIn(repr({'context': context}), result)
+
+class TestOpaqueDict(unittest.TestCase):
+
+    def test_getitem(self):
+        import operator
+        d = {}
+        od = pagetemplate.OpaqueDict(d)
+        with self.assertRaises(KeyError):
+            operator.itemgetter('key')(od)
+
+        d['key'] = 42
+        self.assertEqual(od['key'], 42)
+
+    def test_len(self):
+        d = {}
+        od = pagetemplate.OpaqueDict(d)
+        self.assertEqual(0, len(od))
+
+        d['key'] = 42
+        self.assertEqual(1, len(od))
+
+    def test_repr(self):
+        d = {}
+        od = pagetemplate.OpaqueDict(d)
+        self.assertEqual('{...} (0 entries)', repr(od))
+
+        d['key'] = 42
+        self.assertEqual('{...} (1 entries)', repr(od))
 
 
-def test_suite():
-    import sys
-    return unittest.findTestCases(sys.modules[__name__])
+class TestBaseTemplate(unittest.TestCase):
+
+    def test_negotiate_fails(self):
+        class I18N(object):
+            request = None
+            def negotiate(self, request):
+                self.request = request
+                raise Exception("This is caught")
+
+        i18n = I18N()
+        orig_i18n = pagetemplate.i18n
+        pagetemplate.i18n = i18n
+        try:
+            template = pagetemplate.BaseTemplate('<html />')
+            request = 'strings are allowed'
+            template.render(request=request)
+            self.assertIs(i18n.request, request)
+        finally:
+            pagetemplate.i18n = orig_i18n
+
+    def test_translate_mv(self):
+        template = pagetemplate.BaseTemplate("""
+        <html>
+          <body metal:use-macro="m" />
+        </html>
+        """)
+
+        class Macro(object):
+            translate = None
+            def include(self, stream, econtext, *args, **kwargs):
+                self.translate = econtext['translate']
+        macro = Macro()
+        template.render(m=macro)
+
+        self.assertIsNone(macro.translate(pagetemplate.MV))
+
+class TestBaseTemplateFile(unittest.TestCase):
+
+    def test_init_with_path(self):
+
+        here = os.path.abspath(os.path.dirname(__file__))
+
+        template = pagetemplate.BaseTemplateFile('view.pt', path=here)
+
+        self.assertEqual(template.filename,
+                         os.path.join(here, 'view.pt'))
+
+class TestBoundPageTemplate(unittest.TestCase):
+
+    def test_setattr(self):
+        bound = pagetemplate.BoundPageTemplate(None, None)
+        with self.assertRaisesRegexp(AttributeError,
+                                     "Can't set attribute"):
+            setattr(bound, 'im_self', 42)
+
+    def test_repr(self):
+        # It requires the 'filename' attribute
+        class Template(object):
+            filename = 'file.pt'
+
+        bound = pagetemplate.BoundPageTemplate(Template(), 'render')
+        self.assertEqual("<z3c.pt.tests.test_templates.BoundTemplate 'file.pt'>",
+                         repr(bound))

@@ -135,7 +135,13 @@ class BaseTemplate(template.PageTemplate):
             if msgid is MV:
                 # Special case handling of Zope2's Missing.MV
                 # (Missing.Value) used by the ZCatalog but is
-                # unhashable
+                # unhashable.
+
+                # This case cannot arise in ordinary templates; msgid
+                # comes from i18n:translate attributes, which does not
+                # take a TALES expression, just a literal string.
+                # However, the 'context' argument is available as an implementation
+                # detail for macros
                 return
             return fast_translate(
                 msgid, domain, mapping, request, target_language, default)
