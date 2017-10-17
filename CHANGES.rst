@@ -14,7 +14,10 @@
 - Add the ``string`` and ``nocall`` functions for use inside Python
   expressions. See `issue 2
   <https://github.com/zopefoundation/z3c.pt/issues/2>`_.
-
+- Make bound page templates have ``__self__`` and ``__func__``
+  attributes to be more like Python 3 bound methods. (``im_func`` and
+  ``im_self`` remain available.) See `issue 9
+  <https://github.com/zopefoundation/z3c.pt/issues/9>`_.
 
 3.0 (2016-09-02)
 ================
