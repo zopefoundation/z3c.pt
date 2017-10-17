@@ -13,16 +13,16 @@
 ##############################################################################
 """Setup
 """
+import os
 from setuptools import setup, find_packages
 
 
-def read(filename):
-    with open(filename) as f:
+def read(*filenames):
+    with open(os.path.join(*filenames)) as f:
         return f.read()
 
 
 def alltests():
-    import os
     import sys
     import unittest
     # use the zope.testrunner machinery to find all the
@@ -36,14 +36,24 @@ def alltests():
     suites = list(zope.testrunner.find.find_suites(options))
     return unittest.TestSuite(suites)
 
+TESTS_REQUIRE = [
+    'zope.testing',
+    'zope.testrunner',
+]
 
 setup(
     name='z3c.pt',
-    version='3.1.dev0',
+    version='3.1.0.dev0',
     author='Malthe Borch and the Zope Community',
     author_email='zope-dev@zope.org',
     description='Fast ZPT engine.',
-    long_description=read('README.txt') + read('CHANGES.txt'),
+    long_description=(
+        read('README.rst')
+        + '\n\n'
+        + read('src', 'z3c', 'pt', 'README.rst')
+        + '\n\n'
+        + read('CHANGES.rst')
+    ),
     license='ZPL',
     keywords='tal tales pagetemplate zope chameleon',
     classifiers=[
@@ -55,9 +65,9 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
@@ -81,10 +91,10 @@ setup(
         'zope.contentprovider',
         'Chameleon >= 2.4',
     ],
-    extras_require=dict(
-        test=['zope.testing', 'zope.testrunner'],
-    ),
-    tests_require=['zope.testing'],
+    extras_require={
+        'test': TESTS_REQUIRE,
+    },
+    tests_require=TESTS_REQUIRE,
     test_suite='__main__.alltests',
     include_package_data=True,
     zip_safe=False,
