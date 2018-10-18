@@ -76,7 +76,7 @@ setup(
         'Operating System :: OS Independent',
         'Topic :: Text Processing :: Markup :: HTML',
         'Topic :: Text Processing :: Markup :: XML',
-        'Framework :: Zope3',
+        'Framework :: Zope :: 3',
     ],
     url='https://github.com/zopefoundation/z3c.pt',
     namespace_packages=['z3c'],
