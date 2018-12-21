@@ -14,6 +14,7 @@
 import zope.component
 from zope.traversing.interfaces import IPathAdapter
 
+
 class AdapterNamespaces(object):
     """Simulate tales function namespaces with adapter lookup.
 
@@ -47,15 +48,17 @@ class AdapterNamespaces(object):
     def __getitem__(self, name):
         namespace = self.namespaces.get(name)
         if namespace is None:
+
             def namespace(object):
                 try:
-                    return zope.component.getAdapter(object, IPathAdapter, name)
+                    return zope.component.getAdapter(
+                        object, IPathAdapter, name
+                    )
                 except zope.component.ComponentLookupError:
                     raise KeyError(name)
 
             self.namespaces[name] = namespace
         return namespace
-
 
     def registerFunctionNamespace(self, namespacename, namespacecallable):
         """Register a function namespace
@@ -91,7 +94,6 @@ class AdapterNamespaces(object):
         """
         self.namespaces[namespacename] = namespacecallable
 
-
     def getFunctionNamespace(self, namespacename):
         """
         Returns the function namespace, if registered.
@@ -101,6 +103,7 @@ class AdapterNamespaces(object):
         """
         return self.namespaces[namespacename]
 
+
 function_namespaces = AdapterNamespaces()
 
 try:
@@ -108,6 +111,7 @@ try:
     # registered with the main zope.pagetemplate engine so that
     # we don't need to re-register them.
     from zope.pagetemplate.engine import Engine
+
     function_namespaces = Engine.namespaces
-except (ImportError, AttributeError): # pragma: no cover
+except (ImportError, AttributeError):  # pragma: no cover
     pass
