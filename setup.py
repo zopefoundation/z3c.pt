@@ -22,23 +22,6 @@ def read(*filenames):
         return f.read()
 
 
-def alltests():
-    import sys
-    import unittest
-
-    # use the zope.testrunner machinery to find all the
-    # test suites we've put under ourselves
-    import zope.testrunner.find
-    import zope.testrunner.options
-
-    here = os.path.abspath(os.path.join(os.path.dirname(__file__), "src"))
-    args = sys.argv[:]
-    defaults = ["--test-path", here]
-    options = zope.testrunner.options.get_options(args, defaults)
-    suites = list(zope.testrunner.find.find_suites(options))
-    return unittest.TestSuite(suites)
-
-
 TESTS_REQUIRE = ["zope.pagetemplate", "zope.testing", "zope.testrunner"]
 
 setup(
@@ -93,8 +76,6 @@ setup(
         "Chameleon >= 2.4",
     ],
     extras_require={"test": TESTS_REQUIRE},
-    tests_require=TESTS_REQUIRE,
-    test_suite="__main__.alltests",
     include_package_data=True,
     zip_safe=False,
 )
