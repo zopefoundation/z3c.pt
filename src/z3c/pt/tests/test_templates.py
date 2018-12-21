@@ -242,9 +242,15 @@ class TestBaseTemplateFile(unittest.TestCase):
 
 
 class TestBoundPageTemplate(unittest.TestCase):
+
+    # Avoid DeprecationWarning for assertRaisesRegexp on Python 3 while
+    # coping with Python 2 not having the Regex spelling variant
+    assertRaisesRegex = getattr(unittest.TestCase, 'assertRaisesRegex',
+                                unittest.TestCase.assertRaisesRegexp)
+
     def test_setattr(self):
         bound = pagetemplate.BoundPageTemplate(None, None)
-        with self.assertRaisesRegexp(AttributeError, "Can't set attribute"):
+        with self.assertRaisesRegex(AttributeError, "Can't set attribute"):
             setattr(bound, "__self__", 42)
 
     def test_repr(self):
