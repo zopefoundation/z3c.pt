@@ -44,12 +44,13 @@ _marker = object()
 def render_content_provider(econtext, name):
     name = name.strip()
 
-    context = econtext.get('context')
-    request = econtext.get('request')
-    view = econtext.get('view')
+    context = econtext.get("context")
+    request = econtext.get("request")
+    view = econtext.get("view")
 
     cp = zope.component.queryMultiAdapter(
-        (context, request, view), IContentProvider, name=name)
+        (context, request, view), IContentProvider, name=name
+    )
 
     # provide a useful error message, if the provider was not found.
     # Be sure to provide the objects in addition to the name so
@@ -74,19 +75,20 @@ def render_content_provider(econtext, name):
 
 def path_traverse(base, econtext, call, path_items):
     if path_items:
-        request = econtext.get('request')
+        request = econtext.get("request")
         path_items = list(path_items)
         path_items.reverse()
 
         while path_items:
             name = path_items.pop()
-            ns_used = ':' in name
+            ns_used = ":" in name
             if ns_used:
-                namespace, name = name.split(':', 1)
+                namespace, name = name.split(":", 1)
                 base = z3c.pt.namespaces.function_namespaces[namespace](base)
                 if ITraversable.providedBy(base):
                     base = traversePathElement(
-                        base, name, path_items, request=request)
+                        base, name, path_items, request=request
+                    )
 
                     # base = proxify(base)
 
@@ -102,15 +104,17 @@ def path_traverse(base, econtext, call, path_items):
                 base = next
                 if ns_used and isinstance(base, MethodType):
                     base = base()
-                continue # pragma: no cover (bytecode peephole optimizer removes this)
+                # The bytecode peephole optimizer removes the next line:
+                continue  # pragma: no cover
             else:
                 base = traversePathElement(
-                    base, name, path_items, request=request)
+                    base, name, path_items, request=request
+                )
 
             # if not isinstance(base, (basestring, tuple, list)):
             #    base = proxify(base)
 
-    if call and getattr(base, '__call__', _marker) is not _marker:
+    if call and getattr(base, "__call__", _marker) is not _marker:
         return base()
 
     return base
@@ -123,25 +127,26 @@ class ContextExpressionMixin(object):
 
     def __call__(self, target, engine):
         # Make call to superclass to assign value to target
-        assignment = super(ContextExpressionMixin, self).\
-                     __call__(target, engine)
+        assignment = super(ContextExpressionMixin, self).__call__(
+            target, engine
+        )
 
         transform = template(
             "target = transform(econtext, target)",
             target=target,
             transform=self.transform,
-            )
+        )
 
         return assignment + transform
 
 
 class PathExpr(TalesExpr):
     path_regex = re.compile(
-        r'^(?:(nocall|not):\s*)*((?:[A-Za-z0-9_][A-Za-z0-9_:]*)' +
-        r'(?:/[?A-Za-z0-9_@\-+][?A-Za-z0-9_@\-\.+/:]*)*)$')
+        r"^(?:(nocall|not):\s*)*((?:[A-Za-z0-9_][A-Za-z0-9_:]*)"
+        + r"(?:/[?A-Za-z0-9_@\-+][?A-Za-z0-9_@\-\.+/:]*)*)$"
+    )
 
-    interpolation_regex = re.compile(
-        r'\?[A-Za-z][A-Za-z0-9_]+')
+    interpolation_regex = re.compile(r"\?[A-Za-z][A-Za-z0-9_]+")
 
     traverser = Symbol(path_traverse)
 
@@ -152,8 +157,7 @@ class PathExpr(TalesExpr):
 
             def replace(match):
                 start, end = match.span()
-                interpolation_args.append(
-                    part[start + 1:end])
+                interpolation_args.append(part[start + 1: end])
                 return "%s"
 
             while True:
@@ -163,12 +167,13 @@ class PathExpr(TalesExpr):
 
             if interpolation_args:
                 component = template(
-                    "format % args", format=ast.Str(part),
+                    "format % args",
+                    format=ast.Str(part),
                     args=ast.Tuple(
-                        list(map(load, interpolation_args)),
-                        ast.Load()
-                        ),
-                    mode="eval")
+                        list(map(load, interpolation_args)), ast.Load()
+                    ),
+                    mode="eval",
+                )
             else:
                 component = ast.Str(part)
 
@@ -194,14 +199,14 @@ class PathExpr(TalesExpr):
         nocall, path = m.groups()
 
         # note that unicode paths are not allowed
-        parts = str(path).split('/')
+        parts = str(path).split("/")
 
         components = self._find_translation_components(parts)
 
         base = parts[0]
 
         if not components:
-            if len(parts) == 1 and (nocall or base == 'None'):
+            if len(parts) == 1 and (nocall or base == "None"):
                 return template("target = base", base=base, target=target)
             else:
                 components = ()
@@ -213,7 +218,7 @@ class PathExpr(TalesExpr):
             call=load(str(not nocall)),
             path_items=ast.Tuple(elts=components),
             mode="eval",
-            )
+        )
 
         return template("target = value", target=target, value=call)
 
@@ -223,7 +228,8 @@ class NocallExpr(PathExpr):
 
     def translate(self, expression, engine):
         return super(NocallExpr, self).translate(
-            "nocall:%s" % expression, engine)
+            "nocall:%s" % expression, engine
+        )
 
 
 class ExistsExpr(BaseExistsExpr):
@@ -243,8 +249,9 @@ class PythonExpr(BasePythonExpr):
             "tales(econtext, rcontext, name)",
             tales=Builtin("tales"),
             name=ast.Str(s=name),
-            mode="eval")
-        for name in ('path', 'exists', 'string', 'nocall')
+            mode="eval",
+        )
+        for name in ("path", "exists", "string", "nocall")
     }
 
     def __call__(self, target, engine):
@@ -258,8 +265,8 @@ class PythonExpr(BasePythonExpr):
                 get=Builtin("get"),
                 name=ast.Str(s=node.id),
                 builtin=builtin,
-                mode="eval"
-                )
+                mode="eval",
+            )
 
     @property
     def transform(self):

@@ -29,6 +29,7 @@ from z3c.pt import expressions
 
 try:
     from Missing import MV
+
     MV = MV  # pyflakes pragma: no cover
 except ImportError:
     MV = object()
@@ -36,16 +37,27 @@ except ImportError:
 _marker = object()
 
 
-BOOLEAN_HTML_ATTRS = frozenset([
-    # List of Boolean attributes in HTML that should be rendered in
-    # minimized form (e.g. <img ismap> rather than <img ismap="">)
-    # From http://www.w3.org/TR/xhtml1/#guidelines (C.10)
-    # TODO: The problem with this is that this is not valid XML and
-    # can't be parsed back!
-    "compact", "nowrap", "ismap", "declare", "noshade", "checked",
-    "disabled", "readonly", "multiple", "selected", "noresize",
-    "defer"
-])
+BOOLEAN_HTML_ATTRS = frozenset(
+    [
+        # List of Boolean attributes in HTML that should be rendered in
+        # minimized form (e.g. <img ismap> rather than <img ismap="">)
+        # From http://www.w3.org/TR/xhtml1/#guidelines (C.10)
+        # TODO: The problem with this is that this is not valid XML and
+        # can't be parsed back!
+        "compact",
+        "nowrap",
+        "ismap",
+        "declare",
+        "noshade",
+        "checked",
+        "disabled",
+        "readonly",
+        "multiple",
+        "selected",
+        "noresize",
+        "defer",
+    ]
+)
 
 
 class OpaqueDict(dict):
@@ -63,6 +75,7 @@ class OpaqueDict(dict):
     def __repr__(self):
         return "{...} (%d entries)" % len(self)
 
+
 sys_modules = ProxyFactory(OpaqueDict(sys.modules))
 
 
@@ -71,14 +84,14 @@ class BaseTemplate(template.PageTemplate):
     version = 2
 
     expression_types = {
-        'python': expressions.PythonExpr,
-        'string': StringExpr,
-        'not': NotExpr,
-        'exists': expressions.ExistsExpr,
-        'path': expressions.PathExpr,
-        'provider': expressions.ProviderExpr,
-        'nocall': expressions.NocallExpr,
-        }
+        "python": expressions.PythonExpr,
+        "string": StringExpr,
+        "not": NotExpr,
+        "exists": expressions.ExistsExpr,
+        "path": expressions.PathExpr,
+        "provider": expressions.ProviderExpr,
+        "nocall": expressions.NocallExpr,
+    }
 
     default_expression = "path"
 
@@ -90,20 +103,17 @@ class BaseTemplate(template.PageTemplate):
 
     @property
     def boolean_attributes(self):
-        if self.content_type == 'text/xml':
+        if self.content_type == "text/xml":
             return set()
 
         return BOOLEAN_HTML_ATTRS
 
     @property
     def builtins(self):
-        builtins = {
-            'nothing': None,
-            'modules': sys_modules,
-            }
+        builtins = {"nothing": None, "modules": sys_modules}
 
         tales = ExpressionEvaluator(self.engine, builtins)
-        builtins['tales'] = tales
+        builtins["tales"] = tales
 
         return builtins
 
@@ -117,7 +127,7 @@ class BaseTemplate(template.PageTemplate):
     def render(self, target_language=None, **context):
         # We always include a ``request`` variable; it is (currently)
         # depended on in various expression types and must be defined
-        request = context.setdefault('request', None)
+        request = context.setdefault("request", None)
 
         if target_language is None:
             try:
@@ -125,13 +135,17 @@ class BaseTemplate(template.PageTemplate):
             except Exception:
                 target_language = None
 
-        context['target_language'] = target_language
+        context["target_language"] = target_language
 
         # bind translation-method to request
         def translate(
-                msgid, domain=None, mapping=None,
-                target_language=None, default=None,
-                context=None):
+            msgid,
+            domain=None,
+            mapping=None,
+            target_language=None,
+            default=None,
+            context=None,
+        ):
             if msgid is MV:
                 # Special case handling of Zope2's Missing.MV
                 # (Missing.Value) used by the ZCatalog but is
@@ -140,19 +154,20 @@ class BaseTemplate(template.PageTemplate):
                 # This case cannot arise in ordinary templates; msgid
                 # comes from i18n:translate attributes, which does not
                 # take a TALES expression, just a literal string.
-                # However, the 'context' argument is available as an implementation
-                # detail for macros
+                # However, the 'context' argument is available as an
+                # implementation detail for macros
                 return
             return fast_translate(
-                msgid, domain, mapping, request, target_language, default)
+                msgid, domain, mapping, request, target_language, default
+            )
+
         context["translate"] = translate
 
         if request is not None and not isinstance(request, six.string_types):
-            content_type = self.content_type or 'text/html'
+            content_type = self.content_type or "text/html"
             response = request.response
             if response and not response.getHeader("Content-Type"):
-                response.setHeader(
-                    "Content-Type", content_type)
+                response.setHeader("Content-Type", content_type)
 
         base_renderer = super(BaseTemplate, self).render
         return base_renderer(**context)
@@ -168,7 +183,7 @@ class BaseTemplate(template.PageTemplate):
             options=kwargs,
             request=request,
             template=self,
-            )
+        )
 
 
 class BaseTemplateFile(BaseTemplate, template.PageTemplateFile):
@@ -184,18 +199,20 @@ class BaseTemplateFile(BaseTemplate, template.PageTemplateFile):
         if not os.path.isabs(filename):
             for depth in (1, 2):
                 frame = sys._getframe(depth)
-                package_name = frame.f_globals.get('__name__', None)
-                if package_name is not None and \
-                       package_name != self.__module__:
+                package_name = frame.f_globals.get("__name__", None)
+                if (
+                    package_name is not None
+                    and package_name != self.__module__
+                ):
                     module = sys.modules[package_name]
                     try:
                         path = module.__path__[0]
                     except AttributeError:
                         path = module.__file__
-                        path = path[:path.rfind(os.sep)]
+                        path = path[: path.rfind(os.sep)]
                     break
                 else:
-                    package_path = frame.f_globals.get('__file__', None)
+                    package_path = frame.f_globals.get("__file__", None)
                     if package_path is not None:
                         path = os.path.dirname(package_path)
                         break
@@ -203,8 +220,7 @@ class BaseTemplateFile(BaseTemplate, template.PageTemplateFile):
             if path is not None:
                 filename = os.path.join(path, filename)
 
-        template.PageTemplateFile.__init__(
-            self, filename, **kwargs)
+        template.PageTemplateFile.__init__(self, filename, **kwargs)
 
         # Set content-type last, so that we can override whatever was
         # magically sniffed from the source template.
@@ -247,21 +263,21 @@ class ViewPageTemplate(PageTemplate):
     is 'path' (standard Zope traversal)."""
 
     def _pt_get_context(self, view, request, kwargs):
-        context = kwargs.get('context')
+        context = kwargs.get("context")
         if context is None:
             context = view.context
-        request = request or kwargs.get('request') or view.request
+        request = request or kwargs.get("request") or view.request
         return dict(
             view=view,
             context=context,
             request=request,
             options=kwargs,
             template=self,
-            )
+        )
 
     def __call__(self, _ob=None, context=None, request=None, **kwargs):
-        kwargs.setdefault('context', context)
-        kwargs.setdefault('request', request)
+        kwargs.setdefault("context", context)
+        kwargs.setdefault("request", request)
         bound_pt = self.bind(_ob)
         return bound_pt(**kwargs)
 
@@ -282,8 +298,8 @@ class BoundPageTemplate(object):
     __func__ = None
 
     def __init__(self, pt, render):
-        object.__setattr__(self, '__self__', pt)
-        object.__setattr__(self, '__func__', render)
+        object.__setattr__(self, "__self__", pt)
+        object.__setattr__(self, "__func__", render)
 
     im_self = property(lambda self: self.__self__)
     im_func = property(lambda self: self.__func__)
@@ -291,7 +307,7 @@ class BoundPageTemplate(object):
     filename = property(lambda self: self.__self__.filename)
 
     def __call__(self, *args, **kw):
-        kw.setdefault('args', args)
+        kw.setdefault("args", args)
         return self.__func__(**kw)
 
     def __setattr__(self, name, v):
@@ -300,4 +316,6 @@ class BoundPageTemplate(object):
     def __repr__(self):
         return "<%s.Bound%s %r>" % (
             type(self.__self__).__module__,
-            type(self.__self__).__name__, self.filename)
+            type(self.__self__).__name__,
+            self.filename,
+        )
