@@ -251,7 +251,7 @@ class TestBoundPageTemplate(unittest.TestCase):
     def test_setattr(self):
         bound = pagetemplate.BoundPageTemplate(None, None)
         with self.assertRaisesRegex(AttributeError, "Can't set attribute"):
-            setattr(bound, "__self__", 42)
+            bound.__self__ = 42
 
     def test_repr(self):
         # It requires the 'filename' attribute

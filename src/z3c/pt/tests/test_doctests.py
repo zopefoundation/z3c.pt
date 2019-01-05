@@ -27,31 +27,26 @@ def setUp(suite):
 
 
 def test_suite():
-    filesuites = ("README.rst",)
-    testsuites = "z3c.pt.expressions", "z3c.pt.namespaces"
-
     return unittest.TestSuite(
         [
             doctest.DocFileSuite(
-                filesuite,
+                "README.rst",
                 optionflags=OPTIONFLAGS,
                 setUp=setUp,
                 tearDown=zope.component.testing.tearDown,
                 package="z3c.pt",
-            )
-            for filesuite in filesuites
-        ]
-        + [
+            ),
             doctest.DocTestSuite(
-                testsuite,
+                "z3c.pt.expressions",
                 optionflags=OPTIONFLAGS,
                 setUp=setUp,
                 tearDown=zope.component.testing.tearDown,
-            )
-            for testsuite in testsuites
+            ),
+            doctest.DocTestSuite(
+                "z3c.pt.namespaces",
+                optionflags=OPTIONFLAGS,
+                setUp=setUp,
+                tearDown=zope.component.testing.tearDown,
+            ),
         ]
     )
-
-
-if __name__ == "__main__":
-    unittest.main(defaultTest="test_suite")

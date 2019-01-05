@@ -28,10 +28,8 @@ class TestAdapterNamespaces(unittest.TestCase):
     def test_using_pagetemplate_version(self):
         from zope.pagetemplate import engine
 
-        self.assertFalse(
-            isinstance(
-                namespaces.function_namespaces, namespaces.AdapterNamespaces
-            )
+        self.assertNotIsInstance(
+            namespaces.function_namespaces, namespaces.AdapterNamespaces
         )
         self.assertIsInstance(
             namespaces.function_namespaces, engine.AdapterNamespaces
