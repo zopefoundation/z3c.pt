@@ -8,6 +8,7 @@ benchmark/*.egg-info
 bin
 develop-eggs
 default.profraw
+dist
 docs
 lib
 lib64
