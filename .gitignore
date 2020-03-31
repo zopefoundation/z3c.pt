@@ -7,7 +7,11 @@ benchmark/*.egg-info
 .tox
 bin
 develop-eggs
+default.profraw
 docs
+lib
+lib64
 parts
+pyvenv.cfg
 .coverage
 htmlcov/
