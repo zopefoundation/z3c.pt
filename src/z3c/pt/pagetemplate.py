@@ -101,6 +101,9 @@ class BaseTemplate(template.PageTemplate):
 
     trim_attribute_space = True
 
+    # https://github.com/zopefoundation/Zope/issues/716
+    enable_comment_interpolation = False
+
     @property
     def boolean_attributes(self):
         if self.content_type == "text/xml":
