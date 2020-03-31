@@ -9,6 +9,10 @@
 
 - Add support for Python 3.8
 
+- Prevent interpolation (i.e. ``$``*var*, ``${``*path*``}`` replacements)
+  inside comments
+  (`Zope #716 <https://github.com/zopefoundation/Zope/issues/716>`_).
+
 
 3.2.0 (2019-01-05)
 ==================
