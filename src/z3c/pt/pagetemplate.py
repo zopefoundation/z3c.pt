@@ -40,10 +40,10 @@ _marker = object()
 BOOLEAN_HTML_ATTRS = frozenset(
     [
         # List of Boolean attributes in HTML that should be rendered in
-        # minimized form (e.g. <img ismap> rather than <img ismap="">)
-        # From http://www.w3.org/TR/xhtml1/#guidelines (C.10)
-        # TODO: The problem with this is that this is not valid XML and
-        # can't be parsed back!
+        # full form, e.g., <img ismap="ismap"> rather than their minimized
+        # form <img ismap>, as required by XML 1.0.
+        # From https://www.w3.org/TR/xhtml1/#C_10 and
+        # https://www.w3.org/TR/xhtml1/#h-4.5
         "compact",
         "nowrap",
         "ismap",
