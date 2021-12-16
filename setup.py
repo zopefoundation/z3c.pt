@@ -78,11 +78,16 @@ setup(
         "zope.contentprovider",
         "Chameleon >= 2.4",
     ],
-    extras_require={"test": [
-        "zope.pagetemplate",
-        "zope.testing",
-        "zope.testrunner",
-    ]},
+    extras_require={
+        "test": [
+            "zope.pagetemplate",
+            "zope.testing",
+            "zope.testrunner",
+        ],
+        "docs": [
+            "Sphinx",
+        ]
+   },
     include_package_data=True,
     zip_safe=False,
 )

@@ -12,18 +12,6 @@ files.
 
   .. autoclass:: PageTemplateFile
 
-:mod:`z3c.pt.texttemplate`
---------------------------
-
-``TextTemplate*`` constructors create templates from plaintext
-files.
-
-.. automodule:: z3c.pt.texttemplate
-
-  .. autoclass:: TextTemplate
-
-  .. autoclass:: TextTemplateFile
-
 :mod:`z3c.pt.loader`
 --------------------------
 
