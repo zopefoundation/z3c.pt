@@ -2,7 +2,7 @@
  Changelog
 ===========
 
-3.3.1 (unreleased)
+3.3.1 (2021-12-17)
 ==================
 
 - Add support for Python 3.9, and 3.10.
