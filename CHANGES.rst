@@ -5,13 +5,15 @@
 3.3.1 (unreleased)
 ==================
 
+- Add support for Python 3.9, and 3.10.
+
 
 3.3.0 (2020-03-31)
 ==================
 
 - Drop support for Python 3.4
 
-- Add support for Python 3.8
+- Add support for Python 3.8.
 
 - Prevent interpolation (i.e. ``$``*var*, ``${``*path*``}`` replacements)
   inside comments
@@ -42,6 +44,7 @@
   attributes to be more like Python 3 bound methods. (``im_func`` and
   ``im_self`` remain available.) See `issue 9
   <https://github.com/zopefoundation/z3c.pt/issues/9>`_.
+
 
 3.0 (2016-09-02)
 ================

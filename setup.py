@@ -49,6 +49,8 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
         "Natural Language :: English",
@@ -76,11 +78,16 @@ setup(
         "zope.contentprovider",
         "Chameleon >= 2.4",
     ],
-    extras_require={"test": [
-        "zope.pagetemplate",
-        "zope.testing",
-        "zope.testrunner",
-    ]},
+    extras_require={
+        "test": [
+            "zope.pagetemplate",
+            "zope.testing",
+            "zope.testrunner",
+        ],
+        "docs": [
+            "Sphinx",
+        ]
+    },
     include_package_data=True,
     zip_safe=False,
 )
