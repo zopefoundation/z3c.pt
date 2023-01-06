@@ -119,14 +119,14 @@ def path_traverse(base, econtext, call, path_items):
     return base
 
 
-class ContextExpressionMixin(object):
+class ContextExpressionMixin:
     """Mixin-class for expression compilers."""
 
     transform = None
 
     def __call__(self, target, engine):
         # Make call to superclass to assign value to target
-        assignment = super(ContextExpressionMixin, self).__call__(
+        assignment = super().__call__(
             target, engine
         )
 
@@ -226,7 +226,7 @@ class NocallExpr(PathExpr):
     """A path-expression which does not call the resolved object."""
 
     def translate(self, expression, engine):
-        return super(NocallExpr, self).translate(
+        return super().translate(
             "nocall:%s" % expression, engine
         )
 
@@ -235,7 +235,7 @@ class ExistsExpr(BaseExistsExpr):
     exceptions = AttributeError, LookupError, TypeError, KeyError, NameError
 
     def __init__(self, expression):
-        super(ExistsExpr, self).__init__("nocall:" + expression)
+        super().__init__("nocall:" + expression)
 
 
 class ProviderExpr(ContextExpressionMixin, StringExpr):

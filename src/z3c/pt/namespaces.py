@@ -15,7 +15,7 @@ import zope.component
 from zope.traversing.interfaces import IPathAdapter
 
 
-class AdapterNamespaces(object):
+class AdapterNamespaces:
     """Simulate tales function namespaces with adapter lookup.
 
     When we are asked for a namespace, we return an object that

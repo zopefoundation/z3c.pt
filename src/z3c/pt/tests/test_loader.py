@@ -64,9 +64,3 @@ class LoadTests:
 class LoadPageTests(unittest.TestCase, LoadTests):
     def _load(self, loader, filename):
         return loader.load_page(filename)
-
-
-def test_suite():
-    import sys
-
-    return unittest.findTestCases(sys.modules[__name__])

@@ -39,7 +39,7 @@ class TestPageTemplate(Setup, unittest.TestCase):
         self.assertEqual(result, "<div>a string</div>")
 
     def test_nocall_function(self):
-        class Call(object):
+        class Call:
             def __call__(self):
                 raise AssertionError("Should not be called")
 
@@ -87,7 +87,7 @@ class TestPageTemplateFile(Setup, unittest.TestCase):
     def test_path(self):
         template = PageTemplateFile("path.pt")
 
-        class Context(object):
+        class Context:
             dummy_wysiwyg_support = True
 
         context = Context()
@@ -100,13 +100,13 @@ class TestPageTemplateFile(Setup, unittest.TestCase):
 
 class TestViewPageTemplateFile(Setup, unittest.TestCase):
     def test_provider(self):
-        class Context(object):
+        class Context:
             pass
 
-        class Request(object):
+        class Request:
             response = None
 
-        class View(object):
+        class View:
             __call__ = ViewPageTemplateFile("provider.pt")
 
         # Test binding descriptor behaviour.
@@ -119,13 +119,13 @@ class TestViewPageTemplateFile(Setup, unittest.TestCase):
         from zope.schema import Field
 
         class ITestProvider(Interface):
-            context = Field(u"Provider context.")
+            context = Field("Provider context.")
 
         directlyProvides(ITestProvider, ITALNamespaceData)
         assert ITALNamespaceData.providedBy(ITestProvider)
 
         @implementer(ITestProvider)
-        class Provider(object):
+        class Provider:
             def __init__(self, *args):
                 data.extend(list(args))
 
@@ -133,7 +133,7 @@ class TestViewPageTemplateFile(Setup, unittest.TestCase):
                 data.extend("updated")
 
             def render(self):
-                return """<![CDATA[ %r, %r]]>""" % (data, self.__dict__)
+                return f"<![CDATA[ {data!r}, {self.__dict__!r}]]>"
 
         view = View()
         data = []
@@ -192,7 +192,7 @@ class TestOpaqueDict(unittest.TestCase):
 
 class TestBaseTemplate(unittest.TestCase):
     def test_negotiate_fails(self):
-        class I18N(object):
+        class I18N:
             request = None
 
             def negotiate(self, request):
@@ -219,7 +219,7 @@ class TestBaseTemplate(unittest.TestCase):
         """
         )
 
-        class Macro(object):
+        class Macro:
             translate = None
 
             def include(self, stream, econtext, *args, **kwargs):
@@ -243,11 +243,6 @@ class TestBaseTemplateFile(unittest.TestCase):
 
 class TestBoundPageTemplate(unittest.TestCase):
 
-    # Avoid DeprecationWarning for assertRaisesRegexp on Python 3 while
-    # coping with Python 2 not having the Regex spelling variant
-    assertRaisesRegex = getattr(unittest.TestCase, 'assertRaisesRegex',
-                                unittest.TestCase.assertRaisesRegexp)
-
     def test_setattr(self):
         bound = pagetemplate.BoundPageTemplate(None, None)
         with self.assertRaisesRegex(AttributeError, "Can't set attribute"):
@@ -255,7 +250,7 @@ class TestBoundPageTemplate(unittest.TestCase):
 
     def test_repr(self):
         # It requires the 'filename' attribute
-        class Template(object):
+        class Template:
             filename = "file.pt"
 
         bound = pagetemplate.BoundPageTemplate(Template(), "render")

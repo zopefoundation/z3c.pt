@@ -69,7 +69,6 @@ setup(
     python_requires='>=3.7',
     install_requires=[
         "setuptools",
-        "six",
         "zope.interface",
         "zope.component",
         "zope.i18n >= 3.5",
