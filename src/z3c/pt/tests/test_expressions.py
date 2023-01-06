@@ -9,6 +9,7 @@ from zope.testing.cleanup import CleanUp
 
 from z3c.pt import expressions
 
+
 # pylint:disable=protected-access
 
 
@@ -31,8 +32,8 @@ class TestRenderContentProvider(CleanUp, unittest.TestCase):
     def test_sets_ilocation_name(self):
         from zope import component
         from zope import interface
-        from zope.location.interfaces import ILocation
         from zope.contentprovider.interfaces import IContentProvider
+        from zope.location.interfaces import ILocation
 
         attrs = {}
 
@@ -81,9 +82,9 @@ class TestPathExpr(CleanUp, unittest.TestCase):
             expr.translate("not valid", None)
 
     def test_translate_components(self):
-        from chameleon.codegen import TemplateCodeGenerator
         from chameleon.astutil import ASTCodeGenerator
         from chameleon.astutil import node_annotations
+        from chameleon.codegen import TemplateCodeGenerator
 
         expr = expressions.PathExpr("")
         comps = expr._find_translation_components(["a"])

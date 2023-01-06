@@ -11,9 +11,9 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-from z3c.pt.pagetemplate import PageTemplateFile
-
 from chameleon import loader
+
+from z3c.pt.pagetemplate import PageTemplateFile
 
 
 class TemplateLoader(loader.TemplateLoader):

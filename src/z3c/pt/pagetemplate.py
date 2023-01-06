@@ -16,16 +16,16 @@ import sys
 
 import six
 
+from chameleon.compiler import ExpressionEvaluator
+from chameleon.i18n import fast_translate
+from chameleon.tales import NotExpr
+from chameleon.tales import StringExpr
+from chameleon.zpt import template
 from zope import i18n
 from zope.security.proxy import ProxyFactory
 
-from chameleon.i18n import fast_translate
-from chameleon.zpt import template
-from chameleon.tales import StringExpr
-from chameleon.tales import NotExpr
-from chameleon.compiler import ExpressionEvaluator
-
 from z3c.pt import expressions
+
 
 try:
     from Missing import MV

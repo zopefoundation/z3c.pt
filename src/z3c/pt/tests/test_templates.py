@@ -14,8 +14,8 @@
 import os
 import unittest
 
-from zope.testing.cleanup import CleanUp
 import zope.configuration.xmlconfig
+from zope.testing.cleanup import CleanUp
 
 from z3c.pt import pagetemplate
 from z3c.pt.pagetemplate import PageTemplateFile
@@ -112,11 +112,11 @@ class TestViewPageTemplateFile(Setup, unittest.TestCase):
         # Test binding descriptor behaviour.
         self.assertIsInstance(View.__call__, ViewPageTemplateFile)
 
-        from zope.interface import Interface
-        from zope.schema import Field
-        from zope.interface import implementer
-        from zope.interface import directlyProvides
         from zope.contentprovider.interfaces import ITALNamespaceData
+        from zope.interface import Interface
+        from zope.interface import directlyProvides
+        from zope.interface import implementer
+        from zope.schema import Field
 
         class ITestProvider(Interface):
             context = Field(u"Provider context.")
@@ -138,9 +138,9 @@ class TestViewPageTemplateFile(Setup, unittest.TestCase):
         view = View()
         data = []
 
-        from zope.interface import implementedBy
         from zope.component import provideAdapter
         from zope.contentprovider.interfaces import IContentProvider
+        from zope.interface import implementedBy
 
         provideAdapter(
             Provider,
