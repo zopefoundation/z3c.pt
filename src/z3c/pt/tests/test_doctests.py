@@ -16,7 +16,9 @@ import unittest
 
 import zope.component.testing
 import zope.configuration.xmlconfig
+
 import z3c.pt
+
 
 OPTIONFLAGS = doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE
 

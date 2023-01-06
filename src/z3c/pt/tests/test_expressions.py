@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Tests for expressions.py
 
@@ -8,6 +7,7 @@ import unittest
 from zope.testing.cleanup import CleanUp
 
 from z3c.pt import expressions
+
 
 # pylint:disable=protected-access
 
@@ -31,13 +31,13 @@ class TestRenderContentProvider(CleanUp, unittest.TestCase):
     def test_sets_ilocation_name(self):
         from zope import component
         from zope import interface
-        from zope.location.interfaces import ILocation
         from zope.contentprovider.interfaces import IContentProvider
+        from zope.location.interfaces import ILocation
 
         attrs = {}
 
         @interface.implementer(ILocation, IContentProvider)
-        class Provider(object):
+        class Provider:
             def __init__(self, *args):
                 pass
 
@@ -81,9 +81,9 @@ class TestPathExpr(CleanUp, unittest.TestCase):
             expr.translate("not valid", None)
 
     def test_translate_components(self):
-        from chameleon.codegen import TemplateCodeGenerator
         from chameleon.astutil import ASTCodeGenerator
         from chameleon.astutil import node_annotations
+        from chameleon.codegen import TemplateCodeGenerator
 
         expr = expressions.PathExpr("")
         comps = expr._find_translation_components(["a"])
@@ -138,12 +138,8 @@ class TestPathExpr(CleanUp, unittest.TestCase):
         translated = expr.translate("a/?var/?var2", None)
         self.assertEqual(len(translated), 1)
         code = TemplateCodeGenerator(translated[0]).code
-        # XXX: Normally this starts with 'None =', but sometimes on Python 2,
-        # at least in tox, it starts with '__package__ ='. Why
-        # is this?
-        code = code.strip().replace("__package__", "None")
         self.assertEqual(
             code,
-            "None = _path_traverse(a, econtext, True, (('%s' % (var, )), "
+            "\nNone = _path_traverse(a, econtext, True, (('%s' % (var, )), "
             "('%s' % (var2, )), ))",
         )

@@ -14,23 +14,21 @@
 import os
 import sys
 
-import six
-
+from chameleon.compiler import ExpressionEvaluator
+from chameleon.i18n import fast_translate
+from chameleon.tales import NotExpr
+from chameleon.tales import StringExpr
+from chameleon.zpt import template
 from zope import i18n
 from zope.security.proxy import ProxyFactory
 
-from chameleon.i18n import fast_translate
-from chameleon.zpt import template
-from chameleon.tales import StringExpr
-from chameleon.tales import NotExpr
-from chameleon.compiler import ExpressionEvaluator
-
 from z3c.pt import expressions
+
 
 try:
     from Missing import MV
 
-    MV = MV  # pyflakes pragma: no cover
+    MV = MV  # pragma: no cover
 except ImportError:
     MV = object()
 
@@ -166,13 +164,13 @@ class BaseTemplate(template.PageTemplate):
 
         context["translate"] = translate
 
-        if request is not None and not isinstance(request, six.string_types):
+        if request is not None and not isinstance(request, str):
             content_type = self.content_type or "text/html"
             response = request.response
             if response and not response.getHeader("Content-Type"):
                 response.setHeader("Content-Type", content_type)
 
-        base_renderer = super(BaseTemplate, self).render
+        base_renderer = super().render
         return base_renderer(**context)
 
     def __call__(self, *args, **kwargs):
@@ -292,7 +290,7 @@ class ViewPageTemplateFile(ViewPageTemplate, PageTemplateFile):
     cache = {}
 
 
-class BoundPageTemplate(object):
+class BoundPageTemplate:
     """When a page template class is used as a property, it's bound to
     the class instance on access, which is implemented using this
     helper class."""
@@ -317,7 +315,7 @@ class BoundPageTemplate(object):
         raise AttributeError("Can't set attribute", name)
 
     def __repr__(self):
-        return "<%s.Bound%s %r>" % (
+        return "<{}.Bound{} {!r}>".format(
             type(self.__self__).__module__,
             type(self.__self__).__name__,
             self.filename,
