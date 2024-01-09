@@ -2,7 +2,7 @@
  Changelog
 ===========
 
-4.1 (unreleased)
+4.1 (2024-01-09)
 ================
 
 - Provide own interfaces, since Chameleon will not provide those in a
