@@ -9,14 +9,20 @@
     <include package="zope.security" file="meta.zcml" />
 
     <class class="chameleon.tal.RepeatItem">
-      <allow interface="chameleon.interfaces.ITALESIterator" />
+      <allow interface=".interfaces.ITALESIterator" />
     </class>
 
     <class class=".pagetemplate.BoundPageTemplate">
       <allow attributes="__call__ __str__ __name__" />
     </class>
 
+    <class class="chameleon.tal.RepeatItem">
+      <implements interface=".interfaces.ITALESIterator" />
+    </class>
+
+    <class class="chameleon.tal.ErrorInfo">
+      <implements interface=".interfaces.ITALExpressionErrorInfo" />
+    </class>
   </configure>
 
 </configure>
-

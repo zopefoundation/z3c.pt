@@ -5,7 +5,8 @@
 4.1 (unreleased)
 ================
 
-- Nothing changed yet.
+- Provide own interfaces, since Chameleon will not provide those in a
+  future release.
 
 
 4.0 (2023-03-27)
