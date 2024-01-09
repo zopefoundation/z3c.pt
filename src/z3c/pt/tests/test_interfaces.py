@@ -1,6 +1,6 @@
 ##############################################################################
 #
-# Copyright (c) 2007 Zope Foundation and Contributors.
+# Copyright (c) 2023 Zope Foundation and Contributors.
 # All Rights Reserved.
 #
 # This software is subject to the provisions of the Zope Public License,
@@ -15,6 +15,8 @@ import unittest
 
 import zope.component.testing
 import zope.configuration.xmlconfig
+from chameleon.tal import ErrorInfo
+from chameleon.tal import RepeatItem
 
 import z3c.pt
 from z3c.pt.interfaces import ITALESIterator
@@ -31,7 +33,5 @@ class TestRenderContentProvider(unittest.TestCase):
     tearDown = zope.component.testing.tearDown
 
     def test_implements(self):
-        from chameleon.tal import ErrorInfo
-        from chameleon.tal import RepeatItem
         self.assertTrue(ITALExpressionErrorInfo.implementedBy(ErrorInfo))
         self.assertTrue(ITALESIterator.implementedBy(RepeatItem))
