@@ -149,7 +149,7 @@ class PathExpr(TalesExpr):
 
     traverser = Symbol(path_traverse)
 
-    def _find_translation_components(self, parts):
+    def _find_components(self, parts):
         components = []
         for part in parts[1:]:
             interpolation_args = []
@@ -200,7 +200,7 @@ class PathExpr(TalesExpr):
         # note that unicode paths are not allowed
         parts = str(path).split("/")
 
-        components = self._find_translation_components(parts)
+        components = self._find_components(parts)
 
         base = parts[0]
 
