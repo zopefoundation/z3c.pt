@@ -5,6 +5,9 @@
 4.2 (unreleased)
 ================
 
+- Add support for "structure" expression type.
+  (`Issue #17 <https://github.com/zopefoundation/z3c.pt/issues/17>`_).
+
 - Updated test suite to be compatible with newer Chameleon releases.
 
 4.1 (2024-01-09)

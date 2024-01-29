@@ -18,6 +18,7 @@ from chameleon.compiler import ExpressionEvaluator
 from chameleon.i18n import fast_translate
 from chameleon.tales import NotExpr
 from chameleon.tales import StringExpr
+from chameleon.tales import StructureExpr
 from chameleon.zpt import template
 from zope import i18n
 from zope.security.proxy import ProxyFactory
@@ -89,6 +90,7 @@ class BaseTemplate(template.PageTemplate):
         "path": expressions.PathExpr,
         "provider": expressions.ProviderExpr,
         "nocall": expressions.NocallExpr,
+        "structure": StructureExpr,
     }
 
     default_expression = "path"
