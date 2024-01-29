@@ -19,7 +19,6 @@ import zope.event
 from chameleon.astutil import Builtin
 from chameleon.astutil import NameLookupRewriteVisitor
 from chameleon.astutil import Symbol
-from chameleon.astutil import load
 from chameleon.codegen import template
 from chameleon.exc import ExpressionError
 from chameleon.tales import ExistsExpr as BaseExistsExpr
@@ -149,7 +148,7 @@ class PathExpr(TalesExpr):
 
     traverser = Symbol(path_traverse)
 
-    def _find_translation_components(self, parts):
+    def _find_components(self, parts):
         components = []
         for part in parts[1:]:
             interpolation_args = []
@@ -169,7 +168,9 @@ class PathExpr(TalesExpr):
                     "format % args",
                     format=ast.Str(part),
                     args=ast.Tuple(
-                        list(map(load, interpolation_args)), ast.Load()
+                        [ast.Name(arg, ctx=ast.Load())
+                         for arg in interpolation_args],
+                        ast.Load(),
                     ),
                     mode="eval",
                 )
@@ -200,7 +201,7 @@ class PathExpr(TalesExpr):
         # note that unicode paths are not allowed
         parts = str(path).split("/")
 
-        components = self._find_translation_components(parts)
+        components = self._find_components(parts)
 
         base = parts[0]
 
@@ -213,8 +214,8 @@ class PathExpr(TalesExpr):
         call = template(
             "traverse(base, econtext, call, path_items)",
             traverse=self.traverser,
-            base=load(base),
-            call=load(str(not nocall)),
+            base=base,
+            call=str(not nocall),
             path_items=ast.Tuple(elts=components),
             mode="eval",
         )

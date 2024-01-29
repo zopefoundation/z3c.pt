@@ -2,6 +2,7 @@
 Tests for expressions.py
 
 """
+import functools
 import unittest
 
 from zope.testing.cleanup import CleanUp
@@ -81,65 +82,41 @@ class TestPathExpr(CleanUp, unittest.TestCase):
             expr.translate("not valid", None)
 
     def test_translate_components(self):
-        from chameleon.astutil import ASTCodeGenerator
-        from chameleon.astutil import node_annotations
-        from chameleon.codegen import TemplateCodeGenerator
+        from chameleon.compiler import ExpressionEngine
+        from chameleon.compiler import ExpressionEvaluator
+        from chameleon.tales import ExpressionParser
+        from chameleon.utils import Scope
 
-        expr = expressions.PathExpr("")
-        comps = expr._find_translation_components(["a"])
+        parser = ExpressionParser({'path': expressions.PathExpr}, 'path')
+        engine = functools.partial(ExpressionEngine, parser)
 
-        # First component is skipped
-        self.assertEqual(comps, [])
+        from zope.traversing.interfaces import ITraversable
+
+        class Context(str):
+            def traverse(self, name, rest):
+                return Context(name)
+
+        from zope.interface import classImplements
+        classImplements(Context, ITraversable)
+
+        evaluator = ExpressionEvaluator(engine, {'a': Context('a')})
+
+        def evaluate(expression, **context):
+            return evaluator(Scope(context), {}, 'path', expression)
+
+        self.assertEqual(evaluate("a"), Context('a'))
 
         # Single literal
-        comps = expr._find_translation_components(["a", "b"])
-        self.assertEqual([s.s for s in comps], ["b"])
+        self.assertEqual(evaluate("a/b"), Context('b'))
 
         # Multiple literals
-        comps = expr._find_translation_components(["a", "b", "c"])
-        self.assertEqual([s.s for s in comps], ["b", "c"])
+        self.assertEqual(evaluate("a/b/c"), Context('c'))
 
         # Single interpolation---must be longer than one character
-        comps = expr._find_translation_components(["a", "?b"])
-        self.assertEqual([s.s for s in comps], ["?b"])
+        self.assertEqual(evaluate("a/?b"), Context('?b'))
 
-        comps = expr._find_translation_components(["a", "?var"])
-        self.assertEqual(len(comps), 1)
-        code = ASTCodeGenerator(comps[0]).code
-        self.assertEqual(code, "(format % args)")
-        code = TemplateCodeGenerator(comps[0]).code
-        self.assertEqual(code, "('%s' % (var, ))")
-
-        args = node_annotations[comps[0].right]
-        code = TemplateCodeGenerator(args).code
-        self.assertEqual(code, "(var, )")
+        # Single interpolation
+        self.assertEqual(evaluate("a/?t1", t1='b'), Context('b'))
 
         # Multiple interpolations
-        comps = expr._find_translation_components(["a", "?var", "?var2"])
-        self.assertEqual(len(comps), 2)
-        code = ASTCodeGenerator(comps[0]).code
-        self.assertEqual(code, "(format % args)")
-        code = TemplateCodeGenerator(comps[0]).code
-        self.assertEqual(code, "('%s' % (var, ))")
-
-        args = node_annotations[comps[0].right]
-        code = TemplateCodeGenerator(args).code
-        self.assertEqual(code, "(var, )")
-
-        code = ASTCodeGenerator(comps[1]).code
-        self.assertEqual(code, "(format % args)")
-        code = TemplateCodeGenerator(comps[1]).code
-        self.assertEqual(code, "('%s' % (var2, ))")
-
-        args = node_annotations[comps[1].right]
-        code = TemplateCodeGenerator(args).code
-        self.assertEqual(code, "(var2, )")
-
-        translated = expr.translate("a/?var/?var2", None)
-        self.assertEqual(len(translated), 1)
-        code = TemplateCodeGenerator(translated[0]).code
-        self.assertEqual(
-            code,
-            "\nNone = _path_traverse(a, econtext, True, (('%s' % (var, )), "
-            "('%s' % (var2, )), ))",
-        )
+        self.assertEqual(evaluate("a/?t1/?t2", t1='b', t2='c'), Context('c'))

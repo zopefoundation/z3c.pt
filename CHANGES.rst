@@ -5,8 +5,7 @@
 4.2 (unreleased)
 ================
 
-- Nothing changed yet.
-
+- Updated test suite to be compatible with newer Chameleon releases.
 
 4.1 (2024-01-09)
 ================
