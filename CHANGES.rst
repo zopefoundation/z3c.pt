@@ -5,8 +5,7 @@
 4.3 (unreleased)
 ================
 
-- Nothing changed yet.
-
+- Fix Windows test compatibility.
 
 4.2 (2024-01-31)
 ================
