@@ -53,6 +53,13 @@ class TestPageTemplate(Setup, unittest.TestCase):
         result = template.render(arg=arg)
         self.assertEqual(result, "<div>Not Called</div>")
 
+    def test_structure(self):
+        template = pagetemplate.PageTemplate(
+            "${structure: python: '&lt;div&gt;Hello world&lt;/div&gt;'}"
+        )
+        result = template.render()
+        self.assertEqual(result, "<div>Hello world</div>")
+
 
 class TestPageTemplateFile(Setup, unittest.TestCase):
     def test_nocall(self):
