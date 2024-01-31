@@ -2,7 +2,7 @@
  Changelog
 ===========
 
-4.2 (unreleased)
+4.2 (2024-01-31)
 ================
 
 - Add support for "structure" expression type.
