@@ -33,7 +33,7 @@ path to a template file on disk.
   </div>
 
   >>> import os
-  >>> template_file.filename.startswith(os.sep)
+  >>> os.path.isabs(template_file.filename)
   True
 
 If a ``content_type`` is not informed and one is not present in the
