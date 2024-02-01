@@ -5,6 +5,8 @@
 4.3 (unreleased)
 ================
 
+- Add support for Python 3.12.
+
 - Fix Windows test compatibility.
 
 4.2 (2024-01-31)
