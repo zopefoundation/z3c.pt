@@ -5,7 +5,7 @@
 4.4 (unreleased)
 ================
 
-- Nothing changed yet.
+- Extend boolean html attribute list to include all html5 boolean attributes.
 
 
 4.3 (2024-02-01)
