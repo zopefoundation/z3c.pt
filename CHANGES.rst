@@ -2,7 +2,7 @@
  Changelog
 ===========
 
-4.4 (unreleased)
+4.4 (2024-08-07)
 ================
 
 - Extend boolean html attribute list to include all html5 boolean attributes.
