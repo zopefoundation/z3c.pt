@@ -113,5 +113,5 @@ try:
     from zope.pagetemplate.engine import Engine
 
     function_namespaces = Engine.namespaces
-except (ImportError, AttributeError):  # pragma: no cover
+except (ModuleNotFoundError, AttributeError):  # pragma: no cover
     pass

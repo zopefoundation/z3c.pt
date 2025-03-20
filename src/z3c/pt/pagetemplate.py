@@ -30,7 +30,7 @@ try:
     from Missing import MV
 
     MV = MV  # pragma: no cover
-except ImportError:
+except ModuleNotFoundError:
     MV = object()
 
 _marker = object()
