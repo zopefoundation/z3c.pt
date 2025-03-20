@@ -11,6 +11,7 @@ from z3c.pt import namespaces
 class TestAdapterNamespaces(unittest.TestCase):
     def test_registered_name(self):
         nss = namespaces.AdapterNamespaces()
+
         def func(ctx):
             return ctx
         nss.registerFunctionNamespace("ns", func)
