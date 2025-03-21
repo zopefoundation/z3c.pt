@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # z3c.pt documentation build configuration file, created by
 # sphinx-quickstart on Wed Jul 16 13:18:14 2008.

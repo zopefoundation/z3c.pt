@@ -69,7 +69,7 @@ class TestPageTemplateFile(Setup, unittest.TestCase):
             raise AssertionError("Should not be called")
 
         result = template(callable=dont_call)
-        self.assertTrue(repr(dont_call) in result)
+        self.assertIn(repr(dont_call), result)
 
     def test_exists(self):
         template = PageTemplateFile("exists.pt")
@@ -78,18 +78,18 @@ class TestPageTemplateFile(Setup, unittest.TestCase):
             raise AssertionError("Should not be called")
 
         result = template(callable=dont_call)
-        self.assertTrue("ok" in result)
+        self.assertIn("ok", result)
 
     def test_false_attribute(self):
         template = PageTemplateFile("false.pt")
         result = template()
-        self.assertTrue("False" in result)
+        self.assertIn("False", result)
 
     def test_boolean_attribute(self):
         template = PageTemplateFile("boolean.pt")
         result = template()
-        self.assertFalse("False" in result)
-        self.assertTrue('checked="checked"' in result)
+        self.assertNotIn("False", result)
+        self.assertIn('checked="checked"', result)
 
     def test_path(self):
         template = PageTemplateFile("path.pt")
@@ -101,8 +101,8 @@ class TestPageTemplateFile(Setup, unittest.TestCase):
         template = template.__get__(context, Context)
 
         result = template(editor="dummy")
-        self.assertTrue("supported" in result)
-        self.assertTrue("some path" in result)
+        self.assertIn("supported", result)
+        self.assertIn("some path", result)
 
 
 class TestViewPageTemplateFile(Setup, unittest.TestCase):
