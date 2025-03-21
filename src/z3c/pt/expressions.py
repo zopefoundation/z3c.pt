@@ -166,7 +166,7 @@ class PathExpr(TalesExpr):
             if interpolation_args:
                 component = template(
                     "format % args",
-                    format=ast.Str(part),
+                    format=ast.Constant(part),
                     args=ast.Tuple(
                         [ast.Name(arg, ctx=ast.Load())
                          for arg in interpolation_args],
@@ -175,7 +175,7 @@ class PathExpr(TalesExpr):
                     mode="eval",
                 )
             else:
-                component = ast.Str(part)
+                component = ast.Constant(part)
 
             components.append(component)
 
@@ -248,7 +248,7 @@ class PythonExpr(BasePythonExpr):
         name: template(
             "tales(econtext, rcontext, name)",
             tales=Builtin("tales"),
-            name=ast.Str(s=name),
+            name=ast.Constant(name),
             mode="eval",
         )
         for name in ("path", "exists", "string", "nocall")
@@ -263,7 +263,7 @@ class PythonExpr(BasePythonExpr):
             return template(
                 "get(name) if get(name) is not None else builtin",
                 get=Builtin("get"),
-                name=ast.Str(s=node.id),
+                name=ast.Constant(node.id),
                 builtin=builtin,
                 mode="eval",
             )
