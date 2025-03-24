@@ -26,7 +26,7 @@ def read(*filenames):
 
 setup(
     name="z3c.pt",
-    version='4.5.dev0',
+    version='4.5',
     author="Malthe Borch and the Zope Community",
     author_email="zope-dev@zope.dev",
     description="Fast ZPT engine.",
