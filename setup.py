@@ -15,7 +15,6 @@
 """
 import os
 
-from setuptools import find_packages
 from setuptools import setup
 
 
@@ -63,9 +62,6 @@ setup(
         'Sources': 'https://github.com/zopefoundation/z3c.pt',
         'Issue Tracker': 'https://github.com/zopefoundation/z3c.pt/issues',
     },
-    namespace_packages=["z3c"],
-    packages=find_packages("src"),
-    package_dir={"": "src"},
     python_requires='>=3.9',
     install_requires=[
         "setuptools",
@@ -80,7 +76,7 @@ setup(
         "test": [
             "zope.pagetemplate",
             "zope.testing",
-            "zope.testrunner",
+            "zope.testrunner >= 6.4",
         ],
         "docs": [
             "Sphinx",
