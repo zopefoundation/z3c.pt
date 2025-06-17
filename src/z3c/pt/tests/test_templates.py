@@ -17,8 +17,8 @@ import unittest.mock
 
 import zope.configuration.xmlconfig
 from zope.component import provideUtility
-from zope.testing.cleanup import CleanUp
 from zope.i18n.interfaces import ITranslationDomain
+from zope.testing.cleanup import CleanUp
 
 from z3c.pt import pagetemplate
 from z3c.pt.pagetemplate import PageTemplateFile
