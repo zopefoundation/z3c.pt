@@ -13,9 +13,12 @@
 ##############################################################################
 import os
 import unittest
+import unittest.mock
 
 import zope.configuration.xmlconfig
+from zope.component import provideUtility
 from zope.testing.cleanup import CleanUp
+from zope.i18n.interfaces import ITranslationDomain
 
 from z3c.pt import pagetemplate
 from z3c.pt.pagetemplate import PageTemplateFile
@@ -28,6 +31,9 @@ class Setup(CleanUp):
         import z3c.pt
 
         zope.configuration.xmlconfig.file("configure.zcml", z3c.pt)
+
+        domain = self._i18n_domain = unittest.mock.Mock()
+        provideUtility(domain, ITranslationDomain, name="test")
 
 
 class TestPageTemplate(Setup, unittest.TestCase):
@@ -52,6 +58,16 @@ class TestPageTemplate(Setup, unittest.TestCase):
         )
         result = template.render(arg=arg)
         self.assertEqual(result, "<div>Not Called</div>")
+
+    def test_translate_non_message(self):
+        template = pagetemplate.PageTemplate(
+            """<div i18n:domain="test" i18n:target="string:test"
+            data-options="${python: p}"></div>"""
+        )
+        p = [1, 2, 3]
+        self._i18n_domain.translate.side_effect = AssertionError()
+        result = template.render(p=p)
+        self.assertIn(repr(p), result)
 
     def test_structure(self):
         template = pagetemplate.PageTemplate(

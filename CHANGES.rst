@@ -5,8 +5,8 @@
 5.1 (unreleased)
 ================
 
-- Nothing changed yet.
-
+- Attempt to translate only messages (and strings).
+  (`Issue #36 <https://github.com/zopefoundation/z3c.pt/issues/36>`_).
 
 5.0 (2025-04-14)
 ================
