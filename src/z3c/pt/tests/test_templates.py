@@ -17,6 +17,7 @@ import unittest.mock
 
 import zope.configuration.xmlconfig
 from zope.component import provideUtility
+from zope.i18n import MessageFactory
 from zope.i18n.interfaces import ITranslationDomain
 from zope.testing.cleanup import CleanUp
 
@@ -58,6 +59,15 @@ class TestPageTemplate(Setup, unittest.TestCase):
         )
         result = template.render(arg=arg)
         self.assertEqual(result, "<div>Not Called</div>")
+
+    def test_translate_message(self):
+        template = pagetemplate.PageTemplate(
+            """<div i18n:domain="test" i18n:target="string:test"
+            data-options="${python: m}"></div>"""
+        )
+        self._i18n_domain.translate.return_value = "world"
+        result = template.render(m=MessageFactory("test")("hello"))
+        self.assertIn("world", result)
 
     def test_translate_non_message(self):
         template = pagetemplate.PageTemplate(
