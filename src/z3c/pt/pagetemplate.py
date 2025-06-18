@@ -126,6 +126,8 @@ class BaseTemplate(template.PageTemplate):
     # https://github.com/zopefoundation/Zope/issues/716
     enable_comment_interpolation = False
 
+    i18n_message_type = i18n.Message
+
     @property
     def boolean_attributes(self):
         if self.content_type == "text/xml":
@@ -182,6 +184,13 @@ class BaseTemplate(template.PageTemplate):
                 # However, the 'context' argument is available as an
                 # implementation detail for macros
                 return
+
+            # Returning the message id for a non-translatable object
+            # implicitly forces it to be converted to a string by the
+            # the caller.
+            if not isinstance(msgid, (self.i18n_message_type, str)):
+                return msgid
+
             return fast_translate(
                 msgid, domain, mapping, request, target_language, default
             )
