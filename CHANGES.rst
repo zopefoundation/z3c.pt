@@ -2,7 +2,7 @@
  Changelog
 ===========
 
-5.1 (unreleased)
+5.1 (2025-06-19)
 ================
 
 - Attempt to translate only messages (and strings).
