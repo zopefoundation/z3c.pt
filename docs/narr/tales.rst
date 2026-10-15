@@ -45,7 +45,7 @@ These are the TALES expression types supported by :mod:`z3c.pt`:
 * ``string`` - format a string
 
 .. note:: if you do not specify a prefix within an expression context,
-   :mod:`z3c.pt`` assumes that the expression is a *path*
+   :mod:`z3c.pt` assumes that the expression is a *path*
    expression.
 
 .. _tales_built_in_names:
