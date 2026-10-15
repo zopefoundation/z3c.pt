@@ -336,4 +336,3 @@ Including a dollar sign::
     <p tal:content="string:$$$cost">
       cost: $42.00
     </p>
-

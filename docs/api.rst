@@ -17,7 +17,7 @@ files.
 
 A template loader class is provided (for use with Pylons and other
 platforms).
-  
+
 .. automodule:: z3c.pt.loader
 
   .. autoclass:: TemplateLoader
