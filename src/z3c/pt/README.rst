@@ -426,8 +426,8 @@ remaining path instead::
   ...     def traverse(self, name, furtherPath):
   ...         if name == 'page':
   ...             if len(furtherPath) == 1:
-  ...             pagetype = furtherPath.pop()
-  ...         elif not furtherPath:
+  ...                 pagetype = furtherPath.pop()
+  ...             elif not furtherPath:
   ...                 pagetype = 'default'
   ...             else:
   ...                 raise TraversalError("Max 1 path segment after ns4:page")
