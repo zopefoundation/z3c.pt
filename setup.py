@@ -11,77 +11,8 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""Setup
-"""
-import os
-
 from setuptools import setup
 
 
-def read(*filenames):
-    with open(os.path.join(*filenames)) as f:
-        return f.read()
-
-
-setup(
-    name="z3c.pt",
-    version='5.2.dev0',
-    author="Malthe Borch and the Zope Community",
-    author_email="zope-dev@zope.dev",
-    description="Fast ZPT engine.",
-    long_description=(
-        read("README.rst")
-        + "\n\n"
-        + read("src", "z3c", "pt", "README.rst")
-        + "\n\n"
-        + read("CHANGES.rst")
-    ),
-    license="ZPL",
-    keywords="tal tales pagetemplate zope chameleon",
-    classifiers=[
-        "Development Status :: 5 - Production/Stable",
-        "Environment :: Web Environment",
-        "Intended Audience :: Developers",
-        "License :: OSI Approved :: Zope Public License",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-        "Programming Language :: Python :: 3.13",
-        "Programming Language :: Python :: 3.14",
-        "Programming Language :: Python :: 3.15",
-        "Programming Language :: Python :: Implementation :: CPython",
-        "Programming Language :: Python :: Implementation :: PyPy",
-        "Natural Language :: English",
-        "Operating System :: OS Independent",
-        "Topic :: Text Processing :: Markup :: HTML",
-        "Topic :: Text Processing :: Markup :: XML",
-        "Framework :: Zope :: 3",
-    ],
-    url="https://github.com/zopefoundation/z3c.pt",
-    project_urls={
-        'Sources': 'https://github.com/zopefoundation/z3c.pt',
-        'Issue Tracker': 'https://github.com/zopefoundation/z3c.pt/issues',
-    },
-    python_requires='>=3.11',
-    install_requires=[
-        "setuptools",
-        "zope.interface",
-        "zope.component",
-        "zope.i18n >= 3.5",
-        "zope.traversing",
-        "zope.contentprovider",
-        "Chameleon >= 2.4",
-    ],
-    extras_require={
-        "test": [
-            "zope.pagetemplate",
-            "zope.testing",
-            "zope.testrunner >= 6.4",
-        ],
-        "docs": [
-            "Sphinx",
-        ]
-    },
-    include_package_data=True,
-    zip_safe=False,
-)
+# See pyproject.toml for package metadata
+setup()
