@@ -1,9 +1,11 @@
 # Generated with zope.meta (https://zopemeta.readthedocs.io/) from:
 # https://github.com/zopefoundation/meta/tree/master/src/zope/meta/pure-python
 [build-system]
-requires = ["setuptools >= 78.1.1,< 82", "wheel"]
+requires = [
+    "setuptools >= 78.1.1,< 82",
+    "wheel",
+]
 build-backend = "setuptools.build_meta"
-
 
 [project]
 name = "z3c.pt"
@@ -82,3 +84,8 @@ directory = "parts/htmlcov"
 
 [tool.setuptools.dynamic]
 readme = { file = ["README.rst", "CHANGES.rst"] }
+
+[tool.zest-releaser]
+create-wheel = false
+extra-message = ""
+upload-pypi = false
