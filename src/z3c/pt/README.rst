@@ -340,10 +340,10 @@ Variable from one tag never leak into another
   ...       <span tal:replace="greeting" />
   ...   </div>
   ...   <div tal:define="greeting string:'Hello'">
-  ...	  <metal:block metal:use-macro="python:template.macros['greeting']" />
+  ...     <metal:block metal:use-macro="python:template.macros['greeting']" />
   ...   </div>
   ...   <div>
-  ...	  <metal:block metal:use-macro="python:template.macros['greeting']" />
+  ...     <metal:block metal:use-macro="python:template.macros['greeting']" />
   ...   </div>
   ... </div>"""
   >>> print(PageTemplate(body)())
@@ -426,8 +426,8 @@ remaining path instead::
   ...     def traverse(self, name, furtherPath):
   ...         if name == 'page':
   ...             if len(furtherPath) == 1:
-  ...		      pagetype = furtherPath.pop()
-  ...		  elif not furtherPath:
+  ...                 pagetype = furtherPath.pop()
+  ...             elif not furtherPath:
   ...                 pagetype = 'default'
   ...             else:
   ...                 raise TraversalError("Max 1 path segment after ns4:page")
@@ -449,9 +449,9 @@ remaining path instead::
   ...         self.context = context
   ...
   ...     def traverse(self, name, furtherPath):
-  ...	      name = '/'.join([name] + furtherPath[::-1])
-  ...	      del furtherPath[:]
-  ...	      return 'traversed: ' + name
+  ...         name = '/'.join([name] + furtherPath[::-1])
+  ...         del furtherPath[:]
+  ...         return 'traversed: ' + name
 
   >>> zope.component.getGlobalSiteManager().registerAdapter(
   ...     ns5, [zope.interface.Interface], IPathAdapter, 'ns5')
