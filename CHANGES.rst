@@ -5,6 +5,8 @@
 5.2 (unreleased)
 ================
 
+- Move package metadata from setup.py to pyproject.toml.
+
 - Add support for Python 3.15.
 
 - Drop support for Python 3.10.

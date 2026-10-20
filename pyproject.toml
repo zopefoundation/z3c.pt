@@ -7,6 +7,58 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "z3c.pt"
+version = "5.2.dev0"
+description = "Fast ZPT engine."
+license = "ZPL-2.1"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Topic :: Text Processing :: Markup :: HTML",
+    "Topic :: Text Processing :: Markup :: XML",
+    "Framework :: Zope :: 3",
+]
+dynamic = ["readme"]
+requires-python = ">=3.11"
+authors = [
+    { name = "Malthe Borch and the Zope Community", email = "zope-dev@zope.dev" },
+]
+maintainers = [
+    { name = "Plone Foundation and contributors", email = "zope-dev@zope.dev" },
+]
+dependencies = [
+    "zope.interface",
+    "zope.component",
+    "zope.i18n >= 3.5",
+    "zope.traversing",
+    "zope.contentprovider",
+    "Chameleon >= 2.4",
+]
+keywords = ["tal", "tales", "pagetemplate", "zope", "chameleon"]
+
+[project.optional-dependencies]
+test = ["zope.pagetemplate", "zope.testing", "zope.testrunner >= 6.4"]
+docs = ["Sphinx"]
+
+[project.urls]
+Documentation = "https://z3cpt.readthedocs.io/"
+Source = "https://github.com/zopefoundation/z3c.pt"
+Issues = "https://github.com/zopefoundation/z3c.pt/issues"
+Changelog = "https://raw.githubusercontent.com/zopefoundation/z3c.pt/master/CHANGES.rst"
+
+
 [tool.coverage.run]
 branch = true
 source = ["z3c.pt"]
@@ -29,3 +81,11 @@ exclude_lines = [
 
 [tool.coverage.html]
 directory = "parts/htmlcov"
+
+[tool.setuptools.dynamic]
+readme = { file = ["README.rst", "CHANGES.rst"] }
+
+[tool.zest-releaser]
+create-wheel = false
+extra-message = ""
+upload-pypi = false
