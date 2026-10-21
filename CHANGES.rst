@@ -2,7 +2,7 @@
  Changelog
 ===========
 
-5.2 (unreleased)
+5.2 (2026-10-21)
 ================
 
 - Move package metadata from setup.py to pyproject.toml.
