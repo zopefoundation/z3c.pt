@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "z3c.pt"
-version = "5.2"
+version = "5.3.dev0"
 description = "Fast ZPT engine."
 license = "ZPL-2.1"
 classifiers = [
