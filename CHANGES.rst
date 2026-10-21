@@ -7,13 +7,9 @@
 
 - Move package metadata from setup.py to pyproject.toml.
 
-- Add support for Python 3.15.
+- Add support for Python 3.14, 3.15.
 
-- Drop support for Python 3.10.
-
-- Add support for Python 3.14.
-
-- Drop support for Python 3.9.
+- Drop support for Python 3.9, 3.10.
 
 
 5.1 (2025-06-19)
