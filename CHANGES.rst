@@ -5,8 +5,7 @@
 5.3 (unreleased)
 ================
 
-- Nothing changed yet.
-
+- Use ``chameleon-rs`` if it is installed.
 
 5.2 (2026-10-21)
 ================
